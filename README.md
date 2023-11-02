@@ -6,7 +6,7 @@ You may also see any lint errors in the console.
 
 `source venv/Scripts/activate` - activates the virtual environment for FastAPI
 
-`uvicorn main:app --reload` - starts the local backend server (do this in the venv) Open [http://127.0.0.1:8000/endpoint](http://127.0.0.1:8000/endpoint) to view it in your browser.
+`uvicorn main:app --reload` - starts the local backend server (do this in the venv). Open [http://127.0.0.1:8000/endpoint](http://127.0.0.1:8000/endpoint) to view it in your browser.
 
 
 ### Other
