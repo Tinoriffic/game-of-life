@@ -1,7 +1,7 @@
 from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
-from database import Base
+from .database import Base
 import datetime
 
 class User(Base):
@@ -11,6 +11,8 @@ class User(Base):
     hashed_password = Column(String)
     
     skills = relationship("Skill", back_populates="owner")
+    activities = relationship("UserActivities", back_populates="user")
+    skill_progression = relationship("SkillProgression", back_populates="user")
 
 class Skill(Base):
     __tablename__ = "skills"
@@ -45,4 +47,4 @@ class SkillProgression(Base):
     level = Column(Integer)
     last_updated = Column(DateTime, default=datetime.datetime.utcnow)
     
-    user = relationship("User", back_populates="skills")
+    user = relationship("User", back_populates="skill_progression")
