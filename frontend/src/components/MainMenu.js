@@ -20,18 +20,42 @@ function MainMenu() {
       <PlayerCard playerData={yourPlayerData} />
       </section>
       <section className="skill-tree">
-        {/* Skill tree will go here */}
+      <p className="funny">XYZ Counter: 9 Days</p>
+      <p><b>🏆 Achievement Unlocked: "Iron Will" 🏆</b></p>
       </section>
       {/* Add more sections as needed */}
     </div>
   );
 }
 
+// TODO: Adjust this get the current user's data and if unable to, some default settings
 const yourPlayerData = {
   avatar: 'https://th.bing.com/th/id/OIG.EpsJXjL4FVpp8UnVU.OV?pid=ImgGn',
   name: 'Faustino',
   region: 'Boston',
-  occupation: 'Software Engineer'
+  occupation: 'Software Engineer',
+  stats: {
+    mindfulness: {
+      level: 2,
+      currXP: 30,
+      maxXP: 100
+    },
+    strength: {
+      level: 1,
+      currXP: 70,
+      maxXP: 100
+    },
+    charisma: {
+      level: 1,
+      currXP: 50,
+      maxXP: 100
+    },
+    intelligence: {
+      level: 1,
+      currXP: 40,
+      maxXP: 100
+    }
+  }
 };
 
 

@@ -14,3 +14,42 @@
     border-radius: 50%;
     margin-bottom: 10px;
   }
+
+  .player-card .player-stats {
+    margin-top: 10px;
+  }
+  
+  .player-card .player-stats p {
+    margin: 5px 0;
+    font-size: 0.9em;
+  }
+
+  .player-avatar {
+    /* Styles to control the size of the avatar */
+    width: 100px;
+    height: 100px;
+    border-radius: 50%; /* Makes the image round */
+  }
+  
+  .stat-bar-container {
+    margin-bottom: 10px;
+  }
+  
+  .stat-bar {
+    background-color: #eee; /* Light grey background */
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  
+  .stat-bar-fill {
+    background-color: #4caf50; /* Green fill color */
+    height: 20px; /* Height of the progress bar */
+    border-radius: 5px;
+    transition: width 0.3s ease; /* Smooth transition for changes in width */
+  }
+
+  .player-stats {
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+    margin-top: 10px;
+  }

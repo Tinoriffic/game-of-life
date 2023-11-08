@@ -6,7 +6,7 @@ You may also see any lint errors in the console.
 
 `source venv/Scripts/activate` - activates the virtual environment for FastAPI
 
-`python -m app.main` - starts the local backend server (do this in the venv). Execute the command from the `backend/` directory. Open [http://127.0.0.1:8000/endpoint](http://127.0.0.1:8000/endpoint) to view it in your browser.
+`python -m app.main` - starts the local backend server (do this in the venv). Execute the command from the `backend/` directory. Open [http://localhost:8000/endpoint](http://localhost:8000/endpoint) to view it in your browser.
 
 To test your endpoints see [http://localhost:8000/docs](http://localhost:8000/docs)
 
