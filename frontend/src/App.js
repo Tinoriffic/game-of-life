@@ -1,5 +1,6 @@
 import axios from 'axios';
 import React, { useState, useEffect } from 'react'
+import MainMenu from './components/MainMenu';
 
 function App() {
   const [data, setData] = useState(null);
@@ -19,8 +20,9 @@ function App() {
 
   return (
     <div>
-      <h1>Game of Life</h1>
-      {data ? <p>{data.message}</p> : <p>Loading...</p>}
+      {/* <h1>Game of Life</h1>
+      {data ? <p>{data.message}</p> : <p>Loading...</p>} */}
+      <MainMenu />
     </div>
   );
 }

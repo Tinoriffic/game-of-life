@@ -1,13 +1,14 @@
 ## The Game of Life
 
 ### Quick Start
-`npm start` - runs the react app in development mode. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+`npm start` - runs the react app in development mode. Execute the command from the `frontend/` directory. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 You may also see any lint errors in the console.
 
 `source venv/Scripts/activate` - activates the virtual environment for FastAPI
 
 `python -m app.main` - starts the local backend server (do this in the venv). Execute the command from the `backend/` directory. Open [http://127.0.0.1:8000/endpoint](http://127.0.0.1:8000/endpoint) to view it in your browser.
 
+To test your endpoints see [http://localhost:8000/docs](http://localhost:8000/docs)
 
 ### Other
 `npm test` - Launches the test runner in the interactive watch mode.

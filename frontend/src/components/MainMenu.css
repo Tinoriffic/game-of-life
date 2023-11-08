@@ -1,0 +1,45 @@
+@import url('https://fonts.googleapis.com/css2?family=Orbitron&display=swap');
+
+.main-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #282c34; /* Dark background for a game-like feel */
+    color: white;
+    padding: 20px;
+    height: 100vh; /* Full height of the viewport */
+  }
+
+  .main-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .main-nav ul {
+    list-style: none;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .main-nav li {
+    margin: 0 10px;
+    cursor: pointer;
+  }
+  
+  .player-card, .skill-tree {
+    border: 1px solid white;
+    margin: 20px 0;
+    padding: 20px;
+  }
+
+  body {
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    background-color: #1D1F20;
+    color: #F8F8F2;
+  }
+  
+  button {
+    font-family: 'Orbitron', sans-serif;
+  }

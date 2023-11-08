@@ -1,0 +1,16 @@
+.player-card {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px;
+    text-align: center;
+    background: #1D1F20;
+    color: #F8F8F2;
+  }
+  
+  .player-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-bottom: 10px;
+  }
