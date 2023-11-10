@@ -1,27 +1,15 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import './MainMenu.css'
 import PlayerCard from './PlayerCard';
 
 function MainMenu() {
   return (
     <div className="main-screen">
-      <header className="main-header">
-        <h1>Game of Life</h1>
-      </header>
-      <nav className="main-nav">
-        <ul>
-          <li>Player Card</li>
-          <li>Skill Tree</li>
-          <li>Milestones</li>
-          <li>Stats</li>
-        </ul>
-      </nav>
       <section className="player-card">
       <PlayerCard playerData={yourPlayerData} />
       </section>
       <section className="skill-tree">
-      <p className="funny">XYZ Counter: 9 Days</p>
-      <p><b>🏆 Achievement Unlocked: "Iron Will" 🏆</b></p>
       </section>
       {/* Add more sections as needed */}
     </div>
@@ -35,14 +23,9 @@ const yourPlayerData = {
   region: 'Boston',
   occupation: 'Software Engineer',
   stats: {
-    mindfulness: {
+    awareness: {
       level: 2,
       currXP: 30,
-      maxXP: 100
-    },
-    strength: {
-      level: 1,
-      currXP: 70,
       maxXP: 100
     },
     charisma: {
@@ -50,9 +33,24 @@ const yourPlayerData = {
       currXP: 50,
       maxXP: 100
     },
+    endurance: {
+      level: 1,
+      currXP: 92,
+      maxXP: 100
+    },
     intelligence: {
       level: 1,
-      currXP: 40,
+      currXP: 22,
+      maxXP: 100
+    },
+    strength: {
+      level: 1,
+      currXP: 70,
+      maxXP: 100
+    },
+    wisdom: {
+      level: 2,
+      currXP: 12,
       maxXP: 100
     }
   }

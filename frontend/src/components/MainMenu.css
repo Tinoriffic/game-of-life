@@ -8,7 +8,7 @@
     background-color: #282c34; /* Dark background for a game-like feel */
     color: white;
     padding: 20px;
-    height: 100vh; /* Full height of the viewport */
+    height: 85vh;
   }
 
   .main-header {
@@ -25,6 +25,16 @@
   .main-nav li {
     margin: 0 10px;
     cursor: pointer;
+  }
+
+  .main-nav a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  .main-nav a:hover {
+    text-decoration: underline;
+    color: #4d4949;
   }
   
   .player-card, .skill-tree {
