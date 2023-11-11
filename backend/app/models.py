@@ -2,6 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Dat
 from sqlalchemy.orm import relationship
 
 from .database import Base
+from .skill_manager import calculate_required_xp
 import datetime
 
 class User(Base):
@@ -55,10 +56,6 @@ class Skill(Base):
         if self.xp >= required_xp:
             self.level += 1
             self.xp -= required_xp  # Carry over excess XP to next level
-
-def calculate_required_xp(level: int) -> int:
-    # Example calculation, can be adjusted
-    return 100 * level  # Adjust the formula as needed for balancing
 
 class SkillProgression(Base):
     __tablename__ = "skill_progression"

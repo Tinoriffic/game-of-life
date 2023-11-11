@@ -1,8 +1,9 @@
 from sqlalchemy.orm import Session
 from . import models, schemas
 from passlib.context import CryptContext
-from .xp_calculator import *
+from .xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_workout_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from .skill_manager import update_skill_xp
+from datetime import datetime, timedelta
 
 # Instantiate a CryptContext for hashing passwords
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -50,13 +51,19 @@ def log_activity(db: Session, user_id: int, activity_data: schemas.ActivityLog):
     # Step 1: Log the activity
     db_activity = models.UserActivities(user_id=user_id, **activity_data.model_dump())
     db.add(db_activity)
+    db.query(models.WeightTracking).filter()
 
     # Step 2: Calculate XP based on activity type
     xp_to_add = 0
     if activity_data.activity_type == "meditate":
-        xp_to_add = calculate_meditation_xp(activity_data.duration, db_activity.counts_towards_streak)
+        xp_to_add = calculate_meditation_xp(activity_data.duration)
     elif activity_data.activity_type == "workout":
         xp_to_add = calculate_workout_xp(activity_data.volume, 0)  # Previous volume can be fetched as needed
+    elif activity_data.activity_type == "track_weight":
+        weight_logs = get_recent_weight_logs(db, user_id)
+        starting_weight, weight_goal = get_user_weight_goal_and_starting_weight(db, user_id)
+        if weight_logs and starting_weight is not None and weight_goal is not None:
+            xp_to_add = calculate_weight_tracking_xp(weight_logs, starting_weight, weight_goal)
     elif activity_data.activity_type == "run":
         xp_to_add = calculate_running_xp(activity_data.duration, activity_data.distance)
     elif activity_data.activity_type == "socialize":
@@ -80,6 +87,7 @@ def map_activity_to_skill(activity_type: str) -> str:
     mapping = {
         "meditate" : "awareness",
         "workout" : "strength",
+        "track_weight" : "strength",
         "run" : "endurance",
         "socialize" : "charisma",
         "learn" : "intelligence",
@@ -87,3 +95,27 @@ def map_activity_to_skill(activity_type: str) -> str:
     }
 
     return mapping.get(activity_type, "")
+
+def get_recent_weight_logs(db: Session, user_id: int):
+    """
+    Fetch the user's weight logs from the past two weeks.
+    """
+    two_weeks_ago = datetime.utcnow().date() - timedelta(days=14)
+    return db.query(models.WeightTracking).filter(
+        models.WeightTracking.user_id == user_id,
+        models.WeightTracking.date >= two_weeks_ago
+    ).order_by(models.WeightTracking.date).all()
+
+def get_user_weight_goal_and_starting_weight(db: Session, user_id: int):
+    """
+    Fetch the user's starting weight and weight goal.
+    """
+    first_entry = db.query(models.WeightTracking).filter(
+        models.WeightTracking.user_id == user_id
+    ).order_by(models.WeightTracking.date).first()
+
+    if first_entry is None:
+        return None, None
+
+    return first_entry.weight, first_entry.weight_goal
+
