@@ -20,4 +20,26 @@ def create_user(db: Session, user: schemas.UserCreate):
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
+
+    default_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom']
+    for skill in default_skills:
+        db_skill = models.Skill(name=skill, user_id=db_user.id)
+        db.add(db_skill)
+    db.commit()
+
     return db_user
+
+def log_activity(db: Session, user_id: int, activity_type: str, description: str, xp_earned: int, duration: int = 0, volume: int = 0, distance: float = 0.0):
+    db_activity = models.UserActivities(
+        user_id=user_id,
+        activity_type=activity_type,
+        description=description,
+        xp_earned=xp_earned,
+        duration=duration,
+        volume=volume,
+        distance=distance,
+    )
+    db.add(db_activity)
+    db.commit()
+    db.refresh(db_activity)
+    return db_activity
