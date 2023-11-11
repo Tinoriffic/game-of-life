@@ -59,11 +59,6 @@ def log_activity(db: Session, user_id: int, activity_data: schemas.ActivityLog):
         xp_to_add = calculate_meditation_xp(activity_data.duration)
     elif activity_data.activity_type == "workout":
         xp_to_add = calculate_workout_xp(activity_data.volume, 0)  # Previous volume can be fetched as needed
-    elif activity_data.activity_type == "track_weight":
-        weight_logs = get_recent_weight_logs(db, user_id)
-        starting_weight, weight_goal = get_user_weight_goal_and_starting_weight(db, user_id)
-        if weight_logs and starting_weight is not None and weight_goal is not None:
-            xp_to_add = calculate_weight_tracking_xp(weight_logs, starting_weight, weight_goal)
     elif activity_data.activity_type == "run":
         xp_to_add = calculate_running_xp(activity_data.duration, activity_data.distance)
     elif activity_data.activity_type == "socialize":
@@ -87,7 +82,6 @@ def map_activity_to_skill(activity_type: str) -> str:
     mapping = {
         "meditate" : "awareness",
         "workout" : "strength",
-        "track_weight" : "strength",
         "run" : "endurance",
         "socialize" : "charisma",
         "learn" : "intelligence",
@@ -95,6 +89,40 @@ def map_activity_to_skill(activity_type: str) -> str:
     }
 
     return mapping.get(activity_type, "")
+
+def log_weight_entry(db: Session, user_id: int, weight_entry: schemas.WeightEntry):
+    """
+    Log a weight entry for a user and update their skills' XP accordingly.
+    """
+    # Check if its first entry, if so, 
+    first_entry = db.query(models.WeightTracking).filter(models.WeightTracking.user_id == user_id).first()
+    is_starting_weight = first_entry is None
+
+    # Create a new weight tracking record
+    new_weight_entry = models.WeightTracking(
+        user_id=user_id, 
+        weight=weight_entry.weight, 
+        date=weight_entry.date, 
+        weight_goal=weight_entry.weight_goal,
+        is_starting_weight=is_starting_weight
+    )
+    db.add(new_weight_entry)
+
+    # Fetch recent weight logs, starting weight, and weight goal
+    weight_logs = get_recent_weight_logs(db, user_id)
+    starting_weight = weight_entry.weight if first_entry else first_entry.weight
+    # If it's the first entry or if a new weight goal is provided, update it
+    weight_goal = weight_entry.weight_goal if first_entry or weight_entry.weight_goal is not None else first_entry.weight_goal
+
+    # Calculate the XP for weight tracking
+    if weight_logs and starting_weight is not None and weight_goal is not None:
+        xp_to_add = calculate_weight_tracking_xp(weight_logs, starting_weight, weight_goal)
+        # Update skill XP
+        update_skill_xp(db, user_id, "strength", xp_to_add)
+
+    db.commit()
+    return new_weight_entry
+
 
 def get_recent_weight_logs(db: Session, user_id: int):
     """
@@ -106,16 +134,16 @@ def get_recent_weight_logs(db: Session, user_id: int):
         models.WeightTracking.date >= two_weeks_ago
     ).order_by(models.WeightTracking.date).all()
 
-def get_user_weight_goal_and_starting_weight(db: Session, user_id: int):
-    """
-    Fetch the user's starting weight and weight goal.
-    """
-    first_entry = db.query(models.WeightTracking).filter(
-        models.WeightTracking.user_id == user_id
-    ).order_by(models.WeightTracking.date).first()
+# def get_user_weight_goal_and_starting_weight(db: Session, user_id: int):
+#     """
+#     Fetch the user's starting weight and weight goal.
+#     """
+#     first_entry = db.query(models.WeightTracking).filter(
+#         models.WeightTracking.user_id == user_id
+#     ).order_by(models.WeightTracking.date).first()
 
-    if first_entry is None:
-        return None, None
+#     if first_entry is None:
+#         return None, None
 
-    return first_entry.weight, first_entry.weight_goal
+#     return first_entry.weight, first_entry.weight_goal
 

@@ -2,7 +2,6 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Dat
 from sqlalchemy.orm import relationship
 
 from .database import Base
-from .skill_manager import calculate_required_xp
 import datetime
 
 class User(Base):
@@ -57,6 +56,17 @@ class Skill(Base):
             self.level += 1
             self.xp -= required_xp  # Carry over excess XP to next level
 
+    def calculate_required_xp(level: int, base_xp: int = 100) -> int:
+        """
+        Calculate the required XP for the next level using the formula:
+        XP required for next level = Base XP * (Current Level)^1.5
+
+        :param level: Current level of the skill.
+        :param base_xp: Base XP required for leveling up from level 1 to level 2. Default is 100.
+        :return: The XP required to reach the next level.
+        """
+        return int(base_xp * (level ** 1.5))
+
 class SkillProgression(Base):
     __tablename__ = "skill_progression"
     
@@ -86,6 +96,7 @@ class WeightTracking(Base):
     weight = Column(Float)
     date = Column(DateTime, default=datetime.datetime.utcnow)
     weight_goal = Column(Float)
+    is_starting_weight = Column(Boolean, default=False)
     user = relationship("User", back_populates="weight_entries")
 
 class WorkoutProgram(Base):

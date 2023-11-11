@@ -26,14 +26,3 @@ def check_and_update_level(skill: models.Skill):
         skill.level += 1
         # Reset daily XP earned on level up, if desired
         # skill.daily_xp_earned = 0
-
-def calculate_required_xp(level: int, base_xp: int = 100) -> int:
-    """
-    Calculate the required XP for the next level using the formula:
-    XP required for next level = Base XP * (Current Level)^1.5
-
-    :param level: Current level of the skill.
-    :param base_xp: Base XP required for leveling up from level 1 to level 2. Default is 100.
-    :return: The XP required to reach the next level.
-    """
-    return int(base_xp * (level ** 1.5))

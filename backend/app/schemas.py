@@ -35,7 +35,7 @@ class ActivityStreak(BaseModel):
 class WeightEntry(BaseModel):
     weight: float
     date: datetime.date
-    weight_goal: float
+    weight_goal: float = None
 
 class Skill(BaseModel):
     name: str
