@@ -9,12 +9,18 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     hashed_password = Column(String)
+    email = Column(String, unique=True, index=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    city = Column(String)
+    occupation = Column(String)
     
     skills = relationship("Skill", back_populates="user")
     activities = relationship("UserActivities", back_populates="user")
     skill_progression = relationship("SkillProgression", back_populates="user")
     workout_programs = relationship("WorkoutProgram", back_populates="user")
     activity_streaks = relationship("ActivityStreak", back_populates="user")
+    weight_entries = relationship("WeightTracking", back_populates="user")
 
 
 class UserActivities(Base):
@@ -45,27 +51,16 @@ class Skill(Base):
     
     user = relationship("User", back_populates="skills")
 
-    def add_xp(self, xp_amount: int):
-        self.daily_xp_earned += xp_amount
-        self.xp += xp_amount
-        self.check_level_up()
+    # def add_xp(self, xp_amount: int):
+    #     self.daily_xp_earned += xp_amount
+    #     self.xp += xp_amount
+    #     self.check_level_up()
 
-    def check_level_up(self):
-        required_xp = calculate_required_xp(self.level)
-        if self.xp >= required_xp:
-            self.level += 1
-            self.xp -= required_xp  # Carry over excess XP to next level
-
-    def calculate_required_xp(level: int, base_xp: int = 100) -> int:
-        """
-        Calculate the required XP for the next level using the formula:
-        XP required for next level = Base XP * (Current Level)^1.5
-
-        :param level: Current level of the skill.
-        :param base_xp: Base XP required for leveling up from level 1 to level 2. Default is 100.
-        :return: The XP required to reach the next level.
-        """
-        return int(base_xp * (level ** 1.5))
+    # def check_level_up(self):
+    #     required_xp = calculate_required_xp(self.level)
+    #     if self.xp >= required_xp:
+    #         self.level += 1
+    #         self.xp -= required_xp  # Carry over excess XP to next level
 
 class SkillProgression(Base):
     __tablename__ = "skill_progression"
@@ -97,6 +92,7 @@ class WeightTracking(Base):
     date = Column(DateTime, default=datetime.datetime.utcnow)
     weight_goal = Column(Float)
     is_starting_weight = Column(Boolean, default=False)
+    
     user = relationship("User", back_populates="weight_entries")
 
 class WorkoutProgram(Base):
@@ -106,6 +102,7 @@ class WorkoutProgram(Base):
     name = Column(String)  # Name of the program i.e., 'PPL, 7-Day Split'
     day_of_program = Column(String, index=True)  # 'Day 1', 'Day 2', etc.
     exercises = Column(String)  # JSON or stringified list of exercises and desired sets
+    
     user = relationship("User", back_populates="workout_programs")
     workout_sessions = relationship("WorkoutSession", back_populates="workout_program")
 
@@ -116,5 +113,6 @@ class WorkoutSession(Base):
     workout_program_id = Column(Integer, ForeignKey("workout_programs.id"))
     date = Column(DateTime, default=datetime.datetime.utcnow)
     exercises_completed = Column(String)  # JSON or stringified list of completed exercises, reps, and weight
+    
     workout_program = relationship("WorkoutProgram", back_populates="workout_sessions")
 
