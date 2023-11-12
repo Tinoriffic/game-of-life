@@ -24,8 +24,6 @@ def check_and_update_level(skill: models.Skill):
     while skill.xp >= calculate_required_xp(skill.level):
         skill.xp -= calculate_required_xp(skill.level)
         skill.level += 1
-        # Reset daily XP earned on level up, if desired
-        # skill.daily_xp_earned = 0
 
 def calculate_required_xp(level: int, base_xp: int = 100) -> int:
     """

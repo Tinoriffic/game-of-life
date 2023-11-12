@@ -51,17 +51,6 @@ class Skill(Base):
     
     user = relationship("User", back_populates="skills")
 
-    # def add_xp(self, xp_amount: int):
-    #     self.daily_xp_earned += xp_amount
-    #     self.xp += xp_amount
-    #     self.check_level_up()
-
-    # def check_level_up(self):
-    #     required_xp = calculate_required_xp(self.level)
-    #     if self.xp >= required_xp:
-    #         self.level += 1
-    #         self.xp -= required_xp  # Carry over excess XP to next level
-
 class SkillProgression(Base):
     __tablename__ = "skill_progression"
     
