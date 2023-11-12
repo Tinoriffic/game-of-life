@@ -96,8 +96,8 @@ def log_activity(db: Session, user_id: int, activity_data: schemas.ActivityLog):
     elif activity_data.activity_type == "run":
         xp_to_add = calculate_running_xp(activity_data.duration, activity_data.distance, skill_xp_dict.get("Endurance", 0))
     elif activity_data.activity_type == "socialize":
-        xp_to_add = calculate_social_interaction_xp(activity_data.activity_type)
-    elif activity_data.activity_type == "learn":
+        xp_to_add = calculate_social_interaction_xp(activity_data.description)
+    elif activity_data.activity_type == "read" or activity_data.activity_type == "take_class":
         xp_to_add = calculate_learning_xp(activity_data.activity_type, activity_data.duration, skill_xp_dict.get("Intelligence", 0))
     elif activity_data.activity_type == "reflect":
         xp_to_add = calculate_reflection_xp(skill_xp_dict.get("Wisdom", 0))
@@ -119,7 +119,8 @@ def map_activity_to_skill(activity_type: str) -> str:
         "workout" : "Strength",
         "run" : "Endurance",
         "socialize" : "Charisma",
-        "learn" : "Intelligence",
+        "read" : "Intelligence",
+        "take_class" : "Intelligence",
         "reflect" : "Wisdom"
     }
 

@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Dat
 from sqlalchemy.orm import relationship
 
 from .database import Base
-import datetime
+from datetime import datetime
 
 class User(Base):
     __tablename__ = "users"
@@ -31,7 +31,7 @@ class UserActivities(Base):
     activity_type = Column(String, index=True)
     description = Column(String)
     xp_earned = Column(Integer)
-    date = Column(DateTime, default=datetime.datetime.utcnow)
+    date = Column(DateTime, default=datetime.utcnow)
     duration = Column(Integer, default=0)
     volume = Column(Integer, default=0) # for workouts (weight * reps)
     distance = Column(Float, default=0.0)
@@ -60,7 +60,7 @@ class SkillProgression(Base):
     skill_name = Column(String, index=True)
     xp = Column(Integer)
     level = Column(Integer)
-    last_updated = Column(DateTime, default=datetime.datetime.utcnow)
+    last_updated = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="skill_progression")
 
@@ -79,7 +79,7 @@ class WeightTracking(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     weight = Column(Float)
-    date = Column(DateTime, default=datetime.datetime.utcnow)
+    date = Column(DateTime, default=datetime.utcnow)
     weight_goal = Column(Float)
     is_starting_weight = Column(Boolean, default=False)
     
@@ -101,7 +101,7 @@ class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
     id = Column(Integer, primary_key=True, index=True)
     workout_program_id = Column(Integer, ForeignKey("workout_programs.id"))
-    date = Column(DateTime, default=datetime.datetime.utcnow)
+    date = Column(DateTime, default=datetime.utcnow)
     exercises_completed = Column(String)  # JSON or stringified list of completed exercises, reps, and weight
     
     workout_program = relationship("WorkoutProgram", back_populates="workout_sessions")

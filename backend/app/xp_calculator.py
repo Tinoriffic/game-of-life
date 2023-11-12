@@ -53,12 +53,13 @@ def calculate_learning_xp(activity_type: str, duration: int, daily_xp_earned: in
     Daily XP reward differs based on the activity.
     """
     xp = 0
+    # TO DO: Modify so that you can earn daily XP for reading AND taking a course
     if daily_xp_earned == 0:
-        if activity_type == "reading":
+        if activity_type == "read":
             xp += 5
-        elif activity_type == "course":
+        elif activity_type == "take_class":
             xp += 15
-    xp += (duration // 5) * 5
+    xp += (duration // 10) * 5
     return xp
 
 def calculate_reflection_xp(daily_xp_earned: int) -> int:
@@ -92,6 +93,7 @@ def calculate_weight_tracking_xp(daily_logs, starting_weight, goal_weight):
     current_week_avg = calculate_average_weight(current_week_logs)
     previous_week_avg = calculate_average_weight(previous_week_logs)
 
+    # TO DO: Modify the logic so that you get a daily reward by logging a weight entry
     base_xp = 2 * len(current_week_logs)  # 2 XP per day for logging
 
     if not previous_week_logs:
