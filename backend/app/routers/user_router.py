@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from .. import crud, schemas
 from ..dependencies import get_db
@@ -42,6 +42,12 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="Email not found")
     return db_user
+
+# Get a list of users with pagination
+@router.get("/users/", response_model=List[schemas.User])
+def read_users(skip: int = Query(0, alias="skip"), limit: int = Query(10, alias="limit"), db: Session = Depends(get_db)):
+    users = crud.get_users(db, skip=skip, limit=limit)
+    return users
 
 # Logs an activity (action) and rewards XP
 @router.post("/users/{user_id}/log-activity/", response_model=schemas.ActivityLog)
