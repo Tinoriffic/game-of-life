@@ -32,6 +32,18 @@ def get_users(db: Session, skip: int = 0, limit: int = 10):
     """
     return db.query(models.User).offset(skip).limit(limit).all()
 
+def get_user_skills(db: Session, user_id: int):
+    """
+    Retrieve a user's skills
+    """
+    return db.query(models.Skill).filter(models.Skill.user_id == user_id)
+
+def get_user_activity_streaks(db: Session, user_id: int):
+    """
+    Retrieve a user's streaks
+    """
+    return db.query(models.ActivityStreak).filter(models.ActivityStreak.user_id == user_id)
+
 def create_user(db: Session, user: schemas.UserCreate):
     """
     Creates a new user given a username and password
@@ -109,7 +121,10 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: schemas.WeightEntr
     """
     # Check if its first entry, if so, 
     first_entry = db.query(models.WeightTracking).filter(models.WeightTracking.user_id == user_id).first()
-    is_starting_weight = first_entry is None
+    is_first_entry = first_entry is None
+    starting_weight = weight_entry.weight if is_first_entry else first_entry.weight
+    # If it's the first entry or if a new weight goal is provided, update it
+    weight_goal = weight_entry.weight_goal if is_first_entry or weight_entry.weight_goal is not None else first_entry.weight_goal
 
     # Create a new weight tracking record
     new_weight_entry = models.WeightTracking(
@@ -117,15 +132,12 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: schemas.WeightEntr
         weight=weight_entry.weight, 
         date=weight_entry.date, 
         weight_goal=weight_entry.weight_goal,
-        is_starting_weight=is_starting_weight
+        is_starting_weight=is_first_entry
     )
     db.add(new_weight_entry)
 
-    # Fetch recent weight logs, starting weight, and weight goal
+    # Fetch recent weight logs for XP calculation
     weight_logs = get_recent_weight_logs(db, user_id)
-    starting_weight = weight_entry.weight if first_entry else first_entry.weight
-    # If it's the first entry or if a new weight goal is provided, update it
-    weight_goal = weight_entry.weight_goal if first_entry or weight_entry.weight_goal is not None else first_entry.weight_goal
 
     # Calculate the XP for weight tracking
     if weight_logs and starting_weight is not None and weight_goal is not None:

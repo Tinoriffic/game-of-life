@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 import datetime
+from typing import Optional
 
 class UserCreate(BaseModel):
     username: str
@@ -45,7 +46,7 @@ class ActivityStreak(BaseModel):
 class WeightEntry(BaseModel):
     weight: float
     date: datetime.date
-    weight_goal: float = None
+    weight_goal: Optional[float] = None
 
 class Skill(BaseModel):
     name: str
