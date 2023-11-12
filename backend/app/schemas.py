@@ -30,7 +30,7 @@ class UserInDB(User):
 class ActivityLog(BaseModel):
     activity_type: str
     description: str
-    xp_earned: int
+    xp_earned: int = 0
     duration: int = 0
     volume: int = 0
     distance: float = 0.0
@@ -53,3 +53,4 @@ class Skill(BaseModel):
     level: int
     xp: int
     daily_xp_earned: int
+    last_updated: datetime

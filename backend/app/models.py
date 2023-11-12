@@ -46,6 +46,7 @@ class Skill(Base):
     level = Column(Integer, default=1)
     xp = Column(Integer, default=0)
     daily_xp_earned = Column(Integer, default=0)
+    last_updated = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
     user_id = Column(Integer, ForeignKey("users.id"))
     parent_skill_id = Column(Integer, ForeignKey("skills.id"))
     
