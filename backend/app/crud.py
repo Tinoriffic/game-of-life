@@ -1,4 +1,4 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from . import models, schemas
 from passlib.context import CryptContext
 from .xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_workout_xp, calculate_weight_tracking_xp, calculate_reflection_xp
@@ -49,7 +49,7 @@ def create_user(db: Session, user: schemas.UserCreate):
     Creates a new user given a username and password
     """
     hashed_password = pwd_context.hash(user.password)
-    db_user = models.User(
+    new_user = models.User(
         username=user.username,
         hashed_password=hashed_password,
         email=user.email,
@@ -57,25 +57,25 @@ def create_user(db: Session, user: schemas.UserCreate):
         last_name=user.last_name,
         city=user.city,
         occupation=user.occupation)
-    db.add(db_user)
+    db.add(new_user)
     db.commit()
-    db.refresh(db_user)
+    db.refresh(new_user)
 
     default_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom']
     for skill in default_skills:
-        db_skill = models.Skill(name=skill, user_id=db_user.id)
+        db_skill = models.Skill(name=skill, user_id=new_user.id)
         db.add(db_skill)
     db.commit()
 
-    return db_user
+    return new_user
 
 def log_activity(db: Session, user_id: int, activity_data: schemas.ActivityLog):
     """
     Log an activity for a user and update their skills' XP accordingly.
     """
     # Step 1: Log the activity
-    db_activity = models.UserActivities(user_id=user_id, **activity_data.model_dump())
-    db.add(db_activity)
+    new_activity = models.UserActivities(user_id=user_id, **activity_data.model_dump())
+    db.add(new_activity)
     db.query(models.WeightTracking).filter()
     user_skills = get_user_skills(db, user_id)
 
@@ -105,10 +105,10 @@ def log_activity(db: Session, user_id: int, activity_data: schemas.ActivityLog):
     # Step 3: Update Skill XP
     skill_name = map_activity_to_skill(activity_data.activity_type)
     update_skill_xp(db, user_id, skill_name, xp_to_add)
-    db_activity.xp_earned = xp_to_add
+    new_activity.xp_earned = xp_to_add
 
     db.commit()
-    return db_activity
+    return new_activity
 
 def map_activity_to_skill(activity_type: str) -> str:
     """
@@ -159,6 +159,64 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: schemas.WeightEntr
     db.commit()
     return new_weight_entry
 
+def create_workout_program(db: Session, user_id: int, program: schemas.WorkoutProgramCreate):
+    """
+    Create a new workout program.
+    """
+    new_program = models.WorkoutProgram(
+        user_id=user_id,
+        name=program.name
+    )
+    db.add(new_program)
+    db.commit()
+    db.refresh(new_program)
+
+    # Iterate over each day in the program
+    for day in program.workout_days:
+        new_day = models.WorkoutDay(
+            program_id=new_program.program_id,
+            day_name=day.day_name
+        )
+        db.add(new_day)
+
+        # Iterate over each exercise in the day
+        for exercise in day.exercises:
+            exercise_model = get_or_create_exercise(db, exercise.name)
+            new_program_exercise = models.WorkoutProgramExercise(
+                day_id=new_day.day_id,
+                exercise_id=exercise_model.exercise_id,
+                sets=exercise.sets,
+                recommended_reps=exercise.recommended_reps,
+                recommended_weight=exercise.recommended_weight
+            )
+            db.add(new_program_exercise)
+            db.flush()
+            db.refresh(new_program_exercise)
+        
+    db.commit()
+    new_program = db.query(models.WorkoutProgram).options(
+        joinedload(models.WorkoutProgram.workout_days)
+        .joinedload(models.WorkoutDay.exercises)).filter(
+            models.WorkoutProgram.program_id == new_program.program_id).first()
+    
+    # Debugging: Print statements to check if days are loaded correctly
+    print("Created Workout Program: ", new_program.name)
+    print("Days in the Program: ", len(new_program.workout_days))
+    for day in new_program.workout_days:
+        print("Day Name: ", day.day_name, " | Exercises: ", len(day.exercises))
+        for exercise in day.exercises:
+            print("  Exercise Name: ", exercise.exercise.name)
+
+    return new_program
+
+def get_or_create_exercise(db: Session, exercise_name: str):
+    exercise = db.query(models.Exercise).filter(models.Exercise.name == exercise_name).first()
+    if not exercise:
+        exercise = models.Exercise(name=exercise_name)
+        db.add(exercise)
+        db.commit()
+        db.refresh(exercise)
+    return exercise
 
 def get_recent_weight_logs(db: Session, user_id: int):
     """

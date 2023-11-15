@@ -87,22 +87,65 @@ class WeightTracking(Base):
 
 class WorkoutProgram(Base):
     __tablename__ = "workout_programs"
-    id = Column(Integer, primary_key=True, index=True)
+    program_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    name = Column(String)  # Name of the program i.e., 'PPL, 7-Day Split'
-    day_of_program = Column(String, index=True)  # 'Day 1', 'Day 2', etc.
-    exercises = Column(String)  # JSON or stringified list of exercises and desired sets
+    name = Column(String, nullable=False)  # Name of the program i.e., 'PPL, 7-Day Split'
     
     user = relationship("User", back_populates="workout_programs")
+    workout_days = relationship('WorkoutDay', back_populates='workout_program')
     workout_sessions = relationship("WorkoutSession", back_populates="workout_program")
+
+class WorkoutDay(Base):
+    __tablename__ = "workout_days"
+    day_id = Column(Integer, primary_key=True, index=True)
+    program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
+    day_name = Column(String, nullable=False)
+
+    workout_program = relationship('WorkoutProgram', back_populates='workout_days')
+    exercises = relationship('WorkoutProgramExercise', back_populates='workout_day')
+
+class Exercise(Base):
+    __tablename__ = "exercises"
+    exercise_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False)
+
+    program_exercises = relationship('WorkoutProgramExercise', back_populates='exercise')
+    session_exercises = relationship('WorkoutSessionExercise', back_populates='exercise')
+
+class WorkoutProgramExercise(Base):
+    __tablename__ = "workout_program_exercises"
+    program_exercise_id = Column(Integer, primary_key=True, index=True)
+    day_id = Column(Integer, ForeignKey('workout_days.day_id'))
+    exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
+    sets = Column(Integer, nullable=False)
+    recommended_reps = Column(Integer, default=3)
+    recommended_weight = Column(Integer, default=3)
+
+    workout_day = relationship('WorkoutDay', back_populates='exercises')
+    exercise = relationship('Exercise', back_populates='program_exercises')
+    session_exercises = relationship('WorkoutSessionExercise', back_populates='program_exercise')
 
 
 class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
-    id = Column(Integer, primary_key=True, index=True)
-    workout_program_id = Column(Integer, ForeignKey("workout_programs.id"))
-    date = Column(DateTime, default=datetime.utcnow)
-    exercises_completed = Column(String)  # JSON or stringified list of completed exercises, reps, and weight
-    
-    workout_program = relationship("WorkoutProgram", back_populates="workout_sessions")
+    session_id = Column(Integer, primary_key=True, index=True)
+    program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
+    user_id = Column(Integer, ForeignKey('users.id'))
+    session_date = Column(Date, nullable=False)
+
+    workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
+    exercises = relationship('WorkoutSessionExercise', back_populates='session')
+
+class WorkoutSessionExercise(Base):
+    __tablename__ = 'workout_session_exercises'
+    session_exercise_id = Column(Integer, primary_key=True, index=True)
+    session_id = Column(Integer, ForeignKey('workout_sessions.session_id'))
+    program_exercise_id = Column(Integer, ForeignKey('workout_program_exercises.program_exercise_id'))
+    exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
+    performed_reps = Column(Integer)
+    performed_weight = Column(Integer)
+
+    session = relationship('WorkoutSession', back_populates='exercises')
+    program_exercise = relationship('WorkoutProgramExercise', back_populates='session_exercises')
+    exercise = relationship('Exercise', back_populates='session_exercises')
 
