@@ -28,3 +28,4 @@ class SkillProgression(Base):
     last_updated = Column(DateTime, default=datetime.utcnow)
     
     user = relationship("User", back_populates="skill_progression")
+    

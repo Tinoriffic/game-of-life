@@ -40,3 +40,4 @@ class WeightTracking(Base):
     is_starting_weight = Column(Boolean, default=False)
     
     user = relationship("User", back_populates="weight_entries")
+    
