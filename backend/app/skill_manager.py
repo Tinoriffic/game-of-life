@@ -1,14 +1,14 @@
 # skill_manager.py
 from sqlalchemy.orm import Session
-from . import models
+from .models import skill_model
 
 def update_skill_xp(db: Session, user_id: int, skill_name: str, xp_to_add: int):
     """
     Update the XP of a specific skill for a user.
     """
-    skill = db.query(models.Skill).filter(
-        models.Skill.user_id == user_id,
-        models.Skill.name == skill_name
+    skill = db.query(skill_model.Skill).filter(
+        skill_model.Skill.user_id == user_id,
+        skill_model.Skill.name == skill_name
     ).first()
 
     if skill:
@@ -17,7 +17,7 @@ def update_skill_xp(db: Session, user_id: int, skill_name: str, xp_to_add: int):
         check_and_update_level(skill)
         db.commit()
 
-def check_and_update_level(skill: models.Skill):
+def check_and_update_level(skill: skill_model.Skill):
     """
     Check if the skill should level up based on the current XP and update the level if necessary.
     """

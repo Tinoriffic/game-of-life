@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .cors import setup_cors
-from .routers import user_router
+from .routers import user_router, activity_router, skill_router, workout_router
 from . import models
 from .database import engine
 
@@ -10,7 +10,11 @@ app = FastAPI()
 
 setup_cors(app)
 
+app.include_router(activity_router.router)
+app.include_router(skill_router.router)
 app.include_router(user_router.router)
+app.include_router(workout_router.router)
+
 
 # Example Routes
 @app.get("/")
