@@ -11,14 +11,15 @@ def calculate_meditation_xp(duration:int, daily_xp_earned: int) -> int:
     xp += (duration // 5) * 5
     return xp
 
-def calculate_workout_xp(volume: int, previous_volume: int) -> int:
+def calculate_workout_xp(daily_xp_earned: int) -> int:
     """
     Calculate XP for workout activity.
-    Reward 15 XP for logging a workout session, plus 10 XP for each set where the current volume exceeds the previous.
+    Reward 15 XP for logging a workout session
+    TO DO: reward additional 10 XP/exercise where volume exceeded previous average (i.e. avg of 3 sessions) workout volume
     """
-    xp = 15
-    if volume > previous_volume:
-        xp += 10
+    xp = 0
+    if daily_xp_earned == 0:
+        xp += 15
     return xp
 
 def calculate_running_xp(duration: int, distance: float, daily_xp_earned: int) -> int:

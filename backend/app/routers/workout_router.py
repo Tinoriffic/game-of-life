@@ -63,7 +63,26 @@ def read_user_workout_programs(user_id: int, db: Session = Depends(get_db)):
             ]
         ) for program in programs
     ]
-    
+
+# Get a list of exercises for a specific day in a program
+@router.get("/workout-programs/{program_id}/exercises", response_model=List[workout_schema.WorkoutProgramExerciseResponse])
+def get_workout_program_exercises(program_id: int, day_name: str, db: Session = Depends(get_db)):
+    # Add exception handling for programs / workout days that don't exist
+    exercises = workout_crud.get_exercises_for_specific_day(db, program_id, day_name)
+    return [workout_schema.WorkoutProgramExerciseResponse(program_exercise_id=exercise[0].program_exercise_id, exercise_name=exercise[1]) for exercise in exercises]
+
+# Log a workout session entry
+@router.post("/users/{user_id}/workout-sessions/", response_model=workout_schema.WorkoutSession)
+def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):
+    return workout_crud.log_workout_session(db, session_data, user_id)
+
+@router.get("/users/{user_id}/workout-sessions/", response_model=List[workout_schema.WorkoutSession])
+def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
+    try:
+        return workout_crud.get_workout_sessions(db, user_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
 # Reset workout DB tables
 @router.delete("/delete-all-workout-data/")
 def delete_all_workout_data(db: Session = Depends(get_db)):

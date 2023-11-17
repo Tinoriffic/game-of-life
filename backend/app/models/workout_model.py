@@ -1,5 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Date
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
+from datetime import datetime
 
 from ..database import Base
 
@@ -28,7 +29,6 @@ class Exercise(Base):
     name = Column(String, nullable=False)
 
     program_exercises = relationship('WorkoutProgramExercise', back_populates='exercise')
-    session_exercises = relationship('WorkoutSessionExercise', back_populates='exercise')
 
 # Specific exercises within each work out day for a program
 class WorkoutProgramExercise(Base):
@@ -44,13 +44,14 @@ class WorkoutProgramExercise(Base):
     exercise = relationship('Exercise', back_populates='program_exercises')
     session_exercises = relationship('WorkoutSessionExercise', back_populates='program_exercise')
 
+
 # Instances of when a user performs a workout
 class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
     session_id = Column(Integer, primary_key=True, index=True)
     program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
     user_id = Column(Integer, ForeignKey('users.id'))
-    session_date = Column(Date, nullable=False)
+    session_date = Column(DateTime, default=datetime.utcnow)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
     exercises = relationship('WorkoutSessionExercise', back_populates='session')
@@ -61,11 +62,9 @@ class WorkoutSessionExercise(Base):
     session_exercise_id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey('workout_sessions.session_id'))
     program_exercise_id = Column(Integer, ForeignKey('workout_program_exercises.program_exercise_id'))
-    exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
+    set_number = Column(Integer, nullable=False)
     performed_reps = Column(Integer)
     performed_weight = Column(Integer)
 
     session = relationship('WorkoutSession', back_populates='exercises')
     program_exercise = relationship('WorkoutProgramExercise', back_populates='session_exercises')
-    exercise = relationship('Exercise', back_populates='session_exercises')
-

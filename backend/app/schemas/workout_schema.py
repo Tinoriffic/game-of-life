@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from datetime import date
+from datetime import date, datetime
 from typing import Optional, List
 
 class Exercise(BaseModel):
@@ -32,6 +32,10 @@ class WorkoutProgramExercise(BaseModel):
     recommended_reps: Optional[int] = 3
     recommended_weight: Optional[int] = 3
 
+class WorkoutProgramExerciseResponse(BaseModel):
+    program_exercise_id: int
+    exercise_name: str
+
 class WorkoutProgram(BaseModel):
     program_id: int
     user_id: int
@@ -45,9 +49,12 @@ class WorkoutProgramCreate(BaseModel):
     name: str
     workout_days: List[WorkoutDayCreate]
 
+class WorkoutSet(BaseModel):
+    set_number: int
+    performed_reps: int
+    performed_weight: int
+
 class WorkoutSessionExercise(BaseModel):
-    session_exercise_id: int
-    session_id: int
     program_exercise_id: int
     performed_reps: int
     performed_weight: int
@@ -58,3 +65,12 @@ class WorkoutSession(BaseModel):
     user_id: int
     session_date: date
     exercises: List[WorkoutSessionExercise]
+
+class WorkoutSessionExerciseCreate(BaseModel):
+    program_exercise_id: int
+    sets: List[WorkoutSet]
+
+class WorkoutSessionCreate(BaseModel):
+    program_id: int
+    date: datetime
+    exercises: List[WorkoutSessionExerciseCreate]
