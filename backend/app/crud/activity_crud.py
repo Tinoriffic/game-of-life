@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from ..schemas import activity_schema
 from ..models import activity_model
-from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_workout_xp, calculate_weight_tracking_xp, calculate_reflection_xp
+from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
 from .skill_crud import get_user_skills
 from datetime import datetime, timedelta
