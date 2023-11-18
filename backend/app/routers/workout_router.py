@@ -4,7 +4,7 @@ from ..schemas import workout_schema
 from ..models import workout_model
 from ..crud import workout_crud, user_crud
 from ..dependencies import get_db
-from typing import List
+from typing import List, Dict
 
 router = APIRouter()
 
@@ -67,9 +67,23 @@ def read_user_workout_programs(user_id: int, db: Session = Depends(get_db)):
 # Get a list of exercises for a specific day in a program
 @router.get("/workout-programs/{program_id}/exercises", response_model=List[workout_schema.WorkoutProgramExerciseResponse])
 def get_workout_program_exercises(program_id: int, day_name: str, db: Session = Depends(get_db)):
-    # Add exception handling for programs / workout days that don't exist
+    if not workout_crud.get_workout_program(db, program_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
+
+    # Check if the day exists in the program
+    if not workout_crud.get_workout_day_by_name(db, program_id, day_name):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specified workout day not found in the program")
+
     exercises = workout_crud.get_exercises_for_specific_day(db, program_id, day_name)
     return [workout_schema.WorkoutProgramExerciseResponse(program_exercise_id=exercise[0].program_exercise_id, exercise_name=exercise[1]) for exercise in exercises]
+
+# Get the full workout program details of a specific workout program
+@router.get("/workout-programs/{program_id}/program-details", response_model=List[Dict])
+def read_workout_program_details(program_id: int, db: Session = Depends(get_db)):
+    program_details = workout_crud.get_workout_program_details(db, program_id)
+    if not program_details:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
+    return program_details
 
 # Log a workout session entry
 @router.post("/users/{user_id}/workout-sessions/", response_model=workout_schema.WorkoutSession)
@@ -82,6 +96,15 @@ def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
         return workout_crud.get_workout_sessions(db, user_id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
+# Delete a workout program
+@router.delete("/workout-programs/{program_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
+    try:
+        workout_crud.delete_workout_program(db, program_id)
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Workout progrm not found or unable to delete: {e}")
+    return {"detail": "Workout program deleted successfully"}
 
 # Reset workout DB tables
 @router.delete("/delete-all-workout-data/")
