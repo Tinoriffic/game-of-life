@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 def calculate_meditation_xp(duration:int, daily_xp_earned: int) -> int:
     """
@@ -92,62 +92,58 @@ def calculate_weight_tracking_xp(daily_logs, starting_weight, goal_weight):
     Weekly reward of 15 XP if progress is made towards the goal_weight
     For the first week, compare the average weight to the starting weight.
     From the second week onwards, compare the average to the previous week's average.
-    :param daily_logs: List of tuples (date, weight) for the current and previous week.
-    :param starting_weight: User's weight at the start of tracking.
-    :param goal_weight: User's weight goal.
-    :return: XP earned for weight tracking.
     """
     if not daily_logs:
         return 0
+    
+    base_xp = 2 * len(daily_logs)  # 2 XP per day for logging
 
     # Process logs to get weekly averages
-    current_week_logs = [log for log in daily_logs if is_current_week(log[0])]
-    previous_week_logs = [log for log in daily_logs if is_previous_week(log[0])]
+    current_week_avg = calculate_average_weight([log.weight for log in daily_logs if is_current_week(log.date)])
+    previous_week_avg = calculate_average_weight([log.weight for log in daily_logs if is_previous_week(log.date)])
 
-    current_week_avg = calculate_average_weight(current_week_logs)
-    previous_week_avg = calculate_average_weight(previous_week_logs)
+    # Check progress towards the goal
+    progress_xp = 0
+    if current_week_avg is not None:
+        if previous_week_avg is None:
+            # Compare with starting weight for the first week
+            if is_progress_made(current_week_avg, starting_weight, goal_weight):
+                progress_xp = 15
+        else:
+            # Compare with previous week's average from the second week
+            if is_progress_made(current_week_avg, previous_week_avg, goal_weight):
+                progress_xp = 15
 
-    # TO DO: Modify the logic so that you get a daily reward by logging a weight entry
-    base_xp = 2 * len(current_week_logs)  # 2 XP per day for logging
-
-    if not previous_week_logs:
-        # For the first week, compare with the starting weight
-        is_progress = compare_progress(current_week_avg, starting_weight, goal_weight)
-    else:
-        # From the second week, compare with the previous week's average
-        is_progress = compare_progress(current_week_avg, previous_week_avg, goal_weight)
-
-    progress_xp = 15 if is_progress else 0
     return base_xp + progress_xp
 
-def calculate_average_weight(logs):
-    if not logs:
-        return 0
-    total_weight = sum(weight for _, weight in logs)
-    return total_weight / len(logs)
+def calculate_average_weight(weights):
+    return sum(weights) / len(weights) if weights else None
 
-def is_current_week(log_date, start_date):
+def is_current_week(log_date):
     """
     Check if the log date falls in the current week.
-    :param log_date: The date of the weight log entry.
-    :param start_date: The user's weight tracking start date.
-    :return: True if the log date is in the current week, False otherwise.
     """
-    current_week_start = start_date + timedelta(days=((datetime.utcnow().date() - start_date).days // 7) * 7)
-    current_week_end = current_week_start + timedelta(days=7)
-    return current_week_start <= log_date < current_week_end
+    if isinstance(log_date, datetime):
+        log_date = log_date.date()
 
-def is_previous_week(log_date, start_date):
+    current_week_start = date.today() - timedelta(days=date.today().weekday())
+    return current_week_start <= log_date <= current_week_start + timedelta(days=6)
+
+def is_previous_week(log_date):
     """
     Check if the log date falls in the previous week.
-    :param log_date: The date of the weight log entry.
-    :param start_date: The user's weight tracking start date.
-    :return: True if the log date is in the previous week, False otherwise.
     """
-    previous_week_start = start_date + timedelta(days=((datetime.utcnow().date() - start_date).days // 7 - 1) * 7)
-    previous_week_end = previous_week_start + timedelta(days=7)
-    return previous_week_start <= log_date < previous_week_end
+    if isinstance(log_date, datetime):
+        log_date = log_date.date()
 
-def compare_progress(current_avg, comparison_avg, goal_weight):
-    return (current_avg < comparison_avg and goal_weight < comparison_avg) or \
-           (current_avg > comparison_avg and goal_weight > comparison_avg)
+    previous_week_start = date.today() - timedelta(days=date.today().weekday() + 7)
+    previous_week_end = previous_week_start + timedelta(days=6)
+    return previous_week_start <= log_date <= previous_week_end
+
+def is_progress_made(current_avg, comparison_avg, goal_weight):
+    """
+    Determine if progress has been made towards the goal weight.
+    """
+    if goal_weight > comparison_avg:
+        return current_avg > comparison_avg  # Goal is to gain weight
+    return current_avg < comparison_avg  # Goal is to lose weight
