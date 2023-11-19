@@ -130,7 +130,8 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
 def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     result = db.execute(
         text("""
-        SELECT * FROM user_workout_program_details
+        SELECT user_id, program_name, day_name, exercise_name, program_exercise_id, sets
+        FROM user_workout_program_details
         WHERE program_id = :program_id
         """),
         {"program_id": program_id}
@@ -140,7 +141,9 @@ def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     return [row._asdict() for row in result]
 
 def get_workout_sessions(db: Session, user_id: int):
-    return db.query(workout_model.WorkoutSessionExercise).filter(workout_model.WorkoutSession.user_id == user_id).all()
+    return db.query(workout_model.WorkoutSessionExercise).join(
+        workout_model.WorkoutSession, workout_model.WorkoutSession.session_id == workout_model.WorkoutSessionExercise.session_id).filter(
+            workout_model.WorkoutSession.user_id == user_id).all()
 
 def get_or_create_exercise(db: Session, exercise_name: str):
     exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise_name).first()
@@ -159,13 +162,13 @@ def get_user_workout_progress(db: Session, user_id: int, time_frame: int = 7) ->
     start_date = end_date - timedelta(days=time_frame)
     
     return db.execute(
-        """
+        text("""
         SELECT exercise_name, session_date, SUM(volume) as total_volume
         FROM workout_progress_view
         WHERE user_id = :user_id AND session_date BETWEEN :start_date AND :end_date
         GROUP BY exercise_name, session_date
         ORDER BY exercise_name, session_date
-        """,
+        """),
         {"user_id": user_id, "start_date": start_date, "end_date": end_date}
     ).fetchall()
 

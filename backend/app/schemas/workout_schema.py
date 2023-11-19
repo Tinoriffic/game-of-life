@@ -50,7 +50,7 @@ class WorkoutProgramCreate(BaseModel):
     workout_days: List[WorkoutDayCreate]
 
 class WorkoutSet(BaseModel):
-    set_number: int
+    set_number: Optional[int] = None
     performed_reps: int
     performed_weight: int
 

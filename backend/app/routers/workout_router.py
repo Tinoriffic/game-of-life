@@ -90,7 +90,7 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
 def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):
     return workout_crud.log_workout_session(db, session_data, user_id)
 
-@router.get("/users/{user_id}/workout-sessions/", response_model=List[workout_schema.WorkoutSession])
+@router.get("/users/{user_id}/workout-sessions/", response_model=List[workout_schema.WorkoutSessionExercise])
 def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
     try:
         return workout_crud.get_workout_sessions(db, user_id)
