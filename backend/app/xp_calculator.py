@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, date
+import math
 
 def calculate_meditation_xp(duration:int, daily_xp_earned: int) -> int:
     """
@@ -7,7 +8,7 @@ def calculate_meditation_xp(duration:int, daily_xp_earned: int) -> int:
     """
     xp = 0
     if daily_xp_earned == 0:
-        xp += 10
+        xp += 5
     xp += (duration // 5) * 5
     return xp
 
@@ -44,7 +45,7 @@ def calculate_running_xp(duration: int, distance: float, daily_xp_earned: int) -
     if daily_xp_earned == 0:
         xp += 10
     xp += (duration // 10) * 5
-    xp += int(distance / 0.5) * 5
+    xp += math.ceil((distance * 0.5) * 5)
     return xp
 
 def calculate_social_interaction_xp(interaction_type: str) -> int:
@@ -67,13 +68,13 @@ def calculate_learning_xp(activity_type: str, duration: int, daily_xp_earned: in
     Daily XP reward differs based on the activity.
     """
     xp = 0
-    # TO DO: Modify so that you can earn daily XP for reading AND taking a course
+    # TO DO: Considering modifying so that you can earn daily XP for reading AND taking a course
     if daily_xp_earned == 0:
-        if activity_type == "read":
             xp += 5
-        elif activity_type == "take_class":
-            xp += 15
-    xp += (duration // 10) * 5
+    if activity_type == "take_class":
+        xp += (duration // 5) * 5
+    elif activity_type == "read":
+        xp += (duration // 10) * 5
     return xp
 
 def calculate_reflection_xp(daily_xp_earned: int) -> int:
