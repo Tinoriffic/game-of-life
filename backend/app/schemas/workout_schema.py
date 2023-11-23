@@ -17,7 +17,7 @@ class WorkoutDay(BaseModel):
     program_id: int
     day_name: str
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class WorkoutDayCreate(BaseModel):
@@ -42,7 +42,7 @@ class WorkoutProgram(BaseModel):
     name: str
     days: List[WorkoutDay]
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 class WorkoutProgramCreate(BaseModel):

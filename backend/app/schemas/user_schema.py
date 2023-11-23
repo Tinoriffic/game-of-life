@@ -18,7 +18,7 @@ class User(BaseModel):
     city: str
     occupation: str
 
-    class Config:
+    class ConfigDict:
         from_attributes = True
 
 # Schema for internal use, including hashed password
