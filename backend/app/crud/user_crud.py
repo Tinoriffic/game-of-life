@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from ..schemas import user_schema
-from ..models import user_model
+from ..models import user_model, skill_model
 from passlib.context import CryptContext
 
 # Instantiate a CryptContext for hashing passwords
@@ -49,7 +49,7 @@ def create_user(db: Session, user: user_schema.UserCreate):
 
     default_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom']
     for skill in default_skills:
-        db_skill = user_model.Skill(name=skill, user_id=new_user.id)
+        db_skill = skill_model.Skill(name=skill, user_id=new_user.id)
         db.add(db_skill)
     db.commit()
 
