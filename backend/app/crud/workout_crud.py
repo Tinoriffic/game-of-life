@@ -4,6 +4,7 @@ from ..schemas import workout_schema
 from ..models import workout_model, skill_model
 from ..xp_calculator import calculate_workout_xp
 from ..skill_manager import update_skill_xp
+from ..crud.activity_crud import update_activity_streak
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple
 
@@ -80,7 +81,6 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
             db.add(new_program_exercise)
             db.flush()
             db.refresh(new_program_exercise)
-        
     db.commit()
 
     new_program = db.query(workout_model.WorkoutProgram).options(
@@ -123,6 +123,7 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
     workout_data = get_user_workout_progress(db, user_id)
     xp_to_add = calculate_workout_xp(strength_skill.daily_xp_earned, workout_data)
     update_skill_xp(db, user_id, "Strength", xp_to_add)
+    update_activity_streak(db, user_id, "workout")
 
     db.commit()
     return new_session

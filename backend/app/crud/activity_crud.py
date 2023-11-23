@@ -4,7 +4,7 @@ from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
 from .skill_crud import get_user_skills
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 def get_user_activity_streaks(db: Session, user_id: int):
     """
@@ -47,6 +47,7 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
     skill_name = map_activity_to_skill(activity_data.activity_type)
     update_skill_xp(db, user_id, skill_name, xp_to_add)
     new_activity.xp_earned = xp_to_add
+    update_activity_streak(db, user_id, activity_data.activity_type)
 
     db.commit()
     return new_activity
@@ -101,6 +102,7 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: activity_schema.We
     xp_to_add = calculate_weight_tracking_xp(weight_logs, starting_weight, weight_goal)
 
     update_skill_xp(db, user_id, "Strength", xp_to_add)
+    update_activity_streak(db, user_id, "weight_tracking")
 
     db.commit()
     return new_weight_entry
@@ -114,3 +116,24 @@ def get_recent_weight_logs(db: Session, user_id: int):
         activity_model.WeightTracking.user_id == user_id,
         activity_model.WeightTracking.date >= two_weeks_ago
     ).order_by(activity_model.WeightTracking.date).all()
+
+def update_activity_streak(db: Session, user_id: int, activity_type: str):
+    today = date.today()
+    streak = db.query(activity_model.ActivityStreak)\
+               .filter_by(user_id=user_id, activity_type=activity_type)\
+               .first()
+
+    if streak:
+        if streak.last_activity_date == today - timedelta(days=1):
+            streak.current_streak += 1
+        elif streak.last_activity_date < today - timedelta(days=1):
+            streak.current_streak = 1
+        streak.last_activity_date = today
+    else:
+        streak = activity_model.ActivityStreak(
+            user_id=user_id,
+            activity_type=activity_type,
+            current_streak=1,
+            last_activity_date=today
+        )
+        db.add(streak)
