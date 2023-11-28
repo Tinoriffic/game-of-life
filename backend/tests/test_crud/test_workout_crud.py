@@ -1,11 +1,11 @@
 # test_workout_crud.py
 import pytest
-from unittest.mock import create_autospec, MagicMock
+from unittest.mock import create_autospec
 from sqlalchemy.orm import Session
-from app.crud.workout_crud import create_workout_program, get_user_workout_programs, log_workout_session
-from app.models import workout_model, skill_model, activity_model
+from app.crud.workout_crud import get_user_workout_programs
+from app.models import workout_model
 from app.schemas import workout_schema
-from datetime import datetime, timedelta
+from datetime import datetime
 
 @pytest.fixture
 def mock_session():
