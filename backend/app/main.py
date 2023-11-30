@@ -1,4 +1,7 @@
 from fastapi import FastAPI
+from dotenv import load_dotenv
+load_dotenv()
+
 from .cors import setup_cors
 from .routers import user_router, activity_router, skill_router, workout_router
 from . import models
