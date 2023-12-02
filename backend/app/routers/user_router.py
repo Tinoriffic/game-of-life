@@ -1,13 +1,30 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
+from ..oauth2_config import OAuth2Config
 from ..schemas import user_schema
 from ..crud import user_crud
 from ..dependencies import get_db
 from typing import List
+from urllib.parse import urlencode
 
 router = APIRouter()
 
 # User Endpoints
+
+# User Authentication
+@router.get("/auth/login")
+async def login():
+    try:
+        query_params = {
+            "response_type": "code",
+            "client_id": OAuth2Config.client_id,
+            "redirect_uri": OAuth2Config.callback_url,
+            "scope": OAuth2Config.scope
+        }
+        auth_url = f"{OAuth2Config.authorize_url}?{urlencode(query_params)}"
+        return {"url": auth_url}
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 # Create a user
 @router.post("/users/", response_model=user_schema.User)

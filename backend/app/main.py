@@ -2,8 +2,9 @@ from fastapi import FastAPI
 from dotenv import load_dotenv
 load_dotenv()
 
+from .oauth2_config import OAuth2Config
 from .cors import setup_cors
-from .routers import user_router, activity_router, skill_router, workout_router
+from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router
 from . import models
 from .database import engine
 
@@ -13,6 +14,9 @@ app = FastAPI()
 
 setup_cors(app)
 
+oauth2_config = OAuth2Config()
+
+app.include_router(oauth2_router.router)
 app.include_router(activity_router.router)
 app.include_router(skill_router.router)
 app.include_router(user_router.router)
