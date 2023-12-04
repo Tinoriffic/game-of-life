@@ -27,11 +27,12 @@ async def verify_and_register_user(user_info: dict, db: Session):
 
     # Create a new user
     user_data = user_schema.UserCreate(
-        username=user_info.get("username"),
+        # TODO: It would be nice if the user can choose their username if registering through google for the 1st time
+        username=email.split('@')[0],
         email=email,
         password=None,  # Password is not needed for OAuth users
-        first_name=user_info.get("first_name"),
-        last_name=user_info.get("last_name")
+        first_name=user_info.get("given_name"),
+        last_name=user_info.get("family_name")
     )
     new_user = user_crud.create_user(db, user_data)
     return new_user
