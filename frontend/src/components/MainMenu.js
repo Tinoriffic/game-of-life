@@ -1,5 +1,4 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
 import './MainMenu.css'
 import PlayerCard from './PlayerCard';
 
