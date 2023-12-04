@@ -1,25 +1,10 @@
-import axios from 'axios';
 import React, { useState, useEffect } from 'react'
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
+import LoginPage from './components/LoginPage';
 import ActionLogger from './components/ActionLogger';
 
 function App() {
-  // const [data, setData] = useState(null);
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:8000/endpoint');
-  //       setData(response.data);
-  //     } catch (error) {
-  //       console.error('Error fetching data: ', error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, []); // The empty array means this effect will only run on mount and unmount
-
   return (
     <Router>
       <header className="main-header">
@@ -34,8 +19,9 @@ function App() {
         </ul>
       </nav>
       <Routes>
+        <Route path="/login" element={<LoginPage />} />
         <Route path="/" element={<MainMenu />} />
-        {/* Define the route for ActionLogger */}
+        {/* TODO: route for ActionLogger */}
         <Route path="/log-actions" element={<ActionLogger />} />
         {/* Define other routes */}
       </Routes>
