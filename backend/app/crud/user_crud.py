@@ -34,10 +34,9 @@ def create_user(db: Session, user: user_schema.UserCreate):
     """
     Creates a new user given a username and password
     """
-    hashed_password = pwd_context.hash(user.password)
     new_user = user_model.User(
         username=user.username,
-        hashed_password=hashed_password,
+        hashed_password=pwd_context.hash(user.password) if user.password else None,
         email=user.email,
         first_name=user.first_name,
         last_name=user.last_name,

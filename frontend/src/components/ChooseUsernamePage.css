@@ -1,0 +1,55 @@
+.choose-username-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #282c34;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+  }
+  
+  .choose-username-form {
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px;
+    background: #1D1F20;
+  }
+  
+  .choose-username-form h2 {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  .choose-username-input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #333;
+    color: white;
+  }
+  
+  .choose-username-button {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    text-decoration: none;
+    font-family: 'Orbitron', sans-serif;
+  }
+  
+  .choose-username-button:hover {
+    background-color: #45a049;
+  }
+
+  .error-message {
+    color: red;
+    margin-top: 10px;
+  }
+  

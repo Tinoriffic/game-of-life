@@ -15,7 +15,7 @@ async def fetch_google_user_info(token: str):
     user_info = response.json()
     return user_info
 
-async def verify_and_register_user(user_info: dict, db: Session):
+async def handle_user_authentication(user_info: dict, db: Session):
     email = user_info.get("email")
     if not email:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing email in user information")
@@ -23,19 +23,12 @@ async def verify_and_register_user(user_info: dict, db: Session):
     # Check if user already exists
     existing_user = user_crud.get_user_by_email(db, email)
     if existing_user:
-        return existing_user
-
-    # Create a new user
-    user_data = user_schema.UserCreate(
-        # TODO: It would be nice if the user can choose their username if registering through google for the 1st time
-        username=email.split('@')[0],
-        email=email,
-        password=None,  # Password is not needed for OAuth users
-        first_name=user_info.get("given_name"),
-        last_name=user_info.get("family_name")
-    )
-    new_user = user_crud.create_user(db, user_data)
-    return new_user
+        # Existing user, generate session token
+        session_token = generate_session_token(existing_user)
+        return {"type": "existing", "session_token": session_token}
+    else:
+        # New user, return user_info for further processing
+        return {"type": "new", "user_info": user_info}
 
 def generate_session_token(user: user_model.User):
     payload = {
@@ -44,3 +37,19 @@ def generate_session_token(user: user_model.User):
         "exp": datetime.utcnow() + timedelta(days=1)  # expiration time
     }
     return jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
+
+def generate_temp_token(user_info: dict):
+    payload = {
+        "user_info": user_info,
+        "exp": datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
+    }
+    return jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
+
+def validate_temp_token(token: str):
+    try:
+        decoded_token = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        return decoded_token["user_info"]
+    except jwt.ExpiredSignatureError:
+        return None  # Token expired
+    except jwt.InvalidTokenError:
+        return None  # Invalid token

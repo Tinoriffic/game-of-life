@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from ..oauth2_config import OAuth2Config
-from ..crud.auth_utils import verify_and_register_user, generate_session_token
+from ..crud.auth_utils import handle_user_authentication, generate_temp_token
 from ..dependencies import get_db
 import httpx
 
@@ -52,9 +53,15 @@ async def callback(code: str, db: Session = Depends(get_db)):
 
     # Verify and register user
     print(user_info)
-    user = await verify_and_register_user(user_info, db)
-
-    # Create user session and generate token
-    session_token = generate_session_token(user)
-
-    return {"session_token": session_token, "user_info": user_info}
+    result = await handle_user_authentication(user_info, db)
+    
+    if result["type"] == "existing":
+        # Redirect existing user to main screen with session token
+        frontend_url = f"http://localhost:3000/?token={result['session_token']}"
+        return RedirectResponse(url=frontend_url)
+    else:
+        # Redirect new user to 'Choose Username' page
+        # Consider storing user_info temporarily and generate a temporary token
+        temp_token = generate_temp_token(result["user_info"])
+        frontend_url = f"http://localhost:3000/choose-username?token={temp_token}"
+        return RedirectResponse(url=frontend_url)
