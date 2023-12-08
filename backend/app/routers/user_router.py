@@ -66,6 +66,12 @@ async def create_oauth_user(request: user_schema.CreateAccountRequest, db: Sessi
     if not user_info:
         raise HTTPException(status_code=400, detail="Invalid token")
 
+    if len(request.occupation) < 4:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Occupation must be at least 4 characters long")
+    
+    if len(request.city) < 2:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="City must be at least 4 characters long")
+
     # Create a new user account
     user_data = user_schema.UserCreate(
         username=user_info["username"],
@@ -124,3 +130,11 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)):
 def read_users(skip: int = Query(0, alias="skip"), limit: int = Query(10, alias="limit"), db: Session = Depends(get_db)):
     users = user_crud.get_users(db, skip=skip, limit=limit)
     return users
+
+# Delete a user
+@router.delete("/users/{user_id}", response_model=user_schema.User)
+def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
+    deleted_user = user_crud.delete_user(db, user_id)
+    if deleted_user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return deleted_user

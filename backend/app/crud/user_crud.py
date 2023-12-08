@@ -53,3 +53,14 @@ def create_user(db: Session, user: user_schema.UserCreate):
     db.commit()
 
     return new_user
+
+def delete_user(db: Session, user_id: int):
+    """
+    Deletes a user given their id
+    """
+    user_to_delete = db.query(user_model.User).filter(user_model.User.id == user_id).first()
+    if user_to_delete is None:
+        return None
+    db.delete(user_to_delete)
+    db.commit()
+    return user_to_delete
