@@ -24,23 +24,17 @@ const ChooseUsernamePage = () => {
 
       const usernameSetToken = response.data.temp_token;
       console.log("temp_token 2: " + usernameSetToken);
-
-    // if (response.data.temp_token) {
-    //     localStorage.setItem('sessionToken', response.data.temp_token)
-    // }
-
       navigate('/set-user-info', { state: { usernameSetToken: usernameSetToken}}); // Redirect to next part of registration
 
     } catch (error) {
         if (error.response && error.response.status === 400 && error.response.data.detail === "Username must be at least 4 characters long") {
-            //alert("Username must be at least 4 characters in length.")
             setError("Username must be at least 4 characters in length.");
         }
         if (error.response && error.response.status === 400 && error.response.data.detail === "Username already taken") {
-            alert("Username already taken, please try a different one.");
+            setError("Username already taken, please try a different one.");
         }
-        else if (error.response && error.response.status === 400 && error.response.data.detail === "Invalid token") {
-            alert("Token is invalid or expired, try refreshing.")
+        if (error.response && error.response.status === 400 && error.response.data.detail === "Invalid token") {
+            setError("Token is invalid or expired, try refreshing.")
         }
       console.error('Error setting username: ', error);
     }

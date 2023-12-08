@@ -7,6 +7,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 const SetUserInfoPage = () => {
   const [occupation, setOccupation] = useState('');
   const [city, setCity] = useState('');
+  const [error, setError] = useState('');
+
   const navigate = useNavigate();
   const location = useLocation();
   const usernameSetToken = location.state?.usernameSetToken;
@@ -14,6 +16,7 @@ const SetUserInfoPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError('');
     try {
         await axios.post('http://localhost:8000/finalize-oauth-registration', {
           occupation,
@@ -23,8 +26,16 @@ const SetUserInfoPage = () => {
   
         navigate('/');
       } catch (error) {
+        if (error.response && error.response.status === 400 && error.response.data.detail === "Occupation must be at least 4 characters long") {
+            setError("Occupation must be at least 4 characters long");
+        }
+        if (error.response && error.response.status === 400 && error.response.data.detail === "City must be at least 4 characters long") {
+           setError("City must be at least 4 characters long");
+        }
+        if (error.response && error.response.status === 400 && error.response.data.detail === "Invalid token") {
+          setError("Token is invalid or expired, try refreshing.")
+        }
         console.error('Error creating account: ', error);
-        // TODO: Handle errors, display them to the user
       }
   };
 
@@ -47,6 +58,7 @@ const SetUserInfoPage = () => {
           />
           <button type="submit">Submit</button>
         </form>
+        {error && <div className="error-message">{error}</div>}
       </div>
       <div className="image-container">
         <img src={houseIcon} alt="Home" />
