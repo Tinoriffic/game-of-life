@@ -12,20 +12,19 @@ class Skill(Base):
     xp = Column(Integer, default=0)
     daily_xp_earned = Column(Integer, default=0)
     last_updated = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    parent_skill_id = Column(Integer, ForeignKey("skills.id"))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    parent_skill_id = Column(Integer, ForeignKey('skills.id'))
     
-    user = relationship("User", back_populates="skills")
+    user = relationship('User', back_populates='skills')
 
 class SkillProgression(Base):
     __tablename__ = "skill_progression"
-    
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     skill_name = Column(String, index=True)
     xp = Column(Integer)
     level = Column(Integer)
     last_updated = Column(DateTime, default=datetime.utcnow)
     
-    user = relationship("User", back_populates="skill_progression")
+    user = relationship('User', back_populates='skill_progression')
     

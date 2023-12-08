@@ -7,12 +7,12 @@ from ..database import Base
 class WorkoutProgram(Base):
     __tablename__ = "workout_programs"
     program_id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     name = Column(String, nullable=False)  # Name of the program i.e., 'PPL, 7-Day Split'
     
-    user = relationship("User", back_populates="workout_programs")
+    user = relationship("User", back_populates='workout_programs')
     workout_days = relationship('WorkoutDay', back_populates='workout_program')
-    workout_sessions = relationship("WorkoutSession", back_populates="workout_program")
+    workout_sessions = relationship('WorkoutSession', back_populates='workout_program')
 
 class WorkoutDay(Base):
     __tablename__ = "workout_days"
@@ -50,7 +50,7 @@ class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
     session_id = Column(Integer, primary_key=True, index=True)
     program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
-    user_id = Column(Integer, ForeignKey('users.id'))
+    user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     session_date = Column(DateTime, default=datetime.utcnow)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
