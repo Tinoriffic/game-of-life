@@ -41,18 +41,20 @@ const ChooseUsernamePage = () => {
   };
 
   return (
-    <div>
-      <h2>Choose Your Username</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
-          placeholder="Username"
-        />
-        <button type="submit">Submit</button>
-        {error && <div className="error-message">{error}</div>}
-      </form>
+    <div className="choose-username-container">
+      <div className="form-container">
+        <h2>Choose Your Username</h2>
+        <form onSubmit={handleSubmit}>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Username"
+          />
+          <button type="submit">Submit</button>
+          {error && <div className="error-message">{error}</div>}
+        </form>
+      </div>
     </div>
   );
 };

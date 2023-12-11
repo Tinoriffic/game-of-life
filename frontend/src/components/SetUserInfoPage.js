@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import './SetUserInfoPage.css';
-import houseIcon from './house-icon.jpg'
+import houseIcon from './house-icon-3.png'
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const SetUserInfoPage = () => {
@@ -41,6 +41,9 @@ const SetUserInfoPage = () => {
 
   return (
     <div className="set-user-info-container">
+      <div className="image-container">
+        <img src={houseIcon} alt="Home" />
+      </div>
       <div className="info-form-container">
         <form onSubmit={handleSubmit}>
           <h2>Complete Your Profile</h2>
@@ -59,9 +62,6 @@ const SetUserInfoPage = () => {
           <button type="submit">Submit</button>
         </form>
         {error && <div className="error-message">{error}</div>}
-      </div>
-      <div className="image-container">
-        <img src={houseIcon} alt="Home" />
       </div>
     </div>
   );
