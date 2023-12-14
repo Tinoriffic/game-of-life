@@ -10,6 +10,8 @@ You may also see any lint errors in the console.
 
 To test your endpoints see [http://localhost:8000/docs](http://localhost:8000/docs)
 
+`pytest` - runs all unit tests in the backend. This command needs to be executed from the root directory.
+
 ### Other
 `npm test` - Launches the test runner in the interactive watch mode.
 
