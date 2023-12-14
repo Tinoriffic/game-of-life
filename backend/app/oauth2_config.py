@@ -1,9 +1,9 @@
-import os
 from fastapi.security import OAuth2PasswordBearer
+from .config import Config
 
 class OAuth2Config:
-    client_id = os.getenv("GOOGLE_CLIENT_ID")
-    client_secret = os.getenv("GOOGLE_CLIENT_SECRET")
+    client_id = Config.GOOGLE_CLIENT_ID
+    client_secret = Config.GOOGLE_CLIENT_SECRET
     token_url = "https://accounts.google.com/o/oauth2/token"
     authorize_url = "https://accounts.google.com/o/oauth2/auth"
     callback_url = "http://localhost:8000/auth/callback"

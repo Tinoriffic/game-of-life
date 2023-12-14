@@ -1,6 +1,9 @@
 import pytest
+from dotenv import load_dotenv
 from app.models import User, Skill, ActivityStreak
 from datetime import date, timedelta
+
+load_dotenv()
 
 @pytest.fixture(scope="module")
 def mock_user():

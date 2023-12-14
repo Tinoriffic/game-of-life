@@ -1,12 +1,34 @@
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
-import os
-import httpx
-import jwt
+from ..config import Config
+from jose import jwt, JWTError
 from ..crud import user_crud
-from ..schemas import user_schema
 from ..models import user_model
+from ..dependencies import get_db
 from datetime import datetime, timedelta
+import httpx
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> user_model.User:
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
+
+    user = db.query(user_model.User).filter(user_model.User.id == user_id).first()
+    if user is None:
+        raise credentials_exception
+    return user
 
 async def fetch_google_user_info(token: str):
     user_info_url = "https://www.googleapis.com/oauth2/v2/userinfo"
@@ -36,20 +58,18 @@ def generate_session_token(user: user_model.User):
         "iat": datetime.utcnow(),  # issued at time
         "exp": datetime.utcnow() + timedelta(days=1)  # expiration time
     }
-    return jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
+    return jwt.encode(payload, Config.SECRET_KEY, algorithm="HS256")
 
 def generate_temp_token(user_info: dict):
     payload = {
         "user_info": user_info,
         "exp": datetime.utcnow() + timedelta(hours=1)  # Token expires in 1 hour
     }
-    return jwt.encode(payload, os.getenv("SECRET_KEY"), algorithm="HS256")
+    return jwt.encode(payload, Config.SECRET_KEY, algorithm="HS256")
 
 def validate_temp_token(token: str):
     try:
-        decoded_token = jwt.decode(token, os.getenv("SECRET_KEY"), algorithms=["HS256"])
+        decoded_token = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
         return decoded_token["user_info"]
-    except jwt.ExpiredSignatureError:
-        return None  # Token expired
-    except jwt.InvalidTokenError:
-        return None  # Invalid token
+    except JWTError:
+        return None
