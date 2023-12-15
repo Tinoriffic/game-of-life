@@ -12,17 +12,23 @@ import httpx
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 async def get_current_user(db: Session = Depends(get_db), token: str = Depends(oauth2_scheme)) -> user_model.User:
+    print(f"Token:  {token}") # Debugging
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
+
     try:
         payload = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
+        print(f"Payload: {payload}") # Debugging
         user_id: str = payload.get("sub")
+        print(f"User ID: {user_id}") # Debugging
         if user_id is None:
             raise credentials_exception
-    except JWTError:
+        user_id = int(user_id) # Convert the subject (User ID) back to an int
+    except JWTError as e:
+        print(f"JWT Error: {e}")  # Debugging
         raise credentials_exception
 
     user = db.query(user_model.User).filter(user_model.User.id == user_id).first()
@@ -54,7 +60,7 @@ async def handle_user_authentication(user_info: dict, db: Session):
 
 def generate_session_token(user: user_model.User):
     payload = {
-        "sub": user.id,  # subject, typically user's identifier
+        "sub": str(user.id),  # subject, typically user's identifier
         "iat": datetime.utcnow(),  # issued at time
         "exp": datetime.utcnow() + timedelta(days=1)  # expiration time
     }

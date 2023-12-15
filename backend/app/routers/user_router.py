@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from ..oauth2_config import OAuth2Config
+from ..models import user_model
 from ..schemas import user_schema
-from ..crud import user_crud, auth_utils
+from ..crud import user_crud, auth_utils, skill_crud
 from ..dependencies import get_db
 from typing import List
 from urllib.parse import urlencode
@@ -138,3 +139,15 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     if deleted_user is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return deleted_user
+
+# Get the current user's data
+@router.get("/users/me", response_model=user_schema.UserWithSkills)
+async def read_current_user_data(db: Session = Depends(get_db), current_user: user_model.User = Depends(auth_utils.get_current_user)):
+    user_data = db.query(user_model.User).filter(user_model.User.id == current_user.id).first()
+    if not user_data:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    skills = skill_crud.get_user_skills(db, current_user.id)
+    user_dict = {c.name: getattr(user_data, c.name) for c in user_model.User.__table__.columns}
+
+    return user_schema.UserWithSkills(**user_dict, skills=skills)

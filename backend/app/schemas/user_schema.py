@@ -1,5 +1,6 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
+from .skill_schema import Skill
 
 class UserCreate(BaseModel):
     username: str
@@ -27,6 +28,19 @@ class User(BaseModel):
     last_name: str
     city: str
     occupation: str
+
+    class ConfigDict:
+        from_attributes = True
+
+class UserWithSkills(BaseModel):
+    id: int
+    username: str
+    email: str
+    first_name: str
+    last_name: str
+    city: str
+    occupation: str
+    skills: List[Skill]
 
     class ConfigDict:
         from_attributes = True

@@ -1,12 +1,44 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import './MainMenu.css'
 import PlayerCard from './PlayerCard';
 
 function MainMenu() {
+  const token = localStorage.getItem('sessionToken');
+  console.log('Token:', token); // Debugging: Check if the token is retrieved correctly
+
+  const [playerData, setPlayerData] = useState(null);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/users/me', {
+          headers: {
+            'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
+          }
+        });
+        setPlayerData(response.data);
+      } catch (error) {
+        console.error('Error fetching user data', error);
+        // Handle error appropriately
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  console.log('Player Data:', playerData) // Debugging
+
+  if (!playerData) {
+    return <div>Unable to fetch user's data...</div>;
+  }
+
+  console.log(playerData);
+
   return (
     <div className="main-screen">
       <section className="player-card">
-      <PlayerCard playerData={yourPlayerData} />
+        <PlayerCard playerData={playerData} />
       </section>
       <section className="skill-tree">
       </section>
