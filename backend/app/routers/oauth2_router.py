@@ -3,7 +3,7 @@ from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from ..oauth2_config import OAuth2Config
-from ..crud.auth_utils import handle_user_authentication, generate_temp_token
+from ..crud.auth_utils import handle_user_authentication, issue_registration_token
 from ..dependencies import get_db
 import httpx
 
@@ -52,16 +52,21 @@ async def callback(code: str, db: Session = Depends(get_db)):
     user_info = user_info_response.json()
 
     # Verify and register user
-    print(user_info)
+    print(f"Fetched User Info: {user_info}")
     result = await handle_user_authentication(user_info, db)
     
     if result["type"] == "existing":
         # Redirect existing user to main screen with session token
-        frontend_url = f"http://localhost:3000/?token={result['session_token']}"
-        return RedirectResponse(url=frontend_url)
+        if 'access_token' in result and 'refresh_token' in result:
+            frontend_url = f"http://localhost:3000/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
+            print(f"Redirecting to {frontend_url}")
+            return RedirectResponse(url=frontend_url)
+        else:
+            print("Error: Access token or refresh token is missing from the authentication result.")
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
     else:
         # Redirect new user to 'Choose Username' page
-        # Consider storing user_info temporarily and generate a temporary token
-        temp_token = generate_temp_token(result["user_info"])
-        frontend_url = f"http://localhost:3000/choose-username?token={temp_token}"
+        # New users: Store user_info in the database with a 'registration in progress' flag
+        registration_token = issue_registration_token(result["user_info"])
+        frontend_url = f"http://localhost:3000/choose-username?token={registration_token}"
         return RedirectResponse(url=frontend_url)

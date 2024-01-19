@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './ChooseUsernamePage.css'
 
@@ -17,14 +17,14 @@ const ChooseUsernamePage = () => {
     setError('');
     console.log("temp_token 1: " + oAuthValidationToken)
     try {
-      const response = await axios.post('http://localhost:8000/set-username', {
+      const response = await axiosInstance.post('http://localhost:8000/set-username', {
         username: username,
         token: oAuthValidationToken
       });
 
-      const usernameSetToken = response.data.temp_token;
-      console.log("temp_token 2: " + usernameSetToken);
-      navigate('/set-user-info', { state: { usernameSetToken: usernameSetToken}}); // Redirect to next part of registration
+      const registrationToken = response.data.registration_token;
+      console.log("temp_token 2: " + registrationToken);
+      navigate('/set-user-info', { state: { registrationToken: registrationToken}}); // Redirect to next part of registration
 
     } catch (error) {
         if (error.response && error.response.status === 400 && error.response.data.detail === "Username must be at least 4 characters long") {

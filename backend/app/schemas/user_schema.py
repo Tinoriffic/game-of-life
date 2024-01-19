@@ -48,3 +48,6 @@ class UserWithSkills(BaseModel):
 # Schema for internal use, including hashed password
 class UserInDB(User):
     hashed_password: str
+
+class RefreshTokenRequest(BaseModel):
+    refresh_token: str

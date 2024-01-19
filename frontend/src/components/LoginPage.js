@@ -1,12 +1,12 @@
 import React from 'react';
 import './LoginPage.css';
-import axios from 'axios';
+import axiosInstance from '../axios';
 
 const LoginPage = () => {
   const [loginUrl, setLoginUrl] = React.useState('');
 
   React.useEffect(() => {
-    axios.get('http://localhost:8000/login')
+    axiosInstance.get('http://localhost:8000/login')
       .then(response => {
         setLoginUrl(response.data.login_url);
       })

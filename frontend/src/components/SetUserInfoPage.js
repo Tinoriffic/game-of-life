@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../axios';
 import './SetUserInfoPage.css';
 import houseIcon from './house-icon-3.png'
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -11,18 +11,22 @@ const SetUserInfoPage = () => {
 
   const navigate = useNavigate();
   const location = useLocation();
-  const usernameSetToken = location.state?.usernameSetToken;
-  console.log("occupation: " + occupation + " city: " + city + "temp_token:" + usernameSetToken);
+  const registrationToken = location.state?.registrationToken;
+  console.log("occupation: " + occupation + " city: " + city + "temp_token:" + registrationToken);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     try {
-        await axios.post('http://localhost:8000/finalize-oauth-registration', {
+        const response = await axiosInstance.post('http://localhost:8000/finalize-oauth-registration', {
           occupation,
           city,
-          temp_token: usernameSetToken
+          temp_token: registrationToken
         });
+
+        // Store access and refresh tokens
+        localStorage.setItem('accessToken', response.data.access_token);
+        localStorage.setItem('refreshToken', response.data.refresh_token);
   
         navigate('/');
       } catch (error) {

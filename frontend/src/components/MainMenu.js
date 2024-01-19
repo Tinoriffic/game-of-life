@@ -1,36 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import axiosInstance from '../axios';
 import './MainMenu.css'
 import PlayerCard from './PlayerCard';
+import { useNavigate } from 'react-router-dom';
 
 function MainMenu() {
-  const token = localStorage.getItem('sessionToken');
-  console.log('Token:', token); // Debugging: Check if the token is retrieved correctly
-
+  const token = localStorage.getItem('accessToken');
+  const [error, setError] = useState('');
   const [playerData, setPlayerData] = useState(null);
+  const navigate = useNavigate();
+
+  console.log('MainMenu: Using access token:', token);
 
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axios.get('http://localhost:8000/users/me', {
+        const response = await axiosInstance.get('http://localhost:8000/users/me', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('sessionToken')}`
+            'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }
         });
         setPlayerData(response.data);
       } catch (error) {
+        if (error.response && error.response.status === 401) {
+          setError(error.response.data.detail);
+        }
         console.error('Error fetching user data', error);
-        // Handle error appropriately
       }
     };
 
     fetchUserData();
   }, []);
 
+  const handleLoginRedirect = () => {
+    navigate('/login');
+  };
+
   console.log('Player Data:', playerData) // Debugging
 
   if (!playerData) {
-    return <div>Unable to fetch user's data...</div>;
+    return <div>
+      Unable to fetch user's data...
+      {error && <p className="error-message">Error Message: {error}</p>}
+      {error && <button onClick={handleLoginRedirect} className="login-redirect-button">Go to Login</button>}
+      </div>;
   }
 
   console.log(playerData);
