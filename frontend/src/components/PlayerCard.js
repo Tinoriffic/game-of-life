@@ -1,12 +1,15 @@
 import React from 'react';
 import PropTypes from 'prop-types'
 import './PlayerCard.css'
+import defaultAvatar from './default-avatar.png'
 
 const PlayerCard = ({ playerData }) => {
-  const { avatar, first_name, last_name, city, occupation, skills } = playerData;
+  const { avatar, first_name, city, occupation, skills } = playerData;
+  const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   const renderStatBar = (skill) => {
-    const percentage = (skill.xp / skill.maxXP) * 100; // Adjust according to actual skill data structure
+    const maxXP = 100 * (skill.level * 1.5)
+    const percentage = (skill.xp / maxXP) * 100; // Adjust according to actual skill data structure
     const skillName = skill.name.charAt(0).toUpperCase() + skill.name.slice(1);
     return (
       <div className="stat-bar-container" key={skill.name}>
@@ -20,10 +23,10 @@ const PlayerCard = ({ playerData }) => {
 
   return (
     <div className="player-card">
-      <img className="avatar" src={avatar} alt={`${first_name}'s avatar`} />
-      <h3>{`${first_name} ${last_name}`}</h3>
-      <p>Region: {city}</p>
-      <p>Occupation: {occupation}</p>
+      <img className="avatar" src={avatar || defaultAvatar} alt={`${first_name}'s avatar`} />
+      <h3>{capitalizeFirstLetter(first_name)}</h3>
+      <p>Region: {capitalizeFirstLetter(city)}</p>
+      <p>Occupation: {capitalizeFirstLetter(occupation)}</p>
       <div className="player-stats">
         {skills && skills.map(renderStatBar)}
       </div>
