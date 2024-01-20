@@ -36,7 +36,7 @@ const PlayerCard = ({ playerData }) => {
 
   PlayerCard.propTypes = {
     playerData: PropTypes.shape({
-        avatar: PropTypes.string.isRequired,
+        avatar: PropTypes.string,
         name: PropTypes.string.isRequired,
         region: PropTypes.string.isRequired,
         occupation: PropTypes.string.isRequired,

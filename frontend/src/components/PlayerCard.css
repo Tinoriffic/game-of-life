@@ -6,6 +6,8 @@
     text-align: center;
     background: #1D1F20;
     color: #F8F8F2;
+    min-width: 250px;
+    width: auto;
   }
   
   .player-card img {

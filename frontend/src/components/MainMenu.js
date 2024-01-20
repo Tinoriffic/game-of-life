@@ -50,11 +50,7 @@ function MainMenu() {
 
   return (
     <div className="main-screen">
-      <section className="player-card">
         <PlayerCard playerData={playerData} />
-      </section>
-      <section className="skill-tree">
-      </section>
       {/* Add more sections as needed */}
     </div>
   );
