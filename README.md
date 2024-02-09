@@ -1,10 +1,36 @@
 ## The Game of Life
 
+### First Time Set Up
+This is a Python-based application. Ensure you have both Python and Node.js installed on your machine. Set up a virtual environment by running:
+```
+python3 -m venv venv
+source venv/bin/activate (Unix)
+source venv/Scripts/activate (Windows)
+```
+
+Once in your virtual environment, install all your Python dependencies:
+```
+cd backend
+pip install -r requirements.txt
+```
+
+Configure your environment variables by creating a `.env` file:
+```
+cd app
+cp .env.template .env
+```
+
+Update all environment variables as required.
+
 ### Quick Start
 `npm start` - runs the react app in development mode. Execute the command from the `frontend/` directory. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 You may also see any lint errors in the console.
 
-`source venv/Scripts/activate` - activates the virtual environment for FastAPI
+```
+source venv/bin/activate (Unix)
+source venv/Scripts/activate (Windows)
+```
+ - activates the virtual environment for FastAPI
 
 `python -m app.main` - starts the local backend server (do this in the venv). Execute the command from the `backend/` directory. Open [http://localhost:8000/endpoint](http://localhost:8000/endpoint) to view it in your browser.
 
