@@ -10,9 +10,7 @@ from .database import engine
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    openapi_url="/api/openapi.json"
-)
+app = FastAPI()
 
 setup_cors(app)
 
