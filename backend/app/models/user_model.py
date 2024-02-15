@@ -13,7 +13,6 @@ class User(Base):
     last_name = Column(String)
     city = Column(String)
     occupation = Column(String)
-    avatar = Column(String, nullable=True)
     
     skills = relationship("Skill", back_populates="user")
     activities = relationship("UserActivities", back_populates="user")

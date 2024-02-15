@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from ..schemas import workout_schema
-from ..models import workout_model, user_model
+from ..models import workout_model
 from ..crud import workout_crud, user_crud
 from ..dependencies import get_db
 from typing import List, Dict
@@ -97,14 +97,6 @@ def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
-# # Edit a workout program
-# @router.put("/workout-programs/{program_id}", response_model=workout_schema.WorkoutProgram)
-# def update_workout_program(program_id: int, program_data: workout_schema.WorkoutProgramCreate, db: Session = Depends(get_db), current_user: user_model.User = Depends(dependencies.get_current_user)):
-#     try:
-#         return workout_crud.update_workout_program(db, program_id, current_user.id, program_data)
-#     except ValueError as e:
-#         raise HTTPException(status_code=404, detail=str(e))
-
 # Delete a workout program
 @router.delete("/workout-programs/{program_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
