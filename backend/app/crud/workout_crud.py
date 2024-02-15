@@ -207,3 +207,25 @@ def delete_workout_program(db: Session, program_id: int):
     # Finally, delete the workout program
     db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).delete(synchronize_session='fetch')
     db.commit()
+
+def update_workout_program(db: Session, program_id: int, user_id: int, updated_program: workout_schema.WorkoutProgramCreate):
+    program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id, workout_model.WorkoutProgram.user_id == user_id).first()
+
+    if not program:
+        raise ValueError("Workout program not found.")
+    
+    program.name = updated_program.name
+
+    program.workout_days = [
+        workout_model.WorkoutDay(day_name=day.day_name, exercises=[
+            workout_model.WorkoutProgramExercise(
+                exercise=workout_model.Exercise(name=exercise.name),
+                sets=exercise.sets
+            )
+            for exercise in day.exercises
+        ])
+        for day in updated_program.workout_days
+    ]
+
+    db.commit()
+    return program

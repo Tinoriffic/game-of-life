@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     last_name: str
     city: str
     occupation: str
+    avatar: Optional[str] = None
 
 class SetUsernameRequest(BaseModel):
     username: str
