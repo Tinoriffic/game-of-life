@@ -22,6 +22,12 @@ cp .env.template .env
 
 Update all environment variables as required.
 
+To set up the frontend:
+```
+cd ../../frontend
+npm install
+```
+
 ### Quick Start
 `npm start` - runs the react app in development mode. Execute the command from the `frontend/` directory. Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
 You may also see any lint errors in the console.
