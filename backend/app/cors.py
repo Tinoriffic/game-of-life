@@ -2,8 +2,9 @@ from fastapi.middleware.cors import CORSMiddleware
 
 def setup_cors(app):
     origins = [
-    "http://localhost:3000",  # The origin of your React app during local development
-    "http://13.59.112.236", # Elastic IP TODO: Replace w/ domain name later
+    "http://localhost:3000",  # For local development
+    "http://pathquester.app",
+    "https://pathquester.app"
 ]
 
     app.add_middleware(
