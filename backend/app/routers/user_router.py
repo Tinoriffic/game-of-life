@@ -14,7 +14,7 @@ router = APIRouter()
 # User Endpoints
 
 # User Authentication
-@router.get("/auth/login")
+@router.get("/api/auth/login")
 async def oauth_login():
     try:
         query_params = {
@@ -29,7 +29,7 @@ async def oauth_login():
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
 # Create a useranme from first-time Google Log-in
-@router.post("/set-username")
+@router.post("/api/set-username")
 async def set_username(request: user_schema.SetUsernameRequest, db: Session = Depends(get_db)):
     # Validate the temporary token and extract user info
     user_info = auth_utils.validate_registration_token(request.token)
@@ -61,7 +61,7 @@ async def set_username(request: user_schema.SetUsernameRequest, db: Session = De
     return {"registration_token": registration_token}
 
 # Final step of the OAuth registration process
-@router.post("/finalize-oauth-registration")
+@router.post("/api/finalize-oauth-registration")
 async def create_oauth_user(request: user_schema.CreateAccountRequest, db: Session = Depends(get_db)):
     # Validate the temporary token and extract user info
     user_info = auth_utils.validate_registration_token(request.temp_token)
@@ -91,7 +91,7 @@ async def create_oauth_user(request: user_schema.CreateAccountRequest, db: Sessi
     return {"access_token": access_token, "refresh_token": refresh_token}
 
 # Used for refreshing expired tokens
-@router.post("/refresh-token")
+@router.post("/api/refresh-token")
 async def refresh_token_endpoint(request: user_schema.RefreshTokenRequest, db: Session = Depends(get_db)):
     print("DEBUG: Refresh Token Received", request.refresh_token)
     decoded_token = auth_utils.validate_refresh_token(request.refresh_token)
@@ -113,7 +113,7 @@ async def refresh_token_endpoint(request: user_schema.RefreshTokenRequest, db: S
 
 
 # Create a user
-@router.post("/users/", response_model=user_schema.User)
+@router.post("/api/users/", response_model=user_schema.User)
 def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     db_user = user_crud.get_user_by_username(db, username=user.username)
     if db_user:
@@ -126,7 +126,7 @@ def create_user(user: user_schema.UserCreate, db: Session = Depends(get_db)):
     return user_crud.create_user(db=db, user=user)
 
 # Get a user by ID
-@router.get("/users/id/{user_id}", response_model=user_schema.User)
+@router.get("/api/users/id/{user_id}", response_model=user_schema.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = user_crud.get_user(db, user_id=user_id)
     if db_user is None:
@@ -134,7 +134,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
     return db_user
 
 # Get a user by username
-@router.get("/users/username/{username}", response_model=user_schema.User)
+@router.get("/api/users/username/{username}", response_model=user_schema.User)
 def read_user_by_username(username: str, db: Session = Depends(get_db)):
     db_user = user_crud.get_user_by_username(db, username=username)
     if db_user is None:
@@ -142,7 +142,7 @@ def read_user_by_username(username: str, db: Session = Depends(get_db)):
     return db_user
 
 # Get a user by email
-@router.get("/users/email/{email}", response_model=user_schema.User)
+@router.get("/api/users/email/{email}", response_model=user_schema.User)
 def read_user_by_email(email: str, db: Session = Depends(get_db)):
     db_user = user_crud.get_user_by_email(db, email=email)
     if db_user is None:
@@ -156,7 +156,7 @@ def read_users(skip: int = Query(0, alias="skip"), limit: int = Query(10, alias=
     return users
 
 # Delete a user
-@router.delete("/users/{user_id}", response_model=user_schema.User)
+@router.delete("/api/users/{user_id}", response_model=user_schema.User)
 def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     deleted_user = user_crud.delete_user(db, user_id)
     if deleted_user is None:
@@ -164,7 +164,7 @@ def delete_user_endpoint(user_id: int, db: Session = Depends(get_db)):
     return deleted_user
 
 # Get the current user's data
-@router.get("/users/me", response_model=user_schema.UserWithSkills)
+@router.get("/api/users/me", response_model=user_schema.UserWithSkills)
 async def read_current_user_data(db: Session = Depends(get_db), current_user: user_model.User = Depends(auth_utils.get_current_user)):
     user_data = db.query(user_model.User).filter(user_model.User.id == current_user.id).first()
     if not user_data:

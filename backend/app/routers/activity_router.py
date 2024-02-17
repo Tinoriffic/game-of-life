@@ -10,7 +10,7 @@ router = APIRouter()
 # Activity Endpoints
 
 # Logs an activity (action) and rewards XP
-@router.post("/users/{user_id}/log-activity/", response_model=activity_schema.ActivityLog)
+@router.post("/api/users/{user_id}/log-activity/", response_model=activity_schema.ActivityLog)
 def log_activity(user_id: int, activity_data: activity_schema.ActivityLog, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -19,7 +19,7 @@ def log_activity(user_id: int, activity_data: activity_schema.ActivityLog, db: S
     return logged_activity
 
 # Log the user's weight and rewards XP
-@router.post("/users/{user_id}/track-weight/", response_model=activity_schema.WeightEntry)
+@router.post("/api/users/{user_id}/track-weight/", response_model=activity_schema.WeightEntry)
 def track_weight(user_id: int, weight_entry: activity_schema.WeightEntry, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -28,7 +28,7 @@ def track_weight(user_id: int, weight_entry: activity_schema.WeightEntry, db: Se
     return logged_activity
 
 # Get the user's activity streaks
-@router.get("/users/{user_id}/activity-streaks/", response_model=List[activity_schema.ActivityStreak])
+@router.get("/api/users/{user_id}/activity-streaks/", response_model=List[activity_schema.ActivityStreak])
 def get_user_activity_streaks(user_id: int, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

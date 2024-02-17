@@ -15,7 +15,7 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     scopes={"openid": "Open ID", "email": "Email", "profile": "Profile"}
 )
 
-@router.get("/login")
+@router.get("/api/login")
 async def login_via_google():
     authorize_url = OAuth2Config.authorize_url
     client_id = OAuth2Config.client_id
@@ -26,7 +26,7 @@ async def login_via_google():
     login_url = f"{authorize_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}"
     return {"login_url": login_url}
 
-@router.get("/auth/callback")
+@router.get("/api/auth/callback")
 async def callback(code: str, db: Session = Depends(get_db)):
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code")
@@ -58,7 +58,7 @@ async def callback(code: str, db: Session = Depends(get_db)):
     if result["type"] == "existing":
         # Redirect existing user to main screen with session token
         if 'access_token' in result and 'refresh_token' in result:
-            frontend_url = f"http://localhost:3000/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
+            frontend_url = f"http://localhost:3000/api/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
             print(f"Redirecting to {frontend_url}")
             return RedirectResponse(url=frontend_url)
         else:
@@ -68,5 +68,5 @@ async def callback(code: str, db: Session = Depends(get_db)):
         # Redirect new user to 'Choose Username' page
         # New users: Store user_info in the database with a 'registration in progress' flag
         registration_token = issue_registration_token(result["user_info"])
-        frontend_url = f"http://localhost:3000/user-setup?token={registration_token}"
+        frontend_url = f"http://localhost:3000/api/user-setup?token={registration_token}"
         return RedirectResponse(url=frontend_url)
