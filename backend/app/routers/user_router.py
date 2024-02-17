@@ -150,7 +150,7 @@ def read_user_by_email(email: str, db: Session = Depends(get_db)):
     return db_user
 
 # Get a list of users with pagination
-@router.get("/users/", response_model=List[user_schema.User])
+@router.get("/api/users/", response_model=List[user_schema.User])
 def read_users(skip: int = Query(0, alias="skip"), limit: int = Query(10, alias="limit"), db: Session = Depends(get_db)):
     users = user_crud.get_users(db, skip=skip, limit=limit)
     return users
