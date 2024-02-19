@@ -3,6 +3,7 @@ import axiosInstance from '../axios';
 import './MainMenu.css'
 import PlayerCard from './PlayerCard';
 import { useNavigate } from 'react-router-dom';
+import { baseUrl } from '../config/apiConfig';
 
 function MainMenu() {
   const token = localStorage.getItem('accessToken');
@@ -15,7 +16,7 @@ function MainMenu() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axiosInstance.get('http://localhost:8000/users/me', {
+        const response = await axiosInstance.get(`${baseUrl}/api/users/me`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }

@@ -3,6 +3,7 @@ import axiosInstance from '../axios';
 import './SetUserInfoPage.css';
 import houseIcon from './house-icon-3.png'
 import { useNavigate, useLocation } from 'react-router-dom';
+import { baseUrl } from '../config/apiConfig';
 
 const SetUserInfoPage = () => {
   const [occupation, setOccupation] = useState('');
@@ -18,7 +19,7 @@ const SetUserInfoPage = () => {
     e.preventDefault();
     setError('');
     try {
-        const response = await axiosInstance.post('http://localhost:8000/finalize-oauth-registration', {
+        const response = await axiosInstance.post(`${baseUrl}/api/finalize-oauth-registration`, {
           occupation,
           city,
           temp_token: registrationToken

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axiosInstance from '../axios';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { baseUrl } from '../config/apiConfig';
 import './ChooseUsernamePage.css'
 
 const ChooseUsernamePage = () => {
@@ -17,7 +18,7 @@ const ChooseUsernamePage = () => {
     setError('');
     console.log("temp_token 1: " + oAuthValidationToken)
     try {
-      const response = await axiosInstance.post('http://localhost:8000/set-username', {
+      const response = await axiosInstance.post(`${baseUrl}/api/set-username`, {
         username: username,
         token: oAuthValidationToken
       });

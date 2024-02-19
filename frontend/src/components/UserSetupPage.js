@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axiosInstance from '../axios';
 import debounce from 'lodash/debounce';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { baseUrl } from '../config/apiConfig';
 import houseIcon from './house-icon-3.png'
 import './UserSetupPage.css'
 
@@ -40,7 +41,7 @@ const UserSetupPage = () => {
 
   const debounceCheckUsername = debounce(async (username) => {
     try {
-      const response = await axiosInstance.post('http://localhost:8000/set-username', { 
+      const response = await axiosInstance.post(`${baseUrl}/api/set-username`, { 
         username: username,
         token: oAuthValidationToken
     });
@@ -87,7 +88,7 @@ const UserSetupPage = () => {
     setError('');
     console.log("Registration Token at submission:", registrationToken);
     try {
-        const response = await axiosInstance.post('http://localhost:8000/finalize-oauth-registration', {
+        const response = await axiosInstance.post(`${baseUrl}/api/finalize-oauth-registration`, {
           occupation,
           city,
           temp_token: registrationToken

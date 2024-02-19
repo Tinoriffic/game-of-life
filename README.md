@@ -22,7 +22,15 @@ cp .env.template .env
 
 Update all environment variables as required.
 
-To set up the frontend:
+**Setting up the frontend**
+
+Configure your environment variables by creating a `.env.local` file:
+```
+cd ../../frontend
+cp .env.example .env.local
+```
+
+Finally install the frontend:
 ```
 cd ../../frontend
 npm install

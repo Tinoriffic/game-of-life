@@ -2,10 +2,15 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2AuthorizationCodeBearer
 from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
+from ..config import Config
 from ..oauth2_config import OAuth2Config
 from ..crud.auth_utils import handle_user_authentication, issue_registration_token
 from ..dependencies import get_db
 import httpx
+
+frontend_url = Config.FRONTEND_URL
+if not frontend_url:
+    raise ValueError("FRONTEND_URL environment variable is not set!")
 
 router = APIRouter()
 
@@ -26,7 +31,7 @@ async def login_via_google():
     login_url = f"{authorize_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}"
     return {"login_url": login_url}
 
-@router.get("/api/auth/callback")
+@router.get("/auth/callback")
 async def callback(code: str, db: Session = Depends(get_db)):
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code")
@@ -58,9 +63,9 @@ async def callback(code: str, db: Session = Depends(get_db)):
     if result["type"] == "existing":
         # Redirect existing user to main screen with session token
         if 'access_token' in result and 'refresh_token' in result:
-            frontend_url = f"http://localhost:3000/api/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
-            print(f"Redirecting to {frontend_url}")
-            return RedirectResponse(url=frontend_url)
+            frontend_request = f"{frontend_url}/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
+            print(f"Redirecting to {frontend_request}")
+            return RedirectResponse(url=frontend_request)
         else:
             print("Error: Access token or refresh token is missing from the authentication result.")
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
@@ -68,5 +73,5 @@ async def callback(code: str, db: Session = Depends(get_db)):
         # Redirect new user to 'Choose Username' page
         # New users: Store user_info in the database with a 'registration in progress' flag
         registration_token = issue_registration_token(result["user_info"])
-        frontend_url = f"http://localhost:3000/api/user-setup?token={registration_token}"
-        return RedirectResponse(url=frontend_url)
+        frontend_request = f"{frontend_url}/api/user-setup?token={registration_token}"
+        return RedirectResponse(url=frontend_request)

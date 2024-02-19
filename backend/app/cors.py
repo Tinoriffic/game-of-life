@@ -1,11 +1,9 @@
 from fastapi.middleware.cors import CORSMiddleware
+from .config import Config
 
 def setup_cors(app):
-    origins = [
-    "http://localhost:3000",  # For local development
-    "http://pathquester.app",
-    "https://pathquester.app"
-]
+    allowed_origins = Config.ALLOWED_ORIGINS
+    origins = allowed_origins.split(",")
 
     app.add_middleware(
         CORSMiddleware,
