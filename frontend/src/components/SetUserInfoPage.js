@@ -19,7 +19,7 @@ const SetUserInfoPage = () => {
     e.preventDefault();
     setError('');
     try {
-        const response = await axiosInstance.post(`${baseUrl}/api/finalize-oauth-registration`, {
+        const response = await axiosInstance.post(`${baseUrl}/finalize-oauth-registration`, {
           occupation,
           city,
           temp_token: registrationToken

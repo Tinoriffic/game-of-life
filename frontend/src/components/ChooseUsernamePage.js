@@ -18,7 +18,7 @@ const ChooseUsernamePage = () => {
     setError('');
     console.log("temp_token 1: " + oAuthValidationToken)
     try {
-      const response = await axiosInstance.post(`${baseUrl}/api/set-username`, {
+      const response = await axiosInstance.post(`${baseUrl}/set-username`, {
         username: username,
         token: oAuthValidationToken
       });

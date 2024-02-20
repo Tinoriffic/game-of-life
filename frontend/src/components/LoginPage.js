@@ -7,7 +7,7 @@ const LoginPage = () => {
   const [loginUrl, setLoginUrl] = React.useState('');
 
   React.useEffect(() => {
-    axiosInstance.get(`${baseUrl}/api/login`)
+    axiosInstance.get(`${baseUrl}/login`)
       .then(response => {
         setLoginUrl(response.data.login_url);
       })

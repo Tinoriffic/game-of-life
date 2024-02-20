@@ -16,7 +16,7 @@ function MainMenu() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await axiosInstance.get(`${baseUrl}/api/users/me`, {
+        const response = await axiosInstance.get(`${baseUrl}/users/me`, {
           headers: {
             'Authorization': `Bearer ${localStorage.getItem('accessToken')}`
           }

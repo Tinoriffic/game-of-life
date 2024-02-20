@@ -10,7 +10,7 @@ router = APIRouter()
 # Skill Endpoints
 
 # Gets the user's skills
-@router.get("/api/users/{user_id}/skills/", response_model=List[skill_schema.Skill])
+@router.get("/users/{user_id}/skills/", response_model=List[skill_schema.Skill])
 def get_user_skills(user_id: int, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")

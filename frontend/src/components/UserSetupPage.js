@@ -41,7 +41,7 @@ const UserSetupPage = () => {
 
   const debounceCheckUsername = debounce(async (username) => {
     try {
-      const response = await axiosInstance.post(`${baseUrl}/api/set-username`, { 
+      const response = await axiosInstance.post(`${baseUrl}/set-username`, { 
         username: username,
         token: oAuthValidationToken
     });
@@ -88,7 +88,7 @@ const UserSetupPage = () => {
     setError('');
     console.log("Registration Token at submission:", registrationToken);
     try {
-        const response = await axiosInstance.post(`${baseUrl}/api/finalize-oauth-registration`, {
+        const response = await axiosInstance.post(`${baseUrl}/finalize-oauth-registration`, {
           occupation,
           city,
           temp_token: registrationToken

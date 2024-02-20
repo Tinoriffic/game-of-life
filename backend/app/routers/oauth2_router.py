@@ -20,7 +20,7 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     scopes={"openid": "Open ID", "email": "Email", "profile": "Profile"}
 )
 
-@router.get("/api/login")
+@router.get("/login")
 async def login_via_google():
     authorize_url = OAuth2Config.authorize_url
     client_id = OAuth2Config.client_id

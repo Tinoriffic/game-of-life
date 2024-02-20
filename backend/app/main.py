@@ -10,11 +10,7 @@ from .database import engine
 
 models.Base.metadata.create_all(bind=engine)
 
-app = FastAPI(
-    docs_url='/api/docs',
-    redoc_url='/api/redoc',
-    openapi_url='/api/openapi.json'
-)
+app = FastAPI()
 
 setup_cors(app)
 
