@@ -73,5 +73,5 @@ async def callback(code: str, db: Session = Depends(get_db)):
         # Redirect new user to 'Choose Username' page
         # New users: Store user_info in the database with a 'registration in progress' flag
         registration_token = issue_registration_token(result["user_info"])
-        frontend_request = f"{frontend_url}/api/user-setup?token={registration_token}"
+        frontend_request = f"{frontend_url}/user-setup?token={registration_token}"
         return RedirectResponse(url=frontend_request)
