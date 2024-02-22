@@ -23,7 +23,6 @@ const UserSetupPage = () => {
   const [usernameValid, setUsernameValid] = useState(false);
   const [checkingUsername, setCheckingUsername] = useState(false);
   const [registrationToken, setRegistrationToken] = useState(false);
-  //let registrationToken;
 
   const handleUsernameChange = (e) => {
     const newUsername = e.target.value;

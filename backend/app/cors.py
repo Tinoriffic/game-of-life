@@ -5,7 +5,7 @@ def setup_cors(app):
     allowed_origins = Config.ALLOWED_ORIGINS
     print("allowed_origins env variable: " + allowed_origins) # DEBUGGING PURPOSES
     origins = allowed_origins.split(",")
-    print("List of origins: " + origins) # DEBUGGING PURPOSES
+    print("List of origins: ", origins) # DEBUGGING PURPOSES
 
     app.add_middleware(
         CORSMiddleware,
