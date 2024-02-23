@@ -51,7 +51,8 @@ async def set_username(request: user_schema.SetUsernameRequest, db: Session = De
         "username": request.username,
         "email": user_info["email"],
         "first_name": user_info["given_name"],
-        "last_name": user_info["family_name"]
+        "last_name": user_info["family_name"],
+        "avatar_url": user_info["picture"]
     }, stage="set_username")
 
     print("Temporary Token")
@@ -82,7 +83,8 @@ async def create_oauth_user(request: user_schema.CreateAccountRequest, db: Sessi
         last_name=user_info["last_name"],
         occupation=request.occupation,
         city=request.city,
-        password=None  # Password is not needed for OAuth users
+        password=None,  # Password is not needed for OAuth users
+        avatar_url=user_info["avatar_url"]
     )
     
     new_user = user_crud.create_user(db, user_data)

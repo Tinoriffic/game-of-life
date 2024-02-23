@@ -4,8 +4,9 @@ import './PlayerCard.css'
 import defaultAvatar from './default-avatar.png'
 
 const PlayerCard = ({ playerData }) => {
-  const { avatar, first_name, city, occupation, skills } = playerData;
+  const { avatar_url, first_name, city, occupation, skills } = playerData;
   const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+  console.log("avatar_url", avatar_url)
 
   const renderStatBar = (skill) => {
     const maxXP = 100 * (skill.level * 1.5)
@@ -23,7 +24,7 @@ const PlayerCard = ({ playerData }) => {
 
   return (
     <div className="player-card">
-      <img className="avatar" src={avatar || defaultAvatar} alt={`${first_name}'s avatar`} />
+      <img className="avatar" src={avatar_url || defaultAvatar} alt={`${first_name}'s avatar`} />
       <h3>{capitalizeFirstLetter(first_name)}</h3>
       <p>Region: {capitalizeFirstLetter(city)}</p>
       <p>Occupation: {capitalizeFirstLetter(occupation)}</p>
@@ -36,7 +37,7 @@ const PlayerCard = ({ playerData }) => {
 
   PlayerCard.propTypes = {
     playerData: PropTypes.shape({
-        avatar: PropTypes.string,
+        avatar_url: PropTypes.string,
         name: PropTypes.string.isRequired,
         region: PropTypes.string.isRequired,
         occupation: PropTypes.string.isRequired,

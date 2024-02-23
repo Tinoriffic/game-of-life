@@ -140,7 +140,7 @@ const UserSetupPage = () => {
                 onChange={(e) => setCity(e.target.value)}
                 placeholder="City"
             />
-            <div className="avatar-upload-container">
+            {/* <div className="avatar-upload-container">
                 <label htmlFor="avatar-upload" className="form-label">Upload Your Avatar (Optional)</label>
                 <input
                     id="avatar-upload"
@@ -152,7 +152,7 @@ const UserSetupPage = () => {
             {avatarPreview && (
                 <img src={avatarPreview} alt="Avatar Preview" className="avatar-preview" />
             )}
-        </div>
+        </div> */}
         <button type="submit" disabled={!usernameValid || checkingUsername }>Submit</button>
       </form>
       {error && <div className="error-message">{error}</div>}

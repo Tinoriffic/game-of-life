@@ -10,6 +10,7 @@ class UserCreate(BaseModel):
     last_name: str
     city: str
     occupation: str
+    avatar_url: Optional[str] = None
 
 class SetUsernameRequest(BaseModel):
     username: str
@@ -28,6 +29,7 @@ class User(BaseModel):
     last_name: str
     city: str
     occupation: str
+    avatar_url: Optional[str] = None
 
     class ConfigDict:
         from_attributes = True
@@ -41,6 +43,7 @@ class UserWithSkills(BaseModel):
     city: str
     occupation: str
     skills: List[Skill]
+    avatar_url: Optional[str] = None
 
     class ConfigDict:
         from_attributes = True

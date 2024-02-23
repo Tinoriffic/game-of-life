@@ -41,7 +41,8 @@ def create_user(db: Session, user: user_schema.UserCreate):
         first_name=user.first_name,
         last_name=user.last_name,
         city=user.city,
-        occupation=user.occupation)
+        occupation=user.occupation,
+        avatar_url=user.avatar_url if user.avatar_url else None)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
