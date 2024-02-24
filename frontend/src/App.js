@@ -1,9 +1,9 @@
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
-import LoginPage from './components/LoginPage';
+import LoginPage from './components/auth/LoginPage';
 import ActionLogger from './components/ActionLogger';
-import UserSetupPage from './components/UserSetupPage';
-import TokenReceiver from './components/TokenReceiver';
+import UserSetupPage from './components/auth/UserSetupPage';
+import TokenReceiver from './components/auth/TokenReceiver';
 
 function App() {
   return (

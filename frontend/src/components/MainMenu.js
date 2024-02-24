@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axios';
 import './MainMenu.css'
-import PlayerCard from './PlayerCard';
+import PlayerCard from './player/PlayerCard';
 import { useNavigate } from 'react-router-dom';
 import { baseUrl } from '../config/apiConfig';
 

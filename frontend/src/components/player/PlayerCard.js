@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types'
 import './PlayerCard.css'
-import defaultAvatar from './default-avatar.png'
+import defaultAvatar from '../../assets/default-avatar.png'
 
 const PlayerCard = ({ playerData }) => {
   const { avatar_url, first_name, city, occupation, skills } = playerData;

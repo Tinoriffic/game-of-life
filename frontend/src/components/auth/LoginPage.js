@@ -1,7 +1,7 @@
 import React from 'react';
 import './LoginPage.css';
-import axiosInstance from '../axios';
-import { baseUrl } from '../config/apiConfig';
+import axiosInstance from '../../axios';
+import { baseUrl } from '../../config/apiConfig';
 
 const LoginPage = () => {
   const [loginUrl, setLoginUrl] = React.useState('');

@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import axiosInstance from '../axios';
+import axiosInstance from '../../axios';
 import debounce from 'lodash/debounce';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { baseUrl } from '../config/apiConfig';
-import houseIcon from './house-icon-3.png'
+import { baseUrl } from '../../config/apiConfig';
+import houseIcon from '../../assets/house-icon-3.png'
 import './UserSetupPage.css'
 
 const UserSetupPage = () => {
