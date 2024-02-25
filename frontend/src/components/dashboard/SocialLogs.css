@@ -1,0 +1,46 @@
+.social-logs-container {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
+  }
+  
+  .social-logs-form {
+    max-width: 500px;
+    width: 100%;
+    background: #1D1F20;
+    padding: 20px;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    color: #F8F8F2;
+  }
+  
+  .form-group {
+    margin-bottom: 20px;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 5px;
+  }
+  
+  .form-group select, .form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .submit-btn {
+    background-color: #4caf50;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    width: 100%;
+  }
+  
+  .submit-btn:hover {
+    background-color: #45a045;
+  }
+  

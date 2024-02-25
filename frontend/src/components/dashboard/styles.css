@@ -1,0 +1,93 @@
+.dashboard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 30px;
+    padding: 20px;
+    background: #1D1F20;
+}
+
+.activity-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #282c34;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 10px;
+    width: 250px;
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.activity-card:hover {
+    transform: scale(1.05);
+}
+
+.activity-logo {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 20px;
+}
+
+.activity-card h3 {
+    color: #F8F8F2;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.activity-logger {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #1D1F20; /* Consistent dark background */
+    color: #F8F8F2;
+    padding: 20px;
+    margin-top: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1); /* Subtle shadow for depth */
+    width: 80%;
+    max-width: 600px; /* Maximum width */
+    margin: 40px auto; /* Centering */
+}
+
+.activity-options {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px; /* Space between buttons */
+    margin-top: 20px;
+}
+
+.activity-options button {
+    background-color: #4caf50; /* CHANGE LATER: Green background for buttons */
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.activity-options button:hover {
+    background-color: #43a047;
+}
+
+.back-button {
+    background-color: #f44336; /* CHANGE LATER: Red background for the back button */
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-top: 30px; /* Space from options */
+    transition: background-color 0.3s ease;
+}
+
+.back-button:hover {
+    background-color: #d32f2f;
+}
