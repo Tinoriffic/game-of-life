@@ -1,1 +1,7 @@
 Generic single-database configuration.
+
+#### Generate a migration script
+`alembic revision --autogenerate -m "Add <field> to <table>"`
+
+#### Apply the migration
+`alembic upgrade head`

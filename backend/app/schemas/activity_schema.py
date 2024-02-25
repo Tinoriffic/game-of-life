@@ -5,6 +5,7 @@ from typing import Optional
 class ActivityLog(BaseModel):
     activity_type: str
     description: Optional[str] = None
+    notes: Optional[str] = None
     xp_earned: int = 0
     duration: int = 0
     volume: int = 0

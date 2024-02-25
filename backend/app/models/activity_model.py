@@ -10,6 +10,7 @@ class UserActivities(Base):
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     activity_type = Column(String, index=True)
     description = Column(String)
+    notes = Column(String, nullable=True)
     xp_earned = Column(Integer)
     date = Column(DateTime, default=datetime.utcnow)
     duration = Column(Integer, default=0)
