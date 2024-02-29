@@ -6,6 +6,9 @@ import Dashboard from './components/dashboard/Dashboard';
 import UserSetupPage from './components/auth/UserSetupPage';
 import TokenReceiver from './components/auth/TokenReceiver';
 import SocialLogs from './components/dashboard/SocialLogs';
+import JournalLogs from './components/dashboard/JournalLogs';
+import MeditationLogs from './components/dashboard/MeditationLogs';
+import LearningLogs from './components/dashboard/LearningLogs';
 
 function App() {
   return (
@@ -19,6 +22,7 @@ function App() {
           <li>Skill Tree</li>
           <li>Milestones</li>
           <li><Link to="/dashboard">Action Logger</Link></li>
+          <li>Stats</li>
         </ul>
       </nav>
       <Routes>
@@ -29,7 +33,9 @@ function App() {
         <Route path="/daily" element={<ActivityLogger />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/log-social-activity" element={<SocialLogs />} />
-        {/* Define other routes */}
+        <Route path="/log-journal-entry" element={<JournalLogs />} /> 
+        <Route path="/log-meditation" element={<MeditationLogs />} />
+        <Route path="/log-learning-session" element={<LearningLogs />} />
       </Routes>
     </Router>
   );

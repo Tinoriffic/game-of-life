@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import axiosInstance from '../../axios';
 import { baseUrl } from '../../config/apiConfig';
 import { useNavigate } from 'react-router-dom';
+import { useUser } from '../player/UserContext';
+import BackButton from '../common/BackButton'
 import './SocialLogs.css'
 
-const SocialLogs = ({ userId }) => {
+const SocialLogs = () => {
+    const { user } = useUser();
     const [interactionType, setInteractionType] = useState('');
     const [notes, setNotes] = useState('');
     const [error, setError] = useState('');
@@ -23,14 +26,14 @@ const SocialLogs = ({ userId }) => {
         e.preventDefault();
 
         const logEntry = {
-            user_id: userId,
+            user_id: user.id,
             activity_type: "socialize",
             description: interactionType,
             notes: notes
         };
 
         try {
-            await axiosInstance.post(`${baseUrl}/users/${userId}/log-activity/`, logEntry);
+            await axiosInstance.post(`${baseUrl}/users/${user.id}/log-activity/`, logEntry);
             alert('Social activity logged successfully');
             setError('');
             navigate('/dashboard');
@@ -69,6 +72,7 @@ const SocialLogs = ({ userId }) => {
               />
             </div>
             <button type="submit" className="submit-btn">Log Activity</button>
+            <BackButton />
           </form>
           {error && <div className="error-message">{error}</div>}
         </div>
