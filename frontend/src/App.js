@@ -9,6 +9,7 @@ import SocialLogs from './components/dashboard/SocialLogs';
 import JournalLogs from './components/dashboard/JournalLogs';
 import MeditationLogs from './components/dashboard/MeditationLogs';
 import LearningLogs from './components/dashboard/LearningLogs';
+import FitnessLogger from './components/dashboard/FitnessLogger';
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
         <Route path="/log-journal-entry" element={<JournalLogs />} /> 
         <Route path="/log-meditation" element={<MeditationLogs />} />
         <Route path="/log-learning-session" element={<LearningLogs />} />
+        <Route path="/fitness" element={<FitnessLogger />} />
       </Routes>
     </Router>
   );

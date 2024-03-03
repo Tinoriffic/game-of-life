@@ -27,6 +27,13 @@ def track_weight(user_id: int, weight_entry: activity_schema.WeightEntry, db: Se
     logged_activity = activity_crud.log_weight_entry(db, user_id, weight_entry)
     return logged_activity
 
+@router.get("/users/{user_id}/weight/logs/", response_model=List[activity_schema.WeightEntry])
+def get_weight_logs(user_id: int, db: Session = Depends(get_db)):
+    logs = activity_crud.get_recent_weight_logs(db, user_id)
+    if not logs:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Weight logs not found")
+    return logs
+
 # Get the user's activity streaks
 @router.get("/users/{user_id}/activity-streaks/", response_model=List[activity_schema.ActivityStreak])
 def get_user_activity_streaks(user_id: int, db: Session = Depends(get_db)):

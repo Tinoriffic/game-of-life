@@ -9,7 +9,7 @@ const Dashboard = () => {
     const navigate = useNavigate();
     
     const activities = [
-        { title: 'Fitness', image: fitnessLogo, path: '/workouts' },
+        { title: 'Fitness', image: fitnessLogo, path: '/fitness' },
         { title: 'Daily', image: dailyLogo, path: '/daily' },
     ];
 

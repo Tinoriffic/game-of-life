@@ -1,0 +1,45 @@
+.weight-tracking {
+    background-color: #1D1F20;
+    color: #F8F8F2;
+    padding: 20px;
+    margin: 20px auto;
+    width: 90%;
+    max-width: 600px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .weight-tracking h2 {
+    color: #4caf50;
+    text-align: center;
+  }
+  
+  .weight-info {
+    margin-bottom: 20px;
+  }
+  
+  .weight-tracking input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #282c34;
+    color: white;
+  }
+  
+  .weight-tracking button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #4caf50;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  
+  .weight-tracking button:hover {
+    background-color: #367c39;
+  }
+  

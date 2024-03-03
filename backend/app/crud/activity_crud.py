@@ -19,7 +19,6 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
     # Step 1: Log the activity
     new_activity = activity_model.UserActivities(user_id=user_id, **activity_data.model_dump())
     db.add(new_activity)
-    db.query(activity_model.WeightTracking).filter()
     user_skills = get_user_skills(db, user_id)
 
     # Check if it's a new day

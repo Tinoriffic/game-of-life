@@ -104,6 +104,10 @@ def calculate_weight_tracking_xp(daily_logs, starting_weight, goal_weight):
     previous_week_avg = calculate_average_weight([log.weight for log in daily_logs if is_previous_week(log.date)])
 
     # Check progress towards the goal
+    if goal_weight is None:
+        # As long as user doesn't have a weight goal, they don't earn XP for tracking
+        return 0
+
     progress_xp = 0
     if current_week_avg is not None:
         if previous_week_avg is None:
