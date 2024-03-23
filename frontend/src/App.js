@@ -1,15 +1,15 @@
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
 import LoginPage from './components/auth/LoginPage';
-import ActivityLogger from './components/dashboard/ActivityLogger';
+import ActivityLogger from './components/dashboard/daily/ActivityLogger';
 import Dashboard from './components/dashboard/Dashboard';
 import UserSetupPage from './components/auth/UserSetupPage';
 import TokenReceiver from './components/auth/TokenReceiver';
-import SocialLogs from './components/dashboard/SocialLogs';
-import JournalLogs from './components/dashboard/JournalLogs';
-import MeditationLogs from './components/dashboard/MeditationLogs';
-import LearningLogs from './components/dashboard/LearningLogs';
-import FitnessLogger from './components/dashboard/FitnessLogger';
+import SocialLogs from './components/dashboard/daily/SocialLogs';
+import JournalLogs from './components/dashboard/daily/JournalLogs';
+import MeditationLogs from './components/dashboard/daily/MeditationLogs';
+import LearningLogs from './components/dashboard/daily/LearningLogs';
+import FitnessLogger from './components/dashboard/fitness/FitnessLogger';
 
 function App() {
   return (

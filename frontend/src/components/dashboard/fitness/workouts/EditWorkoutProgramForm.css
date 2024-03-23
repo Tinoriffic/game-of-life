@@ -1,0 +1,64 @@
+.edit-workout-program-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background-color: #1d1f20;
+    color: #f8f8f2;
+    border-radius: 10px;
+  }
+  
+  .edit-workout-program-form h2 {
+    margin: 0;
+  }
+  
+  .edit-workout-program-form label {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+  
+  .edit-workout-program-form input {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background-color: #333;
+    color: #f8f8f2;
+  }
+  
+  .workout-day {
+    padding: 15px;
+    border: 1px solid #f8f8f2;
+    border-radius: 10px;
+  }
+  
+  .workout-exercise {
+    margin-bottom: 10px;
+  }
+  
+  .edit-workout-program-form button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #4caf50;
+    color: #f8f8f2;
+    cursor: pointer;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .save-button {
+    background-color: #4caf50;
+  }
+  
+  .delete-button {
+    background-color: #f44336;
+  }
+  
+  .cancel-button {
+    background-color: #6c757d;
+  }

@@ -1,0 +1,46 @@
+.cardio-log {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #1D1F20;
+    color: #F8F8F2;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .cardio-log h2 {
+    text-align: center;
+  }
+  
+  .cardio-log form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .cardio-log form div {
+    margin-bottom: 15px;
+  }
+  
+  .cardio-log form label {
+    display: block;
+  }
+  
+  .cardio-log form input {
+    width: 100%;
+    padding: 8px;
+    margin-top: 5px;
+  }
+  
+  .cardio-log button {
+    background-color: #4caf50;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .cardio-log button:hover {
+    background-color: #45a049;
+  }
+  

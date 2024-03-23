@@ -1,0 +1,31 @@
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    background: #1D1F20;
+    color: #F8F8F2;
+  }
+
+  .cancel-button {
+    background-color: #f44336; /* Red color for cancellation action */
+  }
+  
+  input, button {
+    padding: 8px;
+    margin-top: 5px;
+  }
+
+  button {
+    cursor: pointer;
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+  }
+  
+  button:hover {
+    opacity: 0.8;
+  }
+
+  

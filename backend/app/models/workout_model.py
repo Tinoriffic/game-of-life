@@ -51,7 +51,7 @@ class WorkoutSession(Base):
     session_id = Column(Integer, primary_key=True, index=True)
     program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    session_date = Column(DateTime, default=datetime.utcnow)
+    session_date = Column(DateTime, default=datetime.now)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
     exercises = relationship('WorkoutSessionExercise', back_populates='session')

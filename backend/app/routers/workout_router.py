@@ -11,7 +11,7 @@ router = APIRouter()
 # Workout Endpoints
 
 # Create a workout program
-@router.post("/workout-programs/", response_model=workout_schema.WorkoutProgram)
+@router.post("/users/{user_id}/workout-programs", response_model=workout_schema.WorkoutProgram)
 def create_workout_program(user_id: int, program: workout_schema.WorkoutProgramCreate, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
@@ -86,17 +86,31 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
     return program_details
 
 # Log a workout session entry
-@router.post("/users/{user_id}/workout-sessions/", response_model=workout_schema.WorkoutSession)
+@router.post("/users/{user_id}/workout-sessions", response_model=workout_schema.WorkoutSession)
 def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):
     return workout_crud.log_workout_session(db, session_data, user_id)
 
-@router.get("/users/{user_id}/workout-sessions/", response_model=List[workout_schema.WorkoutSessionExercise])
+@router.get("/users/{user_id}/workout-sessions", response_model=List[workout_schema.WorkoutSessionExercise])
 def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
     try:
         return workout_crud.get_workout_sessions(db, user_id)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
+# Edit a workout program
+@router.put("/workout-programs/{program_id}", response_model=workout_schema.WorkoutProgram)
+def update_workout_program(program_id: int, program: workout_schema.WorkoutProgramCreate, db: Session = Depends(get_db)):
+    updated_program = workout_crud.update_workout_program(db, program_id, program)
+    if not updated_program:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
+
+    return workout_schema.WorkoutProgram(
+        program_id=updated_program.program_id,
+        user_id=updated_program.user_id,
+        name=updated_program.name,
+        days=[workout_schema.WorkoutDay(**day.__dict__) for day in updated_program.workout_days]
+    )
+
 # Delete a workout program
 @router.delete("/workout-programs/{program_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
@@ -107,7 +121,7 @@ def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
     return {"detail": "Workout program deleted successfully"}
 
 # Reset workout DB tables
-@router.delete("/delete-all-workout-data/")
+@router.delete("/delete-all-workout-data")
 def delete_all_workout_data(db: Session = Depends(get_db)):
     try:
         # Deleting from child tables first

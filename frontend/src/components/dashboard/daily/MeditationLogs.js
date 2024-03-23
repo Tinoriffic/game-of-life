@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import axiosInstance from '../../axios';
-import { baseUrl } from '../../config/apiConfig';
+import axiosInstance from '../../../axios';
+import { baseUrl } from '../../../config/apiConfig';
 import { useNavigate } from 'react-router-dom';
-import { useUser } from '../player/UserContext';
-import BackButton from '../common/BackButton';
+import { useUser } from '../../player/UserContext';
+import BackButton from '../../common/BackButton';
 import './MeditationLogs.css';
 
 const meditationExercises = [

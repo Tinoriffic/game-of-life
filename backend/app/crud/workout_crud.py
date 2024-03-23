@@ -116,7 +116,7 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
     strength_skill = db.query(skill_model.Skill).filter(skill_model.Skill.user_id == user_id, skill_model.Skill.name == "Strength").first()
 
     # Reset daily XP if it's a new day
-    if strength_skill and strength_skill.last_updated.date() < datetime.utcnow().date():
+    if strength_skill and strength_skill.last_updated.date() < datetime.now().date():
         strength_skill.daily_xp_earned = 0
 
     # Update Skill XP
@@ -159,7 +159,7 @@ def get_user_workout_progress(db: Session, user_id: int, time_frame: int = 7) ->
     """
     Fetch workout progress data for a user over a specified time frame.
     """
-    end_date = datetime.utcnow()
+    end_date = datetime.now()
     start_date = end_date - timedelta(days=time_frame)
     
     return db.execute(
@@ -207,3 +207,69 @@ def delete_workout_program(db: Session, program_id: int):
     # Finally, delete the workout program
     db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).delete(synchronize_session='fetch')
     db.commit()
+
+def update_workout_program(db: Session, program_id: int, program: workout_schema.WorkoutProgramCreate):
+    db_program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
+    if not db_program:
+        return None
+
+    # Update the program name
+    db_program.name = program.name
+
+    # Delete workout days and exercises that are not in the updated program
+    db.query(workout_model.WorkoutProgramExercise).filter(
+        workout_model.WorkoutProgramExercise.day_id.in_(
+            db.query(workout_model.WorkoutDay.day_id).filter(
+                workout_model.WorkoutDay.program_id == program_id,
+                workout_model.WorkoutDay.day_name.notin_([day.day_name for day in program.workout_days])
+            )
+        )
+    ).delete(synchronize_session=False)
+
+    db.query(workout_model.WorkoutDay).filter(
+        workout_model.WorkoutDay.program_id == program_id,
+        workout_model.WorkoutDay.day_name.notin_([day.day_name for day in program.workout_days])
+    ).delete(synchronize_session=False)
+    
+    # Update workout days and exercises
+    for day in program.workout_days:
+        db_day = db.query(workout_model.WorkoutDay).filter(
+            workout_model.WorkoutDay.program_id == program_id,
+            workout_model.WorkoutDay.day_name == day.day_name
+            ).first()
+        
+        if not db_day:
+            db_day = workout_model.WorkoutDay(program_id=program_id, day_name=day.day_name)
+            db.add(db_day)
+            db.flush()
+
+        # Update exercises for the day
+        for exercise in day.exercises:
+            db_exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise.name).first()
+            if not db_exercise:
+                db_exercise = workout_model.Exercise(name=exercise.name)
+                db.add(db_exercise)
+                db.flush()
+
+            db_program_exercise = db.query(workout_model.WorkoutProgramExercise).filter(
+                workout_model.WorkoutProgramExercise.day_id == db_day.day_id,
+                workout_model.WorkoutProgramExercise.exercise_id == db_exercise.exercise_id
+                ).first()
+            
+            if not db_program_exercise:
+                db_program_exercise = workout_model.WorkoutProgramExercise(
+                    day_id=db_day.day_id,
+                    exercise_id=db_exercise.exercise_id,
+                    sets=exercise.sets,
+                    recommended_reps=exercise.recommended_reps,
+                    recommended_weight=exercise.recommended_weight
+                )
+                db.add(db_program_exercise)
+            else:
+                db_program_exercise.sets = exercise.sets
+                db_program_exercise.recommended_reps = exercise.recommended_reps
+                db_program_exercise.recommended_weight = exercise.recommended_weight
+
+    db.commit()
+    db.refresh(db_program)
+    return db_program

@@ -1,0 +1,91 @@
+.fitness-page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #1D1F20;
+    color: #F8F8F2;
+    padding: 20px;
+    min-height: 100vh;
+  }
+  
+  .fitness-page h1 {
+    color: #F8F8F2;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  
+  /* Individual activity container styles */
+  .fitness-page > div {
+    background-color: #282c34;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    margin: 20px 0;
+    padding: 20px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  /* Style adjustments for inputs and buttons inside the fitness page */
+  .fitness-page input, .fitness-page button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    background-color: #333;
+    color: #F8F8F2;
+    box-sizing: border-box;
+  }
+
+  .settings-icon-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    padding: 0;
+    outline: none;
+  }
+  
+  .fitness-page button {
+    background-color: #4caf50;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .fitness-page button:hover {
+    background-color: #45a049;
+  }
+
+  .fitness-page .settings-icon-button {
+    width: auto;
+    padding: 0;
+    margin: 0;
+    border: none;
+    background-color: transparent;
+    transition: none;
+  }
+
+  .fitness-page .settings-icon-button:hover {
+    background-color: transparent;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .fitness-page {
+      padding: 10px;
+    }
+  
+    .fitness-page > div {
+      width: 100%;
+    }
+  }
+  

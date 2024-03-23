@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import axiosInstance from '../../axios';
-import { baseUrl } from '../../config/apiConfig';
-import { useUser } from '../player/UserContext';
+import axiosInstance from '../../../../axios';
+import { baseUrl } from '../../../../config/apiConfig';
+import { useUser } from '../../../player/UserContext';
 import './WeightTracking.css';
 
 const WeightTracking = () => {

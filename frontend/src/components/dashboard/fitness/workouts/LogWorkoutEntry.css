@@ -1,0 +1,45 @@
+.log-workout-entry {
+    background-color: #1d1f20;
+    color: #f8f8f2;
+    padding: 20px;
+    border-radius: 10px;
+  }
+  
+  .log-workout-entry h2 {
+    margin-top: 0;
+  }
+  
+  .log-workout-entry label {
+    display: block;
+    margin-bottom: 10px;
+  }
+  
+  .log-workout-entry select,
+  .log-workout-entry input {
+    padding: 8px;
+    border-radius: 5px;
+    border: none;
+    background-color: #333;
+    color: #f8f8f2;
+    margin-bottom: 10px;
+  }
+  
+  .exercise-entry {
+    margin-bottom: 20px;
+  }
+  
+  .set-entry {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  
+  .log-workout-entry button {
+    padding: 10px;
+    border-radius: 5px;
+    border: none;
+    background-color: #4caf50;
+    color: #f8f8f2;
+    cursor: pointer;
+    margin-right: 10px;
+  }
