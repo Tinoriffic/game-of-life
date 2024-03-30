@@ -19,8 +19,10 @@ def get_user_workout_programs(db: Session, user_id: int):
     Retrieve all of a user's workout programs
     """
     return db.query(workout_model.WorkoutProgram).options(
-        joinedload(workout_model.WorkoutProgram.workout_days)).filter(
-            workout_model.WorkoutProgram.user_id == user_id).all()
+        joinedload(workout_model.WorkoutProgram.workout_days).joinedload(
+            workout_model.WorkoutDay.exercises).joinedload(
+                workout_model.WorkoutProgramExercise.exercise)
+    ).filter(workout_model.WorkoutProgram.user_id == user_id).all()
 
 def get_workout_day_by_name(db: Session, program_id: int, day_name: str):
     """
@@ -105,12 +107,13 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
 
         # Iterate through each set of the exercise
         for set_number, set in enumerate(exercise.sets, start=max_set_number + 1):
+            performed_weight = set.performed_weight if set.performed_weight else 1
             new_set = workout_model.WorkoutSessionExercise(
                 session_id=new_session.session_id,
                 program_exercise_id=exercise.program_exercise_id,
                 set_number=set_number,
                 performed_reps=set.performed_reps,
-                performed_weight=set.performed_weight)
+                performed_weight=performed_weight)
             db.add(new_set)
 
     strength_skill = db.query(skill_model.Skill).filter(skill_model.Skill.user_id == user_id, skill_model.Skill.name == "Strength").first()
@@ -216,20 +219,8 @@ def update_workout_program(db: Session, program_id: int, program: workout_schema
     # Update the program name
     db_program.name = program.name
 
-    # Delete workout days and exercises that are not in the updated program
-    db.query(workout_model.WorkoutProgramExercise).filter(
-        workout_model.WorkoutProgramExercise.day_id.in_(
-            db.query(workout_model.WorkoutDay.day_id).filter(
-                workout_model.WorkoutDay.program_id == program_id,
-                workout_model.WorkoutDay.day_name.notin_([day.day_name for day in program.workout_days])
-            )
-        )
-    ).delete(synchronize_session=False)
-
-    db.query(workout_model.WorkoutDay).filter(
-        workout_model.WorkoutDay.program_id == program_id,
-        workout_model.WorkoutDay.day_name.notin_([day.day_name for day in program.workout_days])
-    ).delete(synchronize_session=False)
+    # Get the existing workout day IDs for the program
+    existing_day_ids = [day.day_id for day in db_program.workout_days]
     
     # Update workout days and exercises
     for day in program.workout_days:
@@ -242,6 +233,12 @@ def update_workout_program(db: Session, program_id: int, program: workout_schema
             db_day = workout_model.WorkoutDay(program_id=program_id, day_name=day.day_name)
             db.add(db_day)
             db.flush()
+        else:
+            # Remove the day ID from the existing day IDs list
+            existing_day_ids.remove(db_day.day_id)
+
+        # Get the existing exercise IDs for the day
+        existing_exercise_ids = [exercise.exercise_id for exercise in db_day.exercises]
 
         # Update exercises for the day
         for exercise in day.exercises:
@@ -269,6 +266,21 @@ def update_workout_program(db: Session, program_id: int, program: workout_schema
                 db_program_exercise.sets = exercise.sets
                 db_program_exercise.recommended_reps = exercise.recommended_reps
                 db_program_exercise.recommended_weight = exercise.recommended_weight
+
+                # Remove the exercise ID from the existing exercise IDs list
+                existing_exercise_ids.remove(db_exercise.exercise_id)
+
+        # Delete the exercises that are not present in the updated program data
+        db.query(workout_model.WorkoutProgramExercise).filter(
+            workout_model.WorkoutProgramExercise.day_id == db_day.day_id,
+            workout_model.WorkoutProgramExercise.exercise_id.in_(existing_exercise_ids)
+        ).delete(synchronize_session=False)
+
+    # Delete the workout days that are not present in the updated program data
+    db.query(workout_model.WorkoutDay).filter(
+        workout_model.WorkoutDay.program_id == program_id,
+        workout_model.WorkoutDay.day_id.in_(existing_day_ids)
+    ).delete(synchronize_session=False)
 
     db.commit()
     db.refresh(db_program)

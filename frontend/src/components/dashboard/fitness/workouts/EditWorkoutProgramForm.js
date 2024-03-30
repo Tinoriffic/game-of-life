@@ -11,15 +11,19 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
     if (program) {
       setEditedProgram({
         name: program.name,
-        workout_days: program.days ? program.days.map((day) => ({
-          day_name: day.day_name,
-          exercises: day.exercises ? day.exercises.map((exercise) => ({
-            name: exercise.exercise.name,
-            sets: exercise.sets,
-            recommended_reps: exercise.recommended_reps || 0,
-            recommended_weight: exercise.recommended_weight || 0,
-          })) : [],
-        })) : [],
+        workout_days: program.days
+          ? program.days.map((day) => ({
+              day_name: day.day_name,
+              exercises: day.exercises
+                ? day.exercises.map((exercise) => ({
+                    name: exercise.name || '',
+                    sets: exercise.sets || 0,
+                    recommended_reps: exercise.recommended_reps || 0,
+                    recommended_weight: exercise.recommended_weight || 0,
+                  }))
+                : [],
+            }))
+          : [],
       });
     }
   }, [program]);
@@ -70,14 +74,14 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
   };
 
   const handleDelete = () => {
-    onDelete(editedProgram.program_id);
+    onDelete(program.program_id);
   };
 
   return (
     <form onSubmit={handleSubmit} className="edit-workout-program-form">
       <h2>Edit Workout Program</h2>
       <label>
-        Program Name:
+        Program Name
         <input
           type="text"
           name="name"
@@ -88,7 +92,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
       {editedProgram.workout_days.map((day, dayIndex) => (
         <div key={dayIndex} className="workout-day">
           <label>
-            Day Name:
+            Day Name
             <input
               type="text"
               name="day_name"
@@ -99,7 +103,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
           {day.exercises.map((exercise, exerciseIndex) => (
             <div key={exerciseIndex} className="workout-exercise">
               <label>
-                Exercise Name:
+                Exercise Name
                 <input
                   type="text"
                   name="name"
@@ -108,7 +112,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
                 />
               </label>
               <label>
-                Sets:
+                Sets
                 <input
                   type="number"
                   name="sets"
@@ -117,7 +121,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
                 />
               </label>
               <label>
-                Recommended Reps:
+                Target Reps
                 <input
                   type="number"
                   name="recommended_reps"
@@ -126,14 +130,29 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
                 />
               </label>
               <label>
-                Recommended Weight:
+                {exercise.is_calisthenics ? 'Added Weight' : 'Target Weight'}
                 <input
                   type="number"
                   name="recommended_weight"
-                  value={exercise.recommended_weight}
+                  value={exercise.recommended_weight || ''}
                   onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
                 />
               </label>
+              <div className="exercise-option">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_calisthenics"
+                    checked={exercise.is_calisthenics}
+                    onChange={(e) => {
+                      const updatedProgram = { ...editedProgram };
+                      updatedProgram.workout_days[dayIndex].exercises[exerciseIndex].is_calisthenics = e.target.checked;
+                      setEditedProgram(updatedProgram);
+                    }}
+                  />
+                  <span>Calisthenics</span>
+                </label>
+              </div>
               <button type="button" onClick={() => deleteExercise(dayIndex, exerciseIndex)}>
                 Delete Exercise
               </button>

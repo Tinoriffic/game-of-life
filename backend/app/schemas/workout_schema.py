@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 
 class Exercise(BaseModel):
     exercise_id: int
@@ -8,9 +8,10 @@ class Exercise(BaseModel):
 
 class ExerciseCreate(BaseModel):
     name: str
-    sets: int = 3
-    recommended_reps: Optional[int] = 3
-    recommended_weight: Optional[int] = 3
+    sets: Optional[int] = None
+    recommended_reps: Optional[int] = None
+    recommended_weight: Optional[int] = None
+    is_calisthenics: bool = False
 
 class WorkoutDay(BaseModel):
     day_id: int
@@ -28,9 +29,10 @@ class WorkoutProgramExercise(BaseModel):
     program_exercise_id: int
     day_id: int
     exercise_id: int
-    sets: int
-    recommended_reps: Optional[int] = 3
-    recommended_weight: Optional[int] = 3
+    sets: Optional[int] = None
+    recommended_reps: Optional[int] = None
+    recommended_weight: Optional[int] = None
+    is_calisthenics: bool = False
 
 class WorkoutProgramExerciseResponse(BaseModel):
     program_exercise_id: int
@@ -45,6 +47,12 @@ class WorkoutProgram(BaseModel):
     class ConfigDict:
         from_attributes = True
 
+class WorkoutProgramWithExercises(BaseModel):
+    program_id: int
+    user_id: int
+    name: str
+    days: List[Dict[str, Any]]
+
 class WorkoutProgramCreate(BaseModel):
     name: str
     workout_days: List[WorkoutDayCreate]
@@ -52,7 +60,7 @@ class WorkoutProgramCreate(BaseModel):
 class WorkoutSet(BaseModel):
     set_number: Optional[int] = None
     performed_reps: int
-    performed_weight: int
+    performed_weight: Optional[int] = None
 
 class WorkoutSessionExercise(BaseModel):
     program_exercise_id: int

@@ -58,7 +58,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
   return (
     <form onSubmit={handleSubmit}>
       <label>
-        Program Name:
+        Program Name
         <input
           type="text"
           name="name"
@@ -69,7 +69,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
       {program.workout_days.map((day, index) => (
         <div key={index}>
           <label>
-            Day Name:
+            Day Name
             <input
               type="text"
               name="day_name"
@@ -80,7 +80,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
           {day.exercises.map((exercise, exerciseIndex) => (
             <div key={exerciseIndex}>
               <label>
-                Exercise Name:
+                Exercise Name
                 <input
                   type="text"
                   name="name"
@@ -89,7 +89,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
                 />
               </label>
               <label>
-                Sets:
+                Sets
                 <input
                   type="number"
                   name="sets"
@@ -97,7 +97,21 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
                   onChange={(e) => handleInputChange(e, index, exerciseIndex)}
                 />
               </label>
-              {/* Include inputs for reps and weight as needed */}
+              <div className="exercise-option">
+                <label>
+                  <input
+                    type="checkbox"
+                    name="is_calisthenics"
+                    checked={exercise.is_calisthenics}
+                    onChange={(e) => {
+                      const updatedProgram = { ...program };
+                      updatedProgram.workout_days[index].exercises[exerciseIndex].is_calisthenics = e.target.checked;
+                      setProgram(updatedProgram);
+                    }}
+                  />
+                  Calisthenics
+                </label>
+              </div>
             </div>
           ))}
           <button type="button" onClick={() => addExercise(index)}>Add Exercise</button>

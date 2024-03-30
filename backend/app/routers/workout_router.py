@@ -47,22 +47,41 @@ def read_workout_program(program_id: int, db: Session = Depends(get_db)):
         )
 
 # Get all of a user's workout programs
-@router.get("/users/{user_id}/workout-programs", response_model=List[workout_schema.WorkoutProgram])
+@router.get("/users/{user_id}/workout-programs", response_model=List[workout_schema.WorkoutProgramWithExercises])
 def read_user_workout_programs(user_id: int, db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     programs = workout_crud.get_user_workout_programs(db, user_id=user_id)
-    return [
-        workout_schema.WorkoutProgram(
+    
+    program_data = []
+    for program in programs:
+        days = []
+        for day in program.workout_days:
+            exercises = []
+            for exercise in day.exercises:
+                exercises.append({
+                    "program_exercise_id": exercise.program_exercise_id,
+                    "exercise_id": exercise.exercise_id,
+                    "name": exercise.exercise.name,
+                    "sets": exercise.sets,
+                    "recommended_reps": exercise.recommended_reps,
+                    "recommended_weight": exercise.recommended_weight
+                })
+            days.append({
+                "day_id": day.day_id,
+                "program_id": day.program_id,
+                "day_name": day.day_name,
+                "exercises": exercises
+            })
+        program_data.append(workout_schema.WorkoutProgramWithExercises(
             program_id=program.program_id,
             user_id=program.user_id,
             name=program.name,
-            days=[
-                workout_schema.WorkoutDay(**day.__dict__) for day in program.workout_days
-            ]
-        ) for program in programs
-    ]
+            days=days
+        ))
+    
+    return program_data
 
 # Get a list of exercises for a specific day in a program
 @router.get("/workout-programs/{program_id}/exercises", response_model=List[workout_schema.WorkoutProgramExerciseResponse])

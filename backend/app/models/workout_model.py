@@ -61,7 +61,7 @@ class WorkoutSessionExercise(Base):
     __tablename__ = 'workout_session_exercises'
     session_exercise_id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey('workout_sessions.session_id'))
-    program_exercise_id = Column(Integer, ForeignKey('workout_program_exercises.program_exercise_id'))
+    program_exercise_id = Column(Integer, ForeignKey('workout_program_exercises.program_exercise_id', ondelete='CASCADE'))
     set_number = Column(Integer, nullable=False)
     performed_reps = Column(Integer)
     performed_weight = Column(Integer)

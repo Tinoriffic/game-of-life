@@ -7,6 +7,21 @@ form {
     color: #F8F8F2;
   }
 
+  .exercise-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .exercise-option label {
+    display: flex;
+    align-items: center;
+  }
+  
+  .exercise-option input[type="checkbox"] {
+    margin-right: 10px;
+  }
+
   .cancel-button {
     background-color: #f44336; /* Red color for cancellation action */
   }

@@ -35,6 +35,42 @@
   .workout-exercise {
     margin-bottom: 10px;
   }
+
+  .workout-exercise label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+  }
+  
+  .workout-exercise input[type="text"],
+  .workout-exercise input[type="number"] {
+    width: 100%;
+    padding: 5px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .exercise-option {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .exercise-option label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0;
+    flex-direction: row;
+  }
+  
+  .exercise-option input[type="checkbox"] {
+    margin-right: 5px;
+  }
+  
+  .exercise-option span {
+    font-size: 14px;
+    margin-left: 5px;
+  }
   
   .edit-workout-program-form button {
     padding: 10px;

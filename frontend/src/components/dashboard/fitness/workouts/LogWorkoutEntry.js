@@ -46,25 +46,29 @@ const LogWorkoutEntry = ({ program, onClose }) => {
   };
 
   const handleExerciseChange = (programExerciseId, setIndex, field, value) => {
-    const updatedExercises = [...loggedExercises];
-    const exerciseIndex = updatedExercises.findIndex((exercise) => exercise.program_exercise_id === programExerciseId);
+    setLoggedExercises((prevExercises) => {
+      const updatedExercises = [...prevExercises];
+      const exerciseIndex = updatedExercises.findIndex(
+        (exercise) => exercise.program_exercise_id === programExerciseId
+      );
   
-    if (exerciseIndex !== -1) {
-      updatedExercises[exerciseIndex].sets[setIndex] = {
-        ...updatedExercises[exerciseIndex].sets[setIndex],
-        [field]: value,
-      };
-    } else {
-      const newExercise = {
-        program_exercise_id: programExerciseId,
-        sets: Array(setIndex + 1)
-          .fill()
-          .map((_, index) => (index === setIndex ? { [field]: value } : {})),
-      };
-      updatedExercises.push(newExercise);
-    }
+      if (exerciseIndex !== -1) {
+        updatedExercises[exerciseIndex].sets[setIndex] = {
+          ...updatedExercises[exerciseIndex].sets[setIndex],
+          [field]: value,
+        };
+      } else {
+        const newExercise = {
+          program_exercise_id: programExerciseId,
+          sets: Array(setIndex + 1)
+            .fill()
+            .map((_, index) => (index === setIndex ? { [field]: value } : {})),
+        };
+        updatedExercises.push(newExercise);
+      }
   
-    setLoggedExercises(updatedExercises);
+      return updatedExercises;
+    });
   };
 
   const handleSubmit = async () => {
@@ -76,7 +80,7 @@ const LogWorkoutEntry = ({ program, onClose }) => {
       });
       onClose();
     } catch (error) {
-      console.error('Failed to log workout entry', error);
+      console.error('Failed to log workout entry', error.response);
     }
   };
 

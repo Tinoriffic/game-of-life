@@ -23,6 +23,8 @@ const WorkoutPrograms = () => {
     try {
       const response = await axiosInstance.get(`/users/${user.id}/workout-programs`);
       setPrograms(response.data);
+      console.log("Fetched Programs: ")
+      console.log(response.data);
     } catch (error) {
       console.error('Failed to fetch workout programs', error);
     }
@@ -31,6 +33,8 @@ const WorkoutPrograms = () => {
   const saveWorkoutProgram = async (programData) => {
     try {
       if (selectedProgram) {
+        console.log("Edited Program: ")
+        console.log(programData);
         await axiosInstance.put(`/workout-programs/${selectedProgram.program_id}`, programData);
       } else {
         await axiosInstance.post(`/users/${user.id}/workout-programs`, programData);
