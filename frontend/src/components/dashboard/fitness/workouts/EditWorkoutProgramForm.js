@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './EditWorkoutProgramForm.css';
 
-const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
+const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClose }) => {
   const [editedProgram, setEditedProgram] = useState({
     name: '',
     workout_days: [],
@@ -73,8 +73,12 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
     onSave(editedProgram);
   };
 
-  const handleDelete = () => {
-    onDelete(program.program_id);
+  const handleArchiveToggle = () => {
+    if (program.status == 'archived') {
+      onUnarchive(program.program_id);
+    } else {
+      onArchive(program.program_id);
+    }
   };
 
   return (
@@ -153,7 +157,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
                   <span>Calisthenics</span>
                 </label>
               </div>
-              <button type="button" onClick={() => deleteExercise(dayIndex, exerciseIndex)}>
+              <button type="button" onClick={() => deleteExercise(dayIndex, exerciseIndex)} className='delete-button'>
                 Delete Exercise
               </button>
             </div>
@@ -161,7 +165,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
           <button type="button" onClick={() => addExercise(dayIndex)}>
             Add Exercise
           </button>
-          <button type="button" onClick={() => deleteDay(dayIndex)}>
+          <button type="button" onClick={() => deleteDay(dayIndex)} className='delete-button'>
             Delete Day
           </button>
         </div>
@@ -173,8 +177,8 @@ const EditWorkoutProgramForm = ({ program, onSave, onDelete, onClose }) => {
         <button type="submit" className="save-button">
           Save Changes
         </button>
-        <button type="button" onClick={handleDelete} className="delete-button">
-          Delete Program
+        <button type="button" onClick={handleArchiveToggle} className={program.status === 'archived' ? 'unarchive-button' : 'archive-button'}>
+          {program.status === 'archived' ? 'Unarchive Program' : 'Archive Program'}
         </button>
         <button type="button" onClick={onClose} className="cancel-button">
           Cancel

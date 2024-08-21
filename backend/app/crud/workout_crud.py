@@ -14,15 +14,27 @@ def get_workout_program(db: Session, program_id: int):
     """
     return db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
     
-def get_user_workout_programs(db: Session, user_id: int):
+def get_user_workout_programs(db: Session, user_id: int, include_archived: bool = False) -> Tuple[List[workout_model.WorkoutProgram], bool]:
     """
     Retrieve all of a user's workout programs
     """
-    return db.query(workout_model.WorkoutProgram).options(
+    query = db.query(workout_model.WorkoutProgram).options(
         joinedload(workout_model.WorkoutProgram.workout_days).joinedload(
             workout_model.WorkoutDay.exercises).joinedload(
                 workout_model.WorkoutProgramExercise.exercise)
-    ).filter(workout_model.WorkoutProgram.user_id == user_id).all()
+    ).filter(workout_model.WorkoutProgram.user_id == user_id)
+
+    if not include_archived:
+        query = query.filter(workout_model.WorkoutProgram.status == 'active')
+    
+    programs = query.all()
+    
+    has_archived = db.query(workout_model.WorkoutProgram).filter(
+        workout_model.WorkoutProgram.user_id == user_id,
+        workout_model.WorkoutProgram.status == 'archived'
+    ).first() is not None
+
+    return programs, has_archived
 
 def get_workout_day_by_name(db: Session, program_id: int, day_name: str):
     """
@@ -45,13 +57,13 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
     Create a new workout program.
     """
     # Check if the program name already exists for the user
-    existing_program = db.query(workout_model.WorkoutProgram).filter(
-        workout_model.WorkoutProgram.user_id == user_id, 
-        workout_model.WorkoutProgram.name == program.name
-    ).first()
+    # existing_program = db.query(workout_model.WorkoutProgram).filter(
+    #     workout_model.WorkoutProgram.user_id == user_id, 
+    #     workout_model.WorkoutProgram.name == program.name
+    # ).first()
 
-    if existing_program:
-        raise ValueError("A program with this name already exists.")
+    # if existing_program:
+    #     raise ValueError("A program with this name already exists.")
     
     new_program = workout_model.WorkoutProgram(
         user_id=user_id,
@@ -210,6 +222,32 @@ def delete_workout_program(db: Session, program_id: int):
     # Finally, delete the workout program
     db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).delete(synchronize_session='fetch')
     db.commit()
+
+def archive_workout_program(db: Session, program_id: int):
+    """
+    Archives a workout program based on the program ID. Preferred method for saving user's workout data
+    """
+    program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
+    if program:
+        program.status = 'archived'
+        program.archived_at = datetime.now()
+        db.commit()
+        return {"detail": "Workout program archived successfully"}
+    else:
+        raise ValueError("Workout program not found")
+    
+def unarchive_workout_program(db: Session, program_id: int):
+    """
+    Unarchives a workout program based on the program ID.
+    """
+    program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
+    if program:
+        program.status = 'active'
+        program.archived_at = None
+        db.commit()
+        return {"detail": "Workout program unarchived successfully"}
+    else:
+        raise ValueError("Workout program not found")
 
 def update_workout_program(db: Session, program_id: int, program: workout_schema.WorkoutProgramCreate):
     db_program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()

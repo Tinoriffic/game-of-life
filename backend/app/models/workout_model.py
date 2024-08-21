@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum
 from sqlalchemy.orm import relationship
 from datetime import datetime
 
@@ -9,6 +9,8 @@ class WorkoutProgram(Base):
     program_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     name = Column(String, nullable=False)  # Name of the program i.e., 'PPL, 7-Day Split'
+    status = Column(Enum('active', 'archived', name='program_status'), default='active')
+    archived_at = Column(DateTime, nullable=True)
     
     user = relationship("User", back_populates='workout_programs')
     workout_days = relationship('WorkoutDay', back_populates='workout_program')

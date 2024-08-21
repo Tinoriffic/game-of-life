@@ -1,5 +1,7 @@
 Generic single-database configuration.
 
+**Ensure you are in the virtual environment before running commands.**
+
 #### Generate a migration script
 `alembic revision --autogenerate -m "Add <field> to <table>"`
 

@@ -9,6 +9,7 @@ from typing import Sequence, Union
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 
 # revision identifiers, used by Alembic.
@@ -19,6 +20,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade():
+    connection = op.get_bind()
+    result = connection.execute(text("SELECT to_regclass('public.user_workout_program_details');"))
+    view_exists = result.scalar() is not None
+
+    if view_exists:
+        # If the view exists, drop it first
+        op.execute("DROP VIEW user_workout_program_details;")
+
     op.execute("""
         CREATE VIEW user_workout_program_details AS
         SELECT 
@@ -41,5 +50,5 @@ def upgrade():
     """)
 
 
-def downgrade() -> None:
-    pass
+def downgrade():
+    op.execute("DROP VIEW IF EXISTS user_workout_program_details;")

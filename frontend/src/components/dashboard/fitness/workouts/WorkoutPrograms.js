@@ -10,23 +10,28 @@ import './WorkoutPrograms.css';
 
 const WorkoutPrograms = () => {
   const [programs, setPrograms] = useState([]);
+  const [hasArchived, setHasArchived] = useState(false);
+  const [archivedPrograms, setArchivedPrograms] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState(null);
   const [selectedProgram, setSelectedProgram] = useState(null);
+  const [error, setError] = useState(null);
+  const [showArchived, setShowArchived] = useState(false);
   const { user } = useUser();
 
   useEffect(() => {
     fetchWorkoutPrograms();
-  }, []);
+  }, [showArchived]);
 
   const fetchWorkoutPrograms = async () => {
     try {
-      const response = await axiosInstance.get(`/users/${user.id}/workout-programs`);
-      setPrograms(response.data);
-      console.log("Fetched Programs: ")
-      console.log(response.data);
+      const response = await axiosInstance.get(`/users/${user.id}/workout-programs?include_archived=${showArchived}`);
+      setPrograms(response.data.programs);
+      setHasArchived(response.data.has_archived);
+      setError(null);
     } catch (error) {
       console.error('Failed to fetch workout programs', error);
+      setError('Failed to fetch workout programs. Please try again.');
     }
   };
 
@@ -41,9 +46,11 @@ const WorkoutPrograms = () => {
       }
       fetchWorkoutPrograms();
       setIsModalOpen(false);
+      setError(null);
       console.log("Successfully saved workout program");
     } catch (error) {
       console.error('Failed to save workout program', error);
+      setError("Failed to save workout program. Please try again.");
     }
   };
 
@@ -66,28 +73,64 @@ const WorkoutPrograms = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteProgram = async (programId) => {
+  // const handleDeleteProgram = async (programId) => {
+  //   try {
+  //     await axiosInstance.delete(`/workout-programs/${programId}`);
+  //     fetchWorkoutPrograms();
+  //     setIsModalOpen(false);
+  //     setError(null);
+  //     console.log("Successfully deleted workout program");
+  //   } catch (error) {
+  //     console.error('Failed to delete workout program', error);
+  //     if (error.response && error.response.status === 404) {
+  //       setError('Workout program not found or already deleted.');
+  //     } else {
+  //       setError('Failed to delete workout program. Please try again.');
+  //     }
+  //     setIsModalOpen(false);
+  //   }
+  // };
+
+  const handleArchiveProgram = async (programId) => {
     try {
-      await axiosInstance.delete(`/workout-programs/${programId}`);
+      await axiosInstance.put(`/workout-programs/${programId}/archive`);
       fetchWorkoutPrograms();
       setIsModalOpen(false);
-      console.log("Successfully deleted workout program");
+      setError(null);
     } catch (error) {
-      console.error('Failed to delete workout program', error);
+      console.error('Failed to archive workout program', error);
+      setError('Failed to archive workout program. Please try again.');
+    }
+  };
+
+  const handleUnarchiveProgram = async (programId) => {
+    try {
+      await axiosInstance.put(`/workout-programs/${programId}/unarchive`);
+      fetchWorkoutPrograms();
+      setError(null);
+    } catch (error) {
+      console.error('Failed to unarchive workout program', error);
+      setError('Failed to unarchive workout program. Please try again.');
     }
   };
 
   return (
     <div className="workout-programs-container">
       <h1>Fitness Activities</h1>
+      {error && <div className="error-message">{error}</div>}
+      {hasArchived && (
+        <button onClick={() => setShowArchived(!showArchived)} className="toggle-archived-button">
+          {showArchived ? 'Hide Archived Programs' : 'Show Archived Programs'}
+        </button>
+      )}
       <button onClick={handleCreateProgram} className="create-program-button">
         Create New Program
       </button>
-      {programs.length ? (
+      {programs.length > 0 ? (
         programs.map((program) => (
           <div 
             key={program.program_id} 
-            className="program-card" 
+            className={`program-card ${program.status === 'archived' ? 'archived' : ''}`}
             onClick={() => handleProgramClick(program)}
           >
             <button
@@ -97,10 +140,11 @@ const WorkoutPrograms = () => {
               <img src={settingsIcon} alt="settings" className="settings-icon" />
             </button>
             <h3>{program.name}</h3>
+            {program.status === 'archived' && <p className="archived-label">Archived</p>}
           </div>
         ))
       ) : (
-        <p>No workout programs found. Create your first one!</p>
+        <p className="no-programs-message">You don't have any workout programs yet. Click 'Create New Program' to get started!</p>
       )}
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
@@ -114,7 +158,8 @@ const WorkoutPrograms = () => {
             <EditWorkoutProgramForm
               program={selectedProgram}
               onSave={saveWorkoutProgram}
-              onDelete={handleDeleteProgram}
+              onArchive={handleArchiveProgram}
+              onUnarchive={handleUnarchiveProgram}
               onClose={() => setIsModalOpen(false)}
             />
           )}

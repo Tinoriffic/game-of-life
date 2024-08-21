@@ -51,7 +51,13 @@ class WorkoutProgramWithExercises(BaseModel):
     program_id: int
     user_id: int
     name: str
+    status: Optional[str] = 'active'
+    archived_at: Optional[datetime] = None
     days: List[Dict[str, Any]]
+
+class WorkoutProgramsResponse(BaseModel):
+    programs: List[WorkoutProgramWithExercises]
+    has_archived: bool
 
 class WorkoutProgramCreate(BaseModel):
     name: str

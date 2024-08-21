@@ -1,3 +1,4 @@
+import logging
 from fastapi import FastAPI
 from dotenv import load_dotenv
 load_dotenv()
@@ -9,6 +10,12 @@ from . import models
 from .database import engine
 
 models.Base.metadata.create_all(bind=engine)
+
+# Configure logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+)
 
 app = FastAPI()
 
@@ -38,4 +45,4 @@ def read_item(item_id: int, query_param: str = None):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
+    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True, log_level="debug")

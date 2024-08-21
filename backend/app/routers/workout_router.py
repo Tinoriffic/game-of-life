@@ -1,12 +1,14 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.orm import Session
 from ..schemas import workout_schema
 from ..models import workout_model
 from ..crud import workout_crud, user_crud
 from ..dependencies import get_db
 from typing import List, Dict
+import logging
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Workout Endpoints
 
@@ -47,12 +49,14 @@ def read_workout_program(program_id: int, db: Session = Depends(get_db)):
         )
 
 # Get all of a user's workout programs
-@router.get("/users/{user_id}/workout-programs", response_model=List[workout_schema.WorkoutProgramWithExercises])
-def read_user_workout_programs(user_id: int, db: Session = Depends(get_db)):
+@router.get("/users/{user_id}/workout-programs", response_model=workout_schema.WorkoutProgramsResponse)
+def read_user_workout_programs(user_id: int, include_archived: bool = Query(False, description="Include archived programs"), db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
-    programs = workout_crud.get_user_workout_programs(db, user_id=user_id)
+    programs, has_archived = workout_crud.get_user_workout_programs(db, user_id, include_archived)
+
+    logger.debug(f"Retrieved {len(programs)} programs. Has archived: {has_archived}")
     
     program_data = []
     for program in programs:
@@ -78,10 +82,17 @@ def read_user_workout_programs(user_id: int, db: Session = Depends(get_db)):
             program_id=program.program_id,
             user_id=program.user_id,
             name=program.name,
+            status=program.status,
+            archived_at=program.archived_at,
             days=days
         ))
+
+    logger.debug(f"Constructed {len(program_data)} program data objects")
+
+    response = workout_schema.WorkoutProgramsResponse(programs=program_data, has_archived=has_archived)
+    logger.debug(f"Constructed response: {response}")
     
-    return program_data
+    return response
 
 # Get a list of exercises for a specific day in a program
 @router.get("/workout-programs/{program_id}/exercises", response_model=List[workout_schema.WorkoutProgramExerciseResponse])
@@ -138,6 +149,16 @@ def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Workout progrm not found or unable to delete: {e}")
     return {"detail": "Workout program deleted successfully"}
+
+# Archive a workout program
+@router.put("/workout-programs/{program_id}/archive", status_code=status.HTTP_200_OK)
+def archive_workout_program(program_id: int, db: Session = Depends(get_db)):
+    return workout_crud.archive_workout_program(db, program_id)
+
+# Unarchive a workout program
+@router.put("/workout-programs/{program_id}/unarchive", status_code=status.HTTP_200_OK)
+def unarchive_workout_program(program_id: int, db: Session = Depends(get_db)):
+    return workout_crud.unarchive_workout_program(db, program_id)
 
 # Reset workout DB tables
 @router.delete("/delete-all-workout-data")
