@@ -1,16 +1,22 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum, Float, Text
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 
 from ..database import Base
+
+# Helper method for returning the current time in UTC
+def utc_now():
+    return datetime.now(timezone.utc)
 
 class WorkoutProgram(Base):
     __tablename__ = "workout_programs"
     program_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    name = Column(String, nullable=False)  # Name of the program i.e., 'PPL, 7-Day Split'
+    name = Column(String, nullable=False)
     status = Column(Enum('active', 'archived', name='program_status'), default='active')
+    created_at = Column(DateTime, default=utc_now)
     archived_at = Column(DateTime, nullable=True)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
     
     user = relationship("User", back_populates='workout_programs')
     workout_days = relationship('WorkoutDay', back_populates='workout_program')
@@ -23,50 +29,117 @@ class WorkoutDay(Base):
     day_name = Column(String, nullable=False)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_days')
-    exercises = relationship('WorkoutProgramExercise', back_populates='workout_day')
+    exercises = relationship('ProgramExercise', back_populates='workout_day')
 
-class Exercise(Base):
-    __tablename__ = "exercises"
-    exercise_id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, nullable=False)
-
-    program_exercises = relationship('WorkoutProgramExercise', back_populates='exercise')
-
-# Specific exercises within each work out day for a program
-class WorkoutProgramExercise(Base):
-    __tablename__ = "workout_program_exercises"
+class ProgramExercise(Base):
+    __tablename__ = "program_exercises"
     program_exercise_id = Column(Integer, primary_key=True, index=True)
     day_id = Column(Integer, ForeignKey('workout_days.day_id'))
     exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
     sets = Column(Integer, nullable=False)
     recommended_reps = Column(Integer, default=3)
-    recommended_weight = Column(Integer, default=3)
+    recommended_weight = Column(Float, default=0)
 
     workout_day = relationship('WorkoutDay', back_populates='exercises')
-    exercise = relationship('Exercise', back_populates='program_exercises')
-    session_exercises = relationship('WorkoutSessionExercise', back_populates='program_exercise')
+    exercise = relationship('Exercise')
 
-
-# Instances of when a user performs a workout
 class WorkoutSession(Base):
     __tablename__ = "workout_sessions"
     session_id = Column(Integer, primary_key=True, index=True)
     program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
-    session_date = Column(DateTime, default=datetime.now)
+    session_date = Column(DateTime, default=utc_now)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
-    exercises = relationship('WorkoutSessionExercise', back_populates='session')
+    exercises = relationship('SessionExercise', back_populates='session')
 
-# Specific exercises performed during a workout session
-class WorkoutSessionExercise(Base):
-    __tablename__ = 'workout_session_exercises'
+class SessionExercise(Base):
+    __tablename__ = 'session_exercises'
     session_exercise_id = Column(Integer, primary_key=True, index=True)
     session_id = Column(Integer, ForeignKey('workout_sessions.session_id'))
-    program_exercise_id = Column(Integer, ForeignKey('workout_program_exercises.program_exercise_id', ondelete='CASCADE'))
-    set_number = Column(Integer, nullable=False)
-    performed_reps = Column(Integer)
-    performed_weight = Column(Integer)
+    exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
+    total_volume = Column(Float)
 
-    session = relationship('WorkoutSession', back_populates='exercises')
-    program_exercise = relationship('WorkoutProgramExercise', back_populates='session_exercises')
+    session = relationship("WorkoutSession", back_populates="exercises")
+    exercise = relationship("Exercise")
+    sets = relationship("WorkoutSet", back_populates="session_exercise")
+
+class WorkoutSet(Base):
+    __tablename__ = 'workout_sets'
+    set_id = Column(Integer, primary_key=True, index=True)
+    session_exercise_id = Column(Integer, ForeignKey('session_exercises.session_exercise_id'))
+    set_number = Column(Integer)
+    performed_weight = Column(Float)
+    performed_reps = Column(Integer)
+
+    session_exercise = relationship("SessionExercise", back_populates="sets")
+
+# Models below will be used for a global library of exercises in which users can choose from and add to
+class ExerciseCategory(Base):
+    __tablename__ = 'exercise_categories'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    exercises = relationship('Exercise', back_populates='category')
+
+
+class ExerciseMuscleGroup(Base):
+    __tablename__ = 'exercise_muscle_groups'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    exercises = relationship('Exercise', back_populates='muscle_group')
+
+
+class ExerciseEquipment(Base):
+    __tablename__ = 'exercise_equipment'
+    id = Column(Integer, primary_key=True)
+    name = Column(String, unique=True, nullable=False)
+
+    exercises = relationship('Exercise', back_populates='equipment')
+
+
+class ExerciseDifficultyLevel(Base):
+    __tablename__ = 'exercise_difficulty_levels'
+    id = Column(Integer, primary_key=True)
+    level = Column(String, unique=True, nullable=False)
+
+    exercises = relationship('Exercise', back_populates='difficulty_level')
+
+
+class ExerciseType(Base):
+    __tablename__ = 'exercise_types'
+    id = Column(Integer, primary_key=True)
+    type = Column(String, unique=True, nullable=False)
+
+    exercises = relationship('Exercise', back_populates='exercise_type')
+
+class Exercise(Base):
+    __tablename__ = "exercises"
+    exercise_id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, nullable=False, unique=True, index=True)
+    description = Column(Text, nullable=True)
+    instructions = Column(Text, nullable=True)
+    media_url = Column(String, nullable=True)
+    primary_muscles = Column(String, nullable=True)
+    secondary_muscles = Column(String, nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
+
+    # Foreign keys to new tables with updated names
+    category_id = Column(Integer, ForeignKey('exercise_categories.id'), nullable=False)
+    muscle_group_id = Column(Integer, ForeignKey('exercise_muscle_groups.id'), nullable=False)
+    equipment_id = Column(Integer, ForeignKey('exercise_equipment.id'), nullable=False)
+    difficulty_level_id = Column(Integer, ForeignKey('exercise_difficulty_levels.id'), nullable=False)
+    exercise_type_id = Column(Integer, ForeignKey('exercise_types.id'), nullable=False)
+
+    # Relationships to new tables with updated names
+    category = relationship('ExerciseCategory', back_populates='exercises')
+    muscle_group = relationship('ExerciseMuscleGroup', back_populates='exercises')
+    equipment = relationship('ExerciseEquipment', back_populates='exercises')
+    difficulty_level = relationship('ExerciseDifficultyLevel', back_populates='exercises')
+    exercise_type = relationship('ExerciseType', back_populates='exercises')
+
+    # Relationships to other models
+    program_exercises = relationship('ProgramExercise', back_populates='exercise')
+    session_exercises = relationship('SessionExercise', back_populates='exercise')
