@@ -2,89 +2,146 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List, Dict, Any
 
-class Exercise(BaseModel):
-    exercise_id: int
-    name: str
-
+# Create schemas
 class ExerciseCreate(BaseModel):
     name: str
-    sets: Optional[int] = None
+    description: Optional[str] = None
+    instructions: Optional[str] = None
+    primary_muscles: Optional[str] = None
+    secondary_muscles: Optional[str] = None
+    category_id: int
+    muscle_group_id: int
+    equipment_id: int
+    difficulty_level_id: int
+    exercise_type_id: int
+    is_global: bool = False
+
+class ProgramExerciseCreate(BaseModel):
+    exercise_id: int
+    sets: int
     recommended_reps: Optional[int] = None
-    recommended_weight: Optional[int] = None
-    is_calisthenics: bool = False
+    recommended_weight: Optional[float] = None
 
 class WorkoutDay(BaseModel):
     day_id: int
     program_id: int
     day_name: str
 
-    class ConfigDict:
-        from_attributes = True
-
 class WorkoutDayCreate(BaseModel):
     day_name: str
-    exercises: List[ExerciseCreate]
-
-class WorkoutProgramExercise(BaseModel):
-    program_exercise_id: int
-    day_id: int
-    exercise_id: int
-    sets: Optional[int] = None
-    recommended_reps: Optional[int] = None
-    recommended_weight: Optional[int] = None
-    is_calisthenics: bool = False
-
-class WorkoutProgramExerciseResponse(BaseModel):
-    program_exercise_id: int
-    exercise_name: str
-
-class WorkoutProgram(BaseModel):
-    program_id: int
-    user_id: int
-    name: str
-    days: List[WorkoutDay]
-
-    class ConfigDict:
-        from_attributes = True
-
-class WorkoutProgramWithExercises(BaseModel):
-    program_id: int
-    user_id: int
-    name: str
-    status: Optional[str] = 'active'
-    archived_at: Optional[datetime] = None
-    days: List[Dict[str, Any]]
-
-class WorkoutProgramsResponse(BaseModel):
-    programs: List[WorkoutProgramWithExercises]
-    has_archived: bool
+    exercises: List[ProgramExerciseCreate]
 
 class WorkoutProgramCreate(BaseModel):
     name: str
     workout_days: List[WorkoutDayCreate]
 
-class WorkoutSet(BaseModel):
-    set_number: Optional[int] = None
-    performed_reps: int
-    performed_weight: Optional[int] = None
+class WorkoutSetCreate(BaseModel):
+    set_number: int
+    weight: Optional[float] = None
+    reps: int
 
-class WorkoutSessionExercise(BaseModel):
+# Read schemas
+class Exercise(BaseModel):
+    exercise_id: int
+    name: str
+    description: Optional[str]
+    instructions: Optional[str]
+    primary_muscles: Optional[str]
+    secondary_muscles: Optional[str]
+    category_id: int
+    muscle_group_id: int
+    equipment_id: int
+    difficulty_level_id: int
+    exercise_type_id: int
+    is_global: bool
+    user_id: Optional[int]
+    created_at: datetime
+    updated_at: datetime
+
+    class Config:
+        orm_mode = True
+
+class ProgramExercise(BaseModel):
     program_exercise_id: int
-    performed_reps: int
-    performed_weight: int
+    exercise_id: int
+    sets: int
+    recommended_reps: Optional[int]
+    recommended_weight: Optional[float]
+
+    class Config:
+        orm_mode = True
+
+class WorkoutDay(BaseModel):
+    day_id: int
+    program_id: int
+    day_name: str
+    exercises: List[ProgramExercise]
+
+    class Config:
+        orm_mode = True
+
+class WorkoutProgram(BaseModel):
+    program_id: int
+    user_id: int
+    name: str
+    status: str
+    created_at: datetime
+    updated_at: datetime
+    archived_at: Optional[datetime]
+    workout_days: List[WorkoutDay]
+
+    class Config:
+        orm_mode = True
+
+class WorkoutSet(WorkoutSetCreate):
+    set_id: int
+
+    class Config:
+        orm_mode = True
+
+class SessionExercise(BaseModel):
+    session_exercise_id: int
+    exercise_id: int
+    total_volume: float
+    sets: List[WorkoutSet]
+
+    class Config:
+        orm_mode = True
 
 class WorkoutSession(BaseModel):
     session_id: int
-    program_id: int
     user_id: int
-    session_date: datetime
-    exercises: List[WorkoutSessionExercise]
-
-class WorkoutSessionExerciseCreate(BaseModel):
-    program_exercise_id: int
-    sets: List[WorkoutSet]
-
-class WorkoutSessionCreate(BaseModel):
     program_id: int
-    date: datetime
-    exercises: List[WorkoutSessionExerciseCreate]
+    session_date: datetime
+    exercises: List[SessionExercise]
+
+    class Config:
+        orm_mode = True
+
+# Update schemas
+class ExerciseUpdate(BaseModel):
+    name: Optional[str]
+    description: Optional[str]
+    instructions: Optional[str]
+    primary_muscles: Optional[str]
+    secondary_muscles: Optional[str]
+    category_id: Optional[int]
+    muscle_group_id: Optional[int]
+    equipment_id: Optional[int]
+    difficulty_level_id: Optional[int]
+    exercise_type_id: Optional[int]
+
+class WorkoutProgramUpdate(BaseModel):
+    name: Optional[str]
+    status: Optional[str]
+    workout_days: Optional[List[WorkoutDayCreate]]
+
+# List schemas
+class ExerciseList(BaseModel):
+    exercises: List[Exercise]
+
+class WorkoutProgramList(BaseModel):
+    programs: List[WorkoutProgram]
+
+class WorkoutSessionList(BaseModel):
+    sessions: List[WorkoutSession]

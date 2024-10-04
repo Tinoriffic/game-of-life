@@ -1,4 +1,4 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum, Float, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum, Float, Text, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 
@@ -132,6 +132,9 @@ class Exercise(Base):
     equipment_id = Column(Integer, ForeignKey('exercise_equipment.id'), nullable=False)
     difficulty_level_id = Column(Integer, ForeignKey('exercise_difficulty_levels.id'), nullable=False)
     exercise_type_id = Column(Integer, ForeignKey('exercise_types.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    is_global = Column(Boolean, default=True)
+
 
     # Relationships to new tables with updated names
     category = relationship('ExerciseCategory', back_populates='exercises')
@@ -143,3 +146,4 @@ class Exercise(Base):
     # Relationships to other models
     program_exercises = relationship('ProgramExercise', back_populates='exercise')
     session_exercises = relationship('SessionExercise', back_populates='exercise')
+    user = relationship('User', back_populates='created_exercises')
