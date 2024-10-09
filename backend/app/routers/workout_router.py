@@ -4,8 +4,9 @@ from ..schemas import workout_schema
 from ..models import workout_model
 from ..crud import workout_crud, user_crud
 from ..dependencies import get_db
-from typing import List, Dict
+from typing import List, Dict, Tuple
 import logging
+from datetime import datetime
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -32,10 +33,37 @@ def create_workout_program(user_id: int, program: workout_schema.WorkoutProgramC
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
+@router.post("/exercises", response_model=workout_schema.Exercise)
+def create_exercise(user_id: int, exercise: workout_schema.ExerciseCreate, db: Session=Depends(get_db)):
+    return workout_crud.create_user_exercise(db, user_id, exercise)
+
+@router.put("/exercises/{exercise_id}", response_model=workout_schema.Exercise)
+def update_exercise(user_id: int, exercise_id: int,exercise_update: workout_schema.ExerciseUpdate, db: Session = Depends(get_db)):
+    updated_exercise = workout_crud.edit_exercise(db, exercise_id, user_id, exercise_update)
+    if not updated_exercise:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found!")
+    return updated_exercise
+
+@router.get("/exercises", response_model=List[workout_schema.Exercise])
+def get_exercises(user_id: int, db: Session=Depends(get_db)):
+    return workout_crud.get_exercises(db, user_id)
+
+@router.delete("/exercises/{exercise_id}", status_code=status.HTTP_204_NO_CONTENT)
+def delete_exercise(user_id: int,exercise_id: int,db: Session = Depends(get_db)):
+    try:
+        result = workout_crud.delete_exercise(db, exercise_id, user_id)
+        if not result:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found or you don't have permission to delete it!")
+        return {"detail": "Exercise deleted successfully"}
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+    
 # Get a workout program by ID
 @router.get("/workout-programs/{program_id}", response_model=workout_schema.WorkoutProgram)
 def read_workout_program(program_id: int, db: Session = Depends(get_db)):
-    program = workout_crud.get_workout_program(db, program_id=program_id)
+    program = workout_crud.get_workout_program_by_id(db, program_id=program_id)
     if not program:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
     
@@ -49,63 +77,29 @@ def read_workout_program(program_id: int, db: Session = Depends(get_db)):
         )
 
 # Get all of a user's workout programs
-@router.get("/users/{user_id}/workout-programs", response_model=workout_schema.WorkoutProgramsResponse)
+@router.get("/users/{user_id}/workout-programs", response_model=Tuple[List[workout_schema.WorkoutProgram], bool])
 def read_user_workout_programs(user_id: int, include_archived: bool = Query(False, description="Include archived programs"), db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     programs, has_archived = workout_crud.get_user_workout_programs(db, user_id, include_archived)
-
     logger.debug(f"Retrieved {len(programs)} programs. Has archived: {has_archived}")
-    
-    program_data = []
-    for program in programs:
-        days = []
-        for day in program.workout_days:
-            exercises = []
-            for exercise in day.exercises:
-                exercises.append({
-                    "program_exercise_id": exercise.program_exercise_id,
-                    "exercise_id": exercise.exercise_id,
-                    "name": exercise.exercise.name,
-                    "sets": exercise.sets,
-                    "recommended_reps": exercise.recommended_reps,
-                    "recommended_weight": exercise.recommended_weight
-                })
-            days.append({
-                "day_id": day.day_id,
-                "program_id": day.program_id,
-                "day_name": day.day_name,
-                "exercises": exercises
-            })
-        program_data.append(workout_schema.WorkoutProgramWithExercises(
-            program_id=program.program_id,
-            user_id=program.user_id,
-            name=program.name,
-            status=program.status,
-            archived_at=program.archived_at,
-            days=days
-        ))
-
-    logger.debug(f"Constructed {len(program_data)} program data objects")
-
-    response = workout_schema.WorkoutProgramsResponse(programs=program_data, has_archived=has_archived)
-    logger.debug(f"Constructed response: {response}")
-    
-    return response
+    return programs, has_archived
 
 # Get a list of exercises for a specific day in a program
-@router.get("/workout-programs/{program_id}/exercises", response_model=List[workout_schema.WorkoutProgramExerciseResponse])
-def get_workout_program_exercises(program_id: int, day_name: str, db: Session = Depends(get_db)):
-    if not workout_crud.get_workout_program(db, program_id):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
-
-    # Check if the day exists in the program
-    if not workout_crud.get_workout_day_by_name(db, program_id, day_name):
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Specified workout day not found in the program")
-
+@router.get("/workout-programs/{program_id}/days/{day_name}/exercises", response_model=List[Dict])
+def get_exercises_for_specific_day(program_id: int, day_name: str, db: Session = Depends(get_db)):
     exercises = workout_crud.get_exercises_for_specific_day(db, program_id, day_name)
-    return [workout_schema.WorkoutProgramExerciseResponse(program_exercise_id=exercise[0].program_exercise_id, exercise_name=exercise[1]) for exercise in exercises]
+    if not exercises:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="No exercises found for this day in the program")
+    
+    return [
+        {
+            "program_exercise": workout_schema.ProgramExercise.model_validate(program_exercise),
+            "exercise_name": exercise.name
+        }
+        for program_exercise, exercise in exercises
+    ]
 
 # Get the full workout program details of a specific workout program
 @router.get("/workout-programs/{program_id}/program-details", response_model=List[Dict])
@@ -118,19 +112,24 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
 # Log a workout session entry
 @router.post("/users/{user_id}/workout-sessions", response_model=workout_schema.WorkoutSession)
 def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):
-    return workout_crud.log_workout_session(db, session_data, user_id)
-
-@router.get("/users/{user_id}/workout-sessions", response_model=List[workout_schema.WorkoutSessionExercise])
-def get_user_workout_sessions(user_id: int, db: Session = Depends(get_db)):
     try:
-        return workout_crud.get_workout_sessions(db, user_id)
+        return workout_crud.log_workout_session(db, session_data, user_id)
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
+
+@router.get("/users/{user_id}/workout-sessions", response_model=List[workout_schema.WorkoutSession])
+def get_user_workout_sessions(user_id: int, start_date: datetime = None, end_date: datetime = None, db: Session = Depends(get_db)):
+    try:
+        return workout_crud.get_workout_sessions(db, user_id, start_date, end_date)
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
 # Edit a workout program
 @router.put("/workout-programs/{program_id}", response_model=workout_schema.WorkoutProgram)
-def update_workout_program(program_id: int, program: workout_schema.WorkoutProgramCreate, db: Session = Depends(get_db)):
-    updated_program = workout_crud.update_workout_program(db, program_id, program)
+def update_workout_program(program_id: int, program_update: workout_schema.WorkoutProgramUpdate, db: Session = Depends(get_db)):
+    updated_program = workout_crud.update_workout_program(db, program_id, program_update)
     if not updated_program:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
 
@@ -147,7 +146,7 @@ def delete_workout_program(program_id: int, db: Session = Depends(get_db)):
     try:
         workout_crud.delete_workout_program(db, program_id)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Workout progrm not found or unable to delete: {e}")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Workout program not found or unable to delete: {e}")
     return {"detail": "Workout program deleted successfully"}
 
 # Archive a workout program
@@ -160,17 +159,37 @@ def archive_workout_program(program_id: int, db: Session = Depends(get_db)):
 def unarchive_workout_program(program_id: int, db: Session = Depends(get_db)):
     return workout_crud.unarchive_workout_program(db, program_id)
 
-# Reset workout DB tables
-@router.delete("/delete-all-workout-data")
+# Get a user's workout data & progression
+@router.get("/users/{user_id}/workout-progress", response_model=List[Dict])
+def get_user_workout_progress(user_id: int, start_date: datetime = None, end_date: datetime = None, db: Session = Depends(get_db)):
+    progress = workout_crud.get_user_workout_progress(db, user_id, start_date, end_date)
+    return progress
+
+# Get a user's running data & progression
+@router.get("/users/{user_id}/running-progress", response_model=Dict)
+def get_running_progress(user_id: int, db: Session = Depends(get_db)):
+    return workout_crud.get_running_progress(db, user_id)
+
+# Get a user's weight data & progresson
+@router.get("/users/{user_id}/weight-progress", response_model=Dict)
+def get_weight_progress(user_id: int, db: Session = Depends(get_db)):
+    return workout_crud.get_weight_progress(db, user_id)
+
+# TODO: Add admin authentication
+@router.delete("/delete-all-workout-data", status_code=status.HTTP_204_NO_CONTENT)
 def delete_all_workout_data(db: Session = Depends(get_db)):
     try:
-        # Deleting from child tables first
-        db.query(workout_model.WorkoutSessionExercise).delete()
-        db.query(workout_model.WorkoutProgramExercise).delete()
+        # Delete data from tables in reverse order of dependencies
+        db.query(workout_model.WorkoutSet).delete()
+        db.query(workout_model.SessionExercise).delete()
         db.query(workout_model.WorkoutSession).delete()
+        db.query(workout_model.ProgramExercise).delete()
         db.query(workout_model.WorkoutDay).delete()
         db.query(workout_model.WorkoutProgram).delete()
         
+        # Only delete user-created exercises
+        db.query(workout_model.Exercise).filter(workout_model.Exercise.is_global == False).delete()
+
         db.commit()
         return {"detail": "All workout data deleted successfully."}
     except Exception as e:

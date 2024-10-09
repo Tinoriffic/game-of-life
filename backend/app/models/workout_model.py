@@ -59,6 +59,7 @@ class SessionExercise(Base):
     session_id = Column(Integer, ForeignKey('workout_sessions.session_id'))
     exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
     total_volume = Column(Float)
+    total_intensity_score = Column(Float)
 
     session = relationship("WorkoutSession", back_populates="exercises")
     exercise = relationship("Exercise")

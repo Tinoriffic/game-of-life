@@ -1,42 +1,52 @@
 
 ### Getting a user's full workout program details
 ```
-CREATE VIEW user_workout_program_details AS
+CREATE OR REPLACE VIEW user_workout_program_details AS
 SELECT 
-    u.id AS user_id,
     wp.program_id,
+    wp.user_id,
     wp.name AS program_name,
     wd.day_id,
     wd.day_name,
+    pe.program_exercise_id,
     e.exercise_id,
     e.name AS exercise_name,
-    wpe.program_exercise_id,
-    wpe.sets,
-    wpe.recommended_reps,
-    wpe.recommended_weight
-FROM users u
-JOIN workout_programs wp ON u.id = wp.user_id
-JOIN workout_days wd ON wp.program_id = wd.program_id
-JOIN workout_program_exercises wpe ON wd.day_id = wpe.day_id
-JOIN exercises e ON wpe.exercise_id = e.exercise_id;
+    pe.sets,
+    pe.recommended_reps,
+    pe.recommended_weight
+FROM 
+    workout_programs wp
+JOIN 
+    workout_days wd ON wp.program_id = wd.program_id
+JOIN 
+    program_exercises pe ON wd.day_id = pe.day_id
+JOIN 
+    exercises e ON pe.exercise_id = e.exercise_id;
 ```
 
 ### Getting a user's workout progress
 ```
-CREATE VIEW workout_progress_view AS
+CREATE OR REPLACE VIEW workout_progress_view AS
 SELECT 
     ws.user_id,
-    wse.session_id, 
-    wse.program_exercise_id, 
-    wpe.exercise_id, 
-    e.name AS exercise_name,
-    wse.set_number, 
-    wse.performed_reps, 
-    wse.performed_weight, 
+    ws.session_id,
     ws.session_date,
-    (wse.performed_reps * wse.performed_weight) AS volume
-FROM workout_session_exercises wse
-JOIN workout_program_exercises wpe ON wse.program_exercise_id = wpe.program_exercise_id
-JOIN exercises e ON wpe.exercise_id = e.exercise_id
-JOIN workout_sessions ws ON wse.session_id = ws.session_id;
+    se.session_exercise_id,
+    e.exercise_id,
+    e.name AS exercise_name,
+    wset.set_id,
+    wset.set_number,
+    wset.performed_weight,
+    wset.performed_reps,
+    (wset.performed_weight * wset.performed_reps) AS set_volume,
+    se.total_volume,
+    se.total_intensity_score
+FROM 
+    workout_sessions ws
+JOIN 
+    session_exercises se ON ws.session_id = se.session_id
+JOIN 
+    exercises e ON se.exercise_id = e.exercise_id
+JOIN 
+    workout_sets wset ON se.session_exercise_id = wset.session_exercise_id;
 ```

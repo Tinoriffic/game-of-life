@@ -3,13 +3,12 @@ from sqlalchemy.orm import sessionmaker
 from .database import Base
 from .exercise_library import init_exercise_library
 from .models import workout_model
+from .config import Config
 
-# Use your actual database URL
-DATABASE_URL = "your_database_url_here"
+DATABASE_URL = Config.DATABASE_URL
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
 
 def wipe_workout_data(db):
     try:

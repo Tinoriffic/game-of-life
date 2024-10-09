@@ -853,6 +853,8 @@ def populate_exercises(db: Session):
         # Check if exercise already exists
         existing_exercise = db.query(workout_model.Exercise).filter_by(name=exercise['name']).first()
         if existing_exercise:
+            existing_exercise.is_global = True
+            existing_exercise.user_id = None
             continue  # Skip if exercise already exists
 
         # Create the exercise
@@ -867,7 +869,9 @@ def populate_exercises(db: Session):
             muscle_group_id=muscle_group.id,
             equipment_id=equipment.id,
             difficulty_level_id=difficulty.id,
-            exercise_type_id=ex_type.id
+            exercise_type_id=ex_type.id,
+            is_global=True,
+            user_id=None
         )
         db.add(db_exercise)
 
@@ -876,6 +880,7 @@ def populate_exercises(db: Session):
 def init_exercise_library(db: Session):
     try:
         populate_lookup_tables(db)
+        update_existing_exercises_to_global(db)
         populate_exercises(db)
         print("Exercise library initialized successfully.")
     except IntegrityError:
@@ -888,8 +893,17 @@ def init_exercise_library(db: Session):
 def update_exercise_library(db: Session):
     try:
         populate_lookup_tables(db)
+        update_existing_exercises_to_global(db)
         populate_exercises(db)
         print("Exercise library updated successfully.")
     except Exception as e:
         db.rollback()
         print(f"Error updating exercise library: {str(e)}")
+
+def update_existing_exercises_to_global(db: Session):
+    db.query(workout_model.Exercise).update({
+        workout_model.Exercise.is_global: True,
+        workout_model.Exercise.user_id: None
+    })
+    db.commit()
+    print("All existing exercises updated to global status.")

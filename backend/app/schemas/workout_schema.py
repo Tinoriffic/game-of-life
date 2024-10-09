@@ -40,6 +40,15 @@ class WorkoutSetCreate(BaseModel):
     weight: Optional[float] = None
     reps: int
 
+class SessionExerciseCreate(BaseModel):
+    exercise_id: int
+    sets: List[WorkoutSetCreate]
+
+class WorkoutSessionCreate(BaseModel):
+    program_id: int
+    session_date: datetime
+    exercises: List[SessionExerciseCreate]
+
 # Read schemas
 class Exercise(BaseModel):
     exercise_id: int
@@ -59,7 +68,7 @@ class Exercise(BaseModel):
     updated_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class ProgramExercise(BaseModel):
     program_exercise_id: int
@@ -69,7 +78,7 @@ class ProgramExercise(BaseModel):
     recommended_weight: Optional[float]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutDay(BaseModel):
     day_id: int
@@ -78,7 +87,7 @@ class WorkoutDay(BaseModel):
     exercises: List[ProgramExercise]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutProgram(BaseModel):
     program_id: int
@@ -91,22 +100,23 @@ class WorkoutProgram(BaseModel):
     workout_days: List[WorkoutDay]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutSet(WorkoutSetCreate):
     set_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class SessionExercise(BaseModel):
     session_exercise_id: int
     exercise_id: int
     total_volume: float
+    total_intensity_score: float
     sets: List[WorkoutSet]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class WorkoutSession(BaseModel):
     session_id: int
@@ -116,7 +126,7 @@ class WorkoutSession(BaseModel):
     exercises: List[SessionExercise]
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 # Update schemas
 class ExerciseUpdate(BaseModel):

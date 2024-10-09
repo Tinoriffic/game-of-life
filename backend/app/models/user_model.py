@@ -21,3 +21,4 @@ class User(Base):
     workout_programs = relationship("WorkoutProgram", back_populates="user")
     activity_streaks = relationship("ActivityStreak", back_populates="user")
     weight_entries = relationship("WeightTracking", back_populates="user")
+    created_exercises = relationship("Exercise", back_populates="user")

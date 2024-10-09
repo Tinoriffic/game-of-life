@@ -1,28 +1,36 @@
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func, text
 from ..schemas import workout_schema
-from ..models import workout_model, skill_model
+from ..models import workout_model, skill_model, activity_model
 from ..xp_calculator import calculate_workout_xp
 from ..skill_manager import update_skill_xp
 from ..crud.activity_crud import update_activity_streak
 from datetime import datetime, timedelta
 from typing import List, Dict, Tuple
 
-def get_workout_program(db: Session, program_id: int):
+def get_workout_program_by_id(db: Session, program_id: int):
     """
-    Retrieve a workout program
+    Retrieve a workout program by program ID
     """
     return db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
-    
+
+def get_workout_program_by_user_and_id(db: Session, program_id: int, user_id: int):
+    """
+    Retrieve a workout program by program and user ID
+    """
+    return db.query(workout_model.WorkoutProgram).filter(
+        workout_model.WorkoutProgram.program_id == program_id,
+        workout_model.WorkoutProgram.user_id == user_id
+    ).first()
+
 def get_user_workout_programs(db: Session, user_id: int, include_archived: bool = False) -> Tuple[List[workout_model.WorkoutProgram], bool]:
     """
     Retrieve all of a user's workout programs
     """
-    query = db.query(workout_model.WorkoutProgram).options(
-        joinedload(workout_model.WorkoutProgram.workout_days).joinedload(
-            workout_model.WorkoutDay.exercises).joinedload(
-                workout_model.WorkoutProgramExercise.exercise)
-    ).filter(workout_model.WorkoutProgram.user_id == user_id)
+    query = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.user_id == user_id).options(
+        joinedload(workout_model.WorkoutProgram.workout_days)
+        .joinedload(workout_model.WorkoutDay.exercises)
+    ).order_by(workout_model.WorkoutProgram.created_at.desc())
 
     if not include_archived:
         query = query.filter(workout_model.WorkoutProgram.status == 'active')
@@ -49,28 +57,34 @@ def get_exercises_for_specific_day(db: Session, program_id: int, day_name: str):
     Helper function that retrieves all exercises for a specific workout day of a program
     Useful for building the request body when logging a workout entry
     """
-    return db.query(workout_model.WorkoutProgramExercise, workout_model.Exercise.name.label("exercise_name")).join(
-        workout_model.WorkoutDay).join(workout_model.Exercise).filter(workout_model.WorkoutDay.program_id == program_id, workout_model.WorkoutDay.day_name == day_name).all()
+    return db.query(workout_model.ProgramExercise, workout_model.Exercise).\
+        join(workout_model.WorkoutDay, workout_model.ProgramExercise.day_id == workout_model.WorkoutDay.day_id).\
+        join(workout_model.Exercise, workout_model.ProgramExercise.exercise_id == workout_model.Exercise.exercise_id).\
+        filter(
+            workout_model.WorkoutDay.program_id == program_id,
+            workout_model.WorkoutDay.day_name == day_name
+        ).all()
 
 def create_workout_program(db: Session, user_id: int, program: workout_schema.WorkoutProgramCreate):
     """
     Create a new workout program.
     """
     # Check if the program name already exists for the user
-    # existing_program = db.query(workout_model.WorkoutProgram).filter(
-    #     workout_model.WorkoutProgram.user_id == user_id, 
-    #     workout_model.WorkoutProgram.name == program.name
-    # ).first()
+    existing_program = db.query(workout_model.WorkoutProgram).filter(
+        workout_model.WorkoutProgram.user_id == user_id, 
+        workout_model.WorkoutProgram.name == program.name
+    ).first()
 
-    # if existing_program:
-    #     raise ValueError("A program with this name already exists.")
+    if existing_program:
+        raise ValueError("A program with this name already exists.")
     
     new_program = workout_model.WorkoutProgram(
         user_id=user_id,
-        name=program.name
+        name=program.name,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
     )
     db.add(new_program)
-    db.commit()
     db.refresh(new_program)
 
     # Iterate over each day in the program
@@ -84,18 +98,21 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
 
         # Iterate over each exercise in the day
         for exercise in day.exercises:
-            exercise_model = get_or_create_exercise(db, exercise.name)
-            new_program_exercise = workout_model.WorkoutProgramExercise(
+            db_exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise.name).first()
+            if not db_exercise:
+                raise ValueError(f"Exercise '{exercise.name}' not found in the library.")
+            
+            new_program_exercise = workout_model.ProgramExercise(
                 day_id=new_day.day_id,
-                exercise_id=exercise_model.exercise_id,
+                exercise_id=db_exercise.exercise_id,
                 sets=exercise.sets,
                 recommended_reps=exercise.recommended_reps,
                 recommended_weight=exercise.recommended_weight
             )
             db.add(new_program_exercise)
-            db.flush()
-            db.refresh(new_program_exercise)
+            
     db.commit()
+    db.refresh(new_program)
 
     new_program = db.query(workout_model.WorkoutProgram).options(
         joinedload(workout_model.WorkoutProgram.workout_days)
@@ -104,31 +121,132 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
 
     return new_program
 
-def log_workout_session(db: Session, session_data: workout_schema.WorkoutSessionCreate, user_id: int):
-    new_session = workout_model.WorkoutSession(user_id=user_id, program_id=session_data.program_id, session_date=session_data.date)
-    db.add(new_session)
+def create_user_exercise(db: Session, user_id: int, exercise: workout_schema.ExerciseCreate):
+    new_exercise = workout_model.Exercise(
+        name=exercise.name,
+        description=exercise.description,
+        instructions=exercise.instructions,
+        primary_muscles=exercise.primary_muscles,
+        secondary_muscles=exercise.secondary_muscles,
+        category_id=exercise.category_id,
+        muscle_group_id=exercise.muscle_group_id,
+        equipment_id=exercise.equipment_id,
+        difficulty_level_id=exercise.difficulty_level_id,
+        exercise_type_id=exercise.exercise_type_id,
+        is_global=exercise.is_global,
+        user_id=user_id,
+        created_at=datetime.now(),
+        updated_at=datetime.now()
+    )
+    db.add(new_exercise)
     db.commit()
-    db.refresh(new_session)
+    db.refresh(new_exercise)
+    return new_exercise
 
-    for exercise in session_data.exercises:
-        # Get the highest set number for this exercise in this session so far
-        max_set_number = db.query(func.max(workout_model.WorkoutSessionExercise.set_number)).filter(
-            workout_model.WorkoutSessionExercise.session_id == new_session.session_id,
-            workout_model.WorkoutSessionExercise.program_exercise_id == exercise.program_exercise_id
-        ).scalar() or 0
+def edit_exercise(db: Session, exercise_id: int, user_id: int, exercise_update: workout_schema.ExerciseUpdate):
+    # First, check if the exercise exists and belongs to the user
+    exercise = db.query(workout_model.Exercise).filter(
+        workout_model.Exercise.exercise_id == exercise_id,
+        workout_model.Exercise.user_id == user_id
+    ).first()
 
-        # Iterate through each set of the exercise
-        for set_number, set in enumerate(exercise.sets, start=max_set_number + 1):
-            performed_weight = set.performed_weight if set.performed_weight else 1
-            new_set = workout_model.WorkoutSessionExercise(
-                session_id=new_session.session_id,
-                program_exercise_id=exercise.program_exercise_id,
-                set_number=set_number,
-                performed_reps=set.performed_reps,
-                performed_weight=performed_weight)
-            db.add(new_set)
+    if not exercise:
+        return None
 
-    strength_skill = db.query(skill_model.Skill).filter(skill_model.Skill.user_id == user_id, skill_model.Skill.name == "Strength").first()
+    # Update the exercise fields
+    update_data = exercise_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        setattr(exercise, key, value)
+
+    exercise.updated_at = datetime.now()
+    db.commit()
+    db.refresh(exercise)
+    return exercise
+
+def delete_exercise(db: Session, exercise_id: int, user_id: int):
+    exercise = db.query(workout_model.Exercise).filter(
+        workout_model.Exercise.exercise_id == exercise_id,
+        workout_model.Exercise.user_id == user_id,
+        # TODO: only user-created exercises can be deleted but, users should have an option to publish their exercises to global library
+        workout_model.Exercise.is_global == False
+    ).first()
+
+    if not exercise:
+        return None
+
+    # Check if the exercise is used in any workout programs
+    program_exercise = db.query(workout_model.ProgramExercise).filter(
+        workout_model.ProgramExercise.exercise_id == exercise_id
+    ).first()
+
+    if program_exercise:
+        raise ValueError("Cannot delete exercise as it is used in one or more workout programs!")
+
+    db.delete(exercise)
+    db.commit()
+    return exercise
+
+def get_exercises(db: Session, user_id: int):
+    return db.query(workout_model.Exercise).filter(
+        (workout_model.Exercise.is_global == True) | 
+        (workout_model.Exercise.user_id == user_id)
+    ).all()
+
+def log_workout_session(db: Session, session_data: workout_schema.WorkoutSessionCreate, user_id: int):
+     # Check if the workout program exists and belongs to the user
+    workout_program = db.query(workout_model.WorkoutProgram).filter(
+        workout_model.WorkoutProgram.program_id == session_data.program_id,
+        workout_model.WorkoutProgram.user_id == user_id
+    ).first()
+    if not workout_program:
+        raise ValueError("Workout program not found or doesn't belong to the user")
+    
+    new_session = workout_model.WorkoutSession(
+        user_id=user_id,
+        program_id=session_data.program_id,
+        session_date=session_data.session_date
+    )
+    db.add(new_session)
+    db.flush()
+
+    for exercise_data in session_data.exercises:
+        # Check if exercise exists
+        exercise = db.query(workout_model.Exercise).filter(
+            workout_model.Exercise.exercise_id == exercise_data.exercise_id
+        ).first()
+        if not exercise:
+            raise ValueError(f"Exercise with id {exercise_data.exercise_id} not found")
+
+        session_exercise = workout_model.SessionExercise(
+            session_id=new_session.session_id,
+            exercise_id=exercise.exercise_id,
+            total_volume=0,
+            total_intensity_score=0
+        )
+        db.add(session_exercise)
+        db.flush()
+
+        total_volume = 0
+        total_intensity_score = 0
+        for set_data in exercise_data.sets:
+            workout_set = workout_model.WorkoutSet(
+                session_exercise_id=session_exercise.session_exercise_id,
+                set_number=set_data.set_number,
+                weight=set_data.weight,
+                reps=set_data.reps
+            )
+            db.add(workout_set)
+            total_volume += set_data.weight * set_data.reps
+            total_intensity_score += (set_data.weight or 0) * (1 + (set_data.reps / 30))
+
+        session_exercise.total_volume = total_volume
+        session_exercise.total_intensity_score = total_intensity_score
+        db.flush()
+
+    strength_skill = db.query(skill_model.Skill).filter(
+        skill_model.Skill.user_id == user_id,
+        skill_model.Skill.name == "Strength"
+    ).first()
 
     # Reset daily XP if it's a new day
     if strength_skill and strength_skill.last_updated.date() < datetime.now().date():
@@ -141,14 +259,16 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
     update_activity_streak(db, user_id, "workout")
 
     db.commit()
+    db.refresh(new_session)
     return new_session
 
 def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     result = db.execute(
         text("""
-        SELECT user_id, program_name, day_name, exercise_name, program_exercise_id, sets
+        SELECT *
         FROM user_workout_program_details
         WHERE program_id = :program_id
+        ORDER BY day_id, program_exercise_id
         """),
         {"program_id": program_id}
     ).fetchall()
@@ -156,10 +276,23 @@ def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     # Convert result to a list of dicts
     return [row._asdict() for row in result]
 
-def get_workout_sessions(db: Session, user_id: int):
-    return db.query(workout_model.WorkoutSessionExercise).join(
-        workout_model.WorkoutSession, workout_model.WorkoutSession.session_id == workout_model.WorkoutSessionExercise.session_id).filter(
-            workout_model.WorkoutSession.user_id == user_id).all()
+def get_workout_sessions(db: Session, user_id: int, start_date: datetime = None, end_date: datetime = None) -> List[workout_model.WorkoutSession]:
+    query = db.query(workout_model.WorkoutSession).filter(
+        workout_model.WorkoutSession.user_id == user_id
+    ).join(
+        workout_model.WorkoutProgram
+    ).options(
+        joinedload(workout_model.WorkoutSession.workout_program),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.exercise),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.sets)
+    ).order_by(workout_model.WorkoutSession.session_date.desc())
+
+    if start_date:
+        query = query.filter(workout_model.WorkoutSession.session_date >= start_date)
+    if end_date:
+        query = query.filter(workout_model.WorkoutSession.session_date <= end_date)
+
+    return query.all()
 
 def get_or_create_exercise(db: Session, exercise_name: str):
     exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise_name).first()
@@ -170,16 +303,24 @@ def get_or_create_exercise(db: Session, exercise_name: str):
         db.refresh(exercise)
     return exercise
 
-def get_user_workout_progress(db: Session, user_id: int, time_frame: int = 7) -> List[Tuple]:
+def get_user_workout_progress(db: Session, user_id: int, start_date: datetime = None, end_date: datetime = None) -> List[Dict]:
     """
     Fetch workout progress data for a user over a specified time frame.
     """
-    end_date = datetime.now()
-    start_date = end_date - timedelta(days=time_frame)
+    if not start_date:
+        start_date = datetime.now() - timedelta(days=30)  # Default to last 30 days
+    if not end_date:
+        end_date = datetime.now()
     
-    return db.execute(
+    result = db.execute(
         text("""
-        SELECT exercise_name, session_date, SUM(volume) as total_volume
+        SELECT 
+            exercise_name,
+            session_date,
+            SUM(total_volume) as total_volume,
+            AVG(total_intensity_score) as avg_intensity,
+            MAX(weight) as max_weight,
+            MAX(reps) as max_reps
         FROM workout_progress_view
         WHERE user_id = :user_id AND session_date BETWEEN :start_date AND :end_date
         GROUP BY exercise_name, session_date
@@ -188,40 +329,35 @@ def get_user_workout_progress(db: Session, user_id: int, time_frame: int = 7) ->
         {"user_id": user_id, "start_date": start_date, "end_date": end_date}
     ).fetchall()
 
+    return [row._asdict() for row in result]
+
 def delete_workout_program(db: Session, program_id: int):
     """
     Delete a workout program based on the program ID.
     """
-    # Fetch IDs for related workout session exercises
-    session_exercise_ids = db.query(workout_model.WorkoutProgramExercise.program_exercise_id)\
-        .join(workout_model.WorkoutDay, workout_model.WorkoutDay.day_id == workout_model.WorkoutProgramExercise.day_id)\
-        .filter(workout_model.WorkoutDay.program_id == program_id).all()
-    session_exercise_ids = [id[0] for id in session_exercise_ids]
+    db_program = get_workout_program_by_id(db, program_id)
+    if not db_program:
+        return None
+    
+    # Delete related workout sessions
+    db.query(workout_model.WorkoutSession).filter(
+        workout_model.WorkoutSession.program_id == program_id
+    ).delete()
 
-    # Delete related workout session exercises
-    if session_exercise_ids:
-        db.query(workout_model.WorkoutSessionExercise)\
-            .filter(workout_model.WorkoutSessionExercise.program_exercise_id.in_(session_exercise_ids))\
-            .delete(synchronize_session='fetch')
+    # Delete related program exercises and workout days
+    for day in db_program.workout_days:
+        db.query(workout_model.ProgramExercise).filter(
+            workout_model.ProgramExercise.day_id == day.day_id
+        ).delete()
+    db.query(workout_model.WorkoutDay).filter(
+        workout_model.WorkoutDay.program_id == program_id
+    ).delete()
 
-    # Fetch IDs for related workout program exercises
-    program_exercise_ids = db.query(workout_model.WorkoutProgramExercise.program_exercise_id)\
-        .join(workout_model.WorkoutDay, workout_model.WorkoutDay.day_id == workout_model.WorkoutProgramExercise.day_id)\
-        .filter(workout_model.WorkoutDay.program_id == program_id).all()
-    program_exercise_ids = [id[0] for id in program_exercise_ids]
-
-    # Delete workout program exercises
-    if program_exercise_ids:
-        db.query(workout_model.WorkoutProgramExercise)\
-            .filter(workout_model.WorkoutProgramExercise.program_exercise_id.in_(program_exercise_ids))\
-            .delete(synchronize_session='fetch')
-
-    # Delete workout days
-    db.query(workout_model.WorkoutDay).filter(workout_model.WorkoutDay.program_id == program_id).delete(synchronize_session='fetch')
-
-    # Finally, delete the workout program
-    db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).delete(synchronize_session='fetch')
+    # Delete the program itself
+    db.delete(db_program)
     db.commit()
+    
+    return db_program
 
 def archive_workout_program(db: Session, program_id: int):
     """
@@ -249,77 +385,160 @@ def unarchive_workout_program(db: Session, program_id: int):
     else:
         raise ValueError("Workout program not found")
 
-def update_workout_program(db: Session, program_id: int, program: workout_schema.WorkoutProgramCreate):
-    db_program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
+def update_workout_program(db: Session, program_id: int, program_update: workout_schema.WorkoutProgramUpdate):
+    db_program = get_workout_program_by_id(db, program_id)
     if not db_program:
         return None
 
-    # Update the program name
-    db_program.name = program.name
-
-    # Get the existing workout day IDs for the program
-    existing_day_ids = [day.day_id for day in db_program.workout_days]
+    update_data = program_update.model_dump(exclude_unset=True)
+    for key, value in update_data.items():
+        if key != 'workout_days':
+            setattr(db_program, key, value)
     
-    # Update workout days and exercises
-    for day in program.workout_days:
-        db_day = db.query(workout_model.WorkoutDay).filter(
-            workout_model.WorkoutDay.program_id == program_id,
-            workout_model.WorkoutDay.day_name == day.day_name
-            ).first()
-        
-        if not db_day:
-            db_day = workout_model.WorkoutDay(program_id=program_id, day_name=day.day_name)
-            db.add(db_day)
+    if 'workout_days' in update_data:
+        # Remove existing workout days and exercises
+        for day in db_program.workout_days:
+            db.query(workout_model.ProgramExercise).filter(workout_model.ProgramExercise.day_id == day.day_id).delete()
+        db.query(workout_model.WorkoutDay).filter(workout_model.WorkoutDay.program_id == program_id).delete()
+
+        # Add new workout days and exercises
+        for day_data in update_data['workout_days']:
+            new_day = workout_model.WorkoutDay(program_id=program_id, day_name=day_data['day_name'])
+            db.add(new_day)
             db.flush()
-        else:
-            # Remove the day ID from the existing day IDs list
-            existing_day_ids.remove(db_day.day_id)
 
-        # Get the existing exercise IDs for the day
-        existing_exercise_ids = [exercise.exercise_id for exercise in db_day.exercises]
-
-        # Update exercises for the day
-        for exercise in day.exercises:
-            db_exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise.name).first()
-            if not db_exercise:
-                db_exercise = workout_model.Exercise(name=exercise.name)
-                db.add(db_exercise)
-                db.flush()
-
-            db_program_exercise = db.query(workout_model.WorkoutProgramExercise).filter(
-                workout_model.WorkoutProgramExercise.day_id == db_day.day_id,
-                workout_model.WorkoutProgramExercise.exercise_id == db_exercise.exercise_id
-                ).first()
-            
-            if not db_program_exercise:
-                db_program_exercise = workout_model.WorkoutProgramExercise(
-                    day_id=db_day.day_id,
-                    exercise_id=db_exercise.exercise_id,
-                    sets=exercise.sets,
-                    recommended_reps=exercise.recommended_reps,
-                    recommended_weight=exercise.recommended_weight
+            for exercise_data in day_data['exercises']:
+                new_program_exercise = workout_model.ProgramExercise(
+                    day_id=new_day.day_id,
+                    exercise_id=exercise_data['exercise_id'],
+                    sets=exercise_data['sets'],
+                    recommended_reps=exercise_data.get('recommended_reps'),
+                    recommended_weight=exercise_data.get('recommended_weight')
                 )
-                db.add(db_program_exercise)
-            else:
-                db_program_exercise.sets = exercise.sets
-                db_program_exercise.recommended_reps = exercise.recommended_reps
-                db_program_exercise.recommended_weight = exercise.recommended_weight
+                db.add(new_program_exercise)
 
-                # Remove the exercise ID from the existing exercise IDs list
-                existing_exercise_ids.remove(db_exercise.exercise_id)
-
-        # Delete the exercises that are not present in the updated program data
-        db.query(workout_model.WorkoutProgramExercise).filter(
-            workout_model.WorkoutProgramExercise.day_id == db_day.day_id,
-            workout_model.WorkoutProgramExercise.exercise_id.in_(existing_exercise_ids)
-        ).delete(synchronize_session=False)
-
-    # Delete the workout days that are not present in the updated program data
-    db.query(workout_model.WorkoutDay).filter(
-        workout_model.WorkoutDay.program_id == program_id,
-        workout_model.WorkoutDay.day_id.in_(existing_day_ids)
-    ).delete(synchronize_session=False)
-
+    db_program.updated_at=datetime.now()
     db.commit()
     db.refresh(db_program)
     return db_program
+
+def get_running_progress(db: Session, user_id: int):
+    running_logs = db.query(activity_model.UserActivities).filter(
+        activity_model.UserActivities.user_id == user_id,
+        activity_model.UserActivities.activity_type == "run"
+    ).order_by(activity_model.UserActivities.date).all()
+
+    if not running_logs:
+        return None
+
+    total_distance = sum(log.distance for log in running_logs)
+    total_duration = sum(log.duration for log in running_logs)
+    
+    return {
+        "totalDistance": total_distance,
+        "totalDuration": total_duration,
+        "longestRun": max(log.distance for log in running_logs),
+        "fastestPace": min(log.duration / log.distance for log in running_logs if log.distance > 0),
+        "history": [{"date": log.date, "distance": log.distance, "duration": log.duration} for log in running_logs]
+    }
+    # # Get running data for the last 30 days
+    # thirty_days_ago = datetime.now() - timedelta(days=30)
+    # running_logs = db.query(activity_model.UserActivities).filter(
+    #     activity_model.UserActivities.user_id == user_id,
+    #     activity_model.UserActivities.activity_type == "run",
+    #     activity_model.UserActivities.date >= thirty_days_ago
+    # ).order_by(activity_model.UserActivities.date).all()
+
+    # running_progress = [
+    #     {
+    #         "date": log.date.strftime("%Y-%m-%d"),
+    #         "distance": log.distance,
+    #         "duration": log.duration,
+    #         "pace": log.duration / log.distance if log.distance > 0 else 0
+    #     } for log in running_logs
+    # ]
+
+    # total_distance = sum(log.distance for log in running_logs)
+    # total_duration = sum(log.duration for log in running_logs)
+    # average_pace = total_duration / total_distance if total_distance > 0 else 0
+    # fastest_run = min((log.duration / log.distance if log.distance > 0 else float('inf') for log in running_logs), default=0)
+
+    # return {
+    #     "runningProgress": running_progress,
+    #     "totalDistance": total_distance,
+    #     "totalDuration": total_duration,
+    #     "averagePace": average_pace,
+    #     "fastestRun": fastest_run
+    # }
+
+def get_weight_progress(db: Session, user_id: int):
+    weight_logs = db.query(activity_model.WeightTracking).filter(
+        activity_model.WeightTracking.user_id == user_id
+    ).order_by(activity_model.WeightTracking.date).all()
+
+    if not weight_logs:
+        return None
+
+    return {
+        "current": weight_logs[-1].weight,
+        "goal": weight_logs[-1].weight_goal,
+        "lowest": min(log.weight for log in weight_logs),
+        "highest": max(log.weight for log in weight_logs),
+        "change": weight_logs[-1].weight - weight_logs[0].weight,
+        "history": [{"date": log.date, "weight": log.weight} for log in weight_logs]
+    }
+
+    # weight_progress = [
+    #     {
+    #         "date": log.date.strftime("%Y-%m-%d"),
+    #         "weight": log.weight
+    #     } for log in weight_logs
+    # ]
+
+    # starting_weight = weight_logs[0].weight if weight_logs else None
+    # current_weight = weight_logs[-1].weight if weight_logs else None
+    # weight_goal = weight_logs[-1].weight_goal if weight_logs else None
+    # total_weight_change = current_weight - starting_weight if starting_weight and current_weight else 0
+
+    # return {
+    #     "weightLogs": weight_progress,
+    #     "startingWeight": starting_weight,
+    #     "currentWeight": current_weight,
+    #     "weightGoal": weight_goal,
+    #     "totalWeightChange": total_weight_change
+    # }
+
+def get_workout_progress(db: Session, user_id: int):
+    sessions = db.query(workout_model.WorkoutSession).filter(
+        workout_model.WorkoutSession.user_id == user_id
+    ).options(
+        joinedload(workout_model.WorkoutSession.workout_program),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.WorkoutSessionExercise.exercise),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.WorkoutSessionExercise.exercise_sets)
+    ).order_by(workout_model.WorkoutSession.session_date.desc()).all()
+
+    return {
+        "sessions": [
+            workout_schema.WorkoutSession(
+                session_id=session.session_id,
+                user_id=session.user_id,
+                program_id=session.program_id,
+                program_name=session.workout_program.name,
+                session_date=session.session_date,
+                exercises=[
+                    workout_schema.SessionExercise(
+                        exercise_id=exercise.exercise_id,
+                        name=exercise.exercise.name,
+                        sets=[
+                            workout_schema.ExerciseSet(
+                                set_number=set.set_number,
+                                weight=set.weight,
+                                reps=set.reps
+                            ) for set in exercise.exercise_sets
+                        ],
+                        total_volume=exercise.total_volume
+                    ) for exercise in session.exercises
+                ]
+            ) for session in sessions
+        ]
+    }
