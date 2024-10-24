@@ -41,7 +41,7 @@ exercise_types = [
 # Popular exercises list (partial)
 popular_exercises = [
     {
-        "name": "Barbell Bench Press",
+        "name": "Bench Press",
         "description": "Lie on a bench and press a barbell up from your chest.",
         "category": "Strength",
         "muscle_group": "Chest",

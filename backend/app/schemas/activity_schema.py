@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from datetime import datetime, date
-from typing import Optional
+from typing import Optional, List
 
 class ActivityLog(BaseModel):
     activity_type: str
@@ -23,3 +23,18 @@ class WeightEntry(BaseModel):
     weight: float
     date: date
     weight_goal: Optional[float] = None
+
+class WeightLog(BaseModel):
+    id: int
+    user_id: int
+    weight: float
+    date: datetime
+    weight_goal: Optional[float] = None
+    is_starting_weight: bool
+
+    class ConfigDict:
+        from_attributes = True
+
+class WeightLogsResponse(BaseModel):
+    logs: List[WeightLog]
+    latestWeightGoal: Optional[float] = None

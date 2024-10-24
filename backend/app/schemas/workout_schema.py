@@ -155,3 +155,8 @@ class WorkoutProgramList(BaseModel):
 
 class WorkoutSessionList(BaseModel):
     sessions: List[WorkoutSession]
+
+# Response schemas
+class WorkoutProgramsResponse(BaseModel):
+    programs: List[WorkoutProgram]
+    has_archived: bool

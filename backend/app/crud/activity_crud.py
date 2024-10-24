@@ -1,10 +1,15 @@
+import logging
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from ..schemas import activity_schema
 from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
 from .skill_crud import get_user_skills
 from datetime import datetime, timedelta, date
+from typing import List, Tuple, Optional
+
+logger = logging.getLogger(__name__)
 
 def get_user_activity_streaks(db: Session, user_id: int):
     """
@@ -106,15 +111,39 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: activity_schema.We
     db.commit()
     return new_weight_entry
 
-def get_recent_weight_logs(db: Session, user_id: int):
+def get_recent_weight_logs(db: Session, user_id: int) -> Tuple[List[activity_model.WeightTracking], Optional[float]]:
     """
     Fetch the user's weight logs from the past two weeks.
     """
-    two_weeks_ago = datetime.utcnow().date() - timedelta(days=14)
-    return db.query(activity_model.WeightTracking).filter(
+    logger.info(f"Fetching recent weight logs for user {user_id}")
+    two_weeks_ago = datetime.now().date() - timedelta(days=14)
+    
+    subquery = db.query(
+        activity_model.WeightTracking.date,
+        func.max(activity_model.WeightTracking.id).label('max_id')
+    ).filter(
         activity_model.WeightTracking.user_id == user_id,
         activity_model.WeightTracking.date >= two_weeks_ago
-    ).order_by(activity_model.WeightTracking.date).all()
+    ).group_by(activity_model.WeightTracking.date).subquery()
+
+    recent_logs = db.query(activity_model.WeightTracking).join(
+        subquery,
+        (activity_model.WeightTracking.id == subquery.c.max_id) &
+        (activity_model.WeightTracking.date == subquery.c.date)
+    ).order_by(activity_model.WeightTracking.date.desc()).all()
+
+    logger.info(f"Found {len(recent_logs)} recent weight logs")
+    for log in recent_logs:
+        logger.debug(f"Log: id={log.id}, date={log.date}, weight={log.weight}, goal={log.weight_goal}")
+
+    # Get the latest weight goal from the most recent entry
+    latest_weight_goal = recent_logs[0].weight_goal if recent_logs else None
+    logger.info(f"Latest weight goal: {latest_weight_goal}")
+
+    if latest_weight_goal is None:
+        logger.warning(f"No weight goal found for user {user_id}")
+
+    return recent_logs, latest_weight_goal
 
 def update_activity_streak(db: Session, user_id: int, activity_type: str):
     today = date.today()
@@ -136,3 +165,21 @@ def update_activity_streak(db: Session, user_id: int, activity_type: str):
             last_activity_date=today
         )
         db.add(streak)
+
+def get_daily_activities(db: Session, user_id: int):
+    thirty_days_ago = datetime.now() - timedelta(days=30)
+    activities = db.query(activity_model.UserActivities).filter(
+        activity_model.UserActivities.user_id == user_id,
+        activity_model.UserActivities.date >= thirty_days_ago
+    ).all()
+
+    activity_summary = {}
+    for activity in activities:
+        date = activity.date.strftime("%Y-%m-%d")
+        if date not in activity_summary:
+            activity_summary[date] = {}
+        if activity.activity_type not in activity_summary[date]:
+            activity_summary[date][activity.activity_type] = 0
+        activity_summary[date][activity.activity_type] += 1
+
+    return [{"date": date, "activities": acts} for date, acts in activity_summary.items()]

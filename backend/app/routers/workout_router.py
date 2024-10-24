@@ -38,7 +38,7 @@ def create_exercise(user_id: int, exercise: workout_schema.ExerciseCreate, db: S
     return workout_crud.create_user_exercise(db, user_id, exercise)
 
 @router.put("/exercises/{exercise_id}", response_model=workout_schema.Exercise)
-def update_exercise(user_id: int, exercise_id: int,exercise_update: workout_schema.ExerciseUpdate, db: Session = Depends(get_db)):
+def update_exercise(user_id: int, exercise_id: int, exercise_update: workout_schema.ExerciseUpdate, db: Session = Depends(get_db)):
     updated_exercise = workout_crud.edit_exercise(db, exercise_id, user_id, exercise_update)
     if not updated_exercise:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Exercise not found!")
@@ -49,7 +49,7 @@ def get_exercises(user_id: int, db: Session=Depends(get_db)):
     return workout_crud.get_exercises(db, user_id)
 
 @router.delete("/exercises/{exercise_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_exercise(user_id: int,exercise_id: int,db: Session = Depends(get_db)):
+def delete_exercise(user_id: int, exercise_id: int, db: Session = Depends(get_db)):
     try:
         result = workout_crud.delete_exercise(db, exercise_id, user_id)
         if not result:
@@ -77,14 +77,14 @@ def read_workout_program(program_id: int, db: Session = Depends(get_db)):
         )
 
 # Get all of a user's workout programs
-@router.get("/users/{user_id}/workout-programs", response_model=Tuple[List[workout_schema.WorkoutProgram], bool])
+@router.get("/users/{user_id}/workout-programs", response_model=workout_schema.WorkoutProgramsResponse)
 def read_user_workout_programs(user_id: int, include_archived: bool = Query(False, description="Include archived programs"), db: Session = Depends(get_db)):
     if not user_crud.get_user(db, user_id):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     
     programs, has_archived = workout_crud.get_user_workout_programs(db, user_id, include_archived)
     logger.debug(f"Retrieved {len(programs)} programs. Has archived: {has_archived}")
-    return programs, has_archived
+    return {"programs": programs, "has_archived": has_archived}
 
 # Get a list of exercises for a specific day in a program
 @router.get("/workout-programs/{program_id}/days/{day_name}/exercises", response_model=List[Dict])

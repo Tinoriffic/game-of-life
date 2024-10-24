@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../../axios';
 import { baseUrl } from '../../../../config/apiConfig';
 import { useUser } from '../../../player/UserContext';
@@ -10,14 +10,28 @@ const WeightTracking = () => {
     const [weightGoal, setWeightGoal] = useState(null);
     const [weight, setWeight] = useState('');
     const [error, setError] = useState('');
+    const [todaysWeight, setTodaysWeight] = useState(null);
+    const [latestWeightGoal, setLatestWeightGoal] = useState(null);
+
+    useEffect(() => {
+        fetchWeightLogs();
+    }, []);
 
     const fetchWeightLogs = async () => {
         try {
-            const response = await axiosInstance.get(`${baseUrl}/users/${user.id}/weight/logs`);
-            setWeightLogs(response.data);
-            setWeightGoal(response.data.weightGoal);
+            const response = await axiosInstance.get(`${baseUrl}/users/${user.id}/weight/logs/`);
+            console.log(response.data);
+            setWeightLogs(response.data.logs);
+            setLatestWeightGoal(response.data.latestWeightGoal);
+            
+            // Check if there's an entry for today
+            const today = new Date().toISOString().split('T')[0];
+            const todaysEntry = response.data.logs.find(log => log.date.startsWith(today));
+            if (todaysEntry) {
+                setTodaysWeight(todaysEntry.weight);
+            }
+
             setError('');
-            console.log("Successfully fetched weight logs.");
         } catch (error) {
             console.error('Error fetching weight entries: ', error);
             setError('Failed to fetch weight entries. Please try again.');
@@ -25,18 +39,29 @@ const WeightTracking = () => {
     };
 
     const logWeight = async () => {
-
         const date = new Date().toISOString().split('T')[0];
+        
+        // Check if there's already an entry for today
+        const todaysEntry = weightLogs.find(log => log.date.startsWith(date));
+        
+        if (todaysEntry) {
+            const confirmOverwrite = window.confirm("You've already logged your weight today. Are you sure you want to overwrite it?");
+            if (!confirmOverwrite) return;
+        }
 
         const weightEntry = {
-            weight: weight,
-            weight_goal: weightGoal, // TODO: Only updated if modifying the weight goal
+            weight: parseFloat(weight),
+            weight_goal: weightGoal || latestWeightGoal,
             date: date
         };
 
         try {
             await axiosInstance.post(`${baseUrl}/users/${user.id}/track-weight`, weightEntry);
             setWeight('');
+            setTodaysWeight(weightEntry.weight);
+            if (weightGoal) {
+                setLatestWeightGoal(weightGoal);
+            }
             console.log("Successfully logged weight.");
             fetchWeightLogs();
         } catch (error) {
@@ -48,8 +73,11 @@ const WeightTracking = () => {
     return (
         <div className="weight-tracking">
             <h2>Weight Tracking</h2>
-            {!weightLogs.length && (
-                <p>Please log your starting weight:</p>
+            {todaysWeight && (
+                <p>Today's Weight: {todaysWeight} lbs</p>
+            )}
+            {latestWeightGoal && (
+                <p>Weight Goal: {latestWeightGoal} lbs</p>
             )}
             <div className="weight-inputs">
                 <input
@@ -60,24 +88,12 @@ const WeightTracking = () => {
                 />
                 <input
                     type="number"
-                    value={weightGoal}
-                    onChange={(e) => setWeightGoal(e.target.value)}
+                    value={weightGoal || ''}
+                    onChange={(e) => setWeightGoal(e.target.value ? parseFloat(e.target.value) : null)}
                     placeholder="Enter your goal weight"
                 />
                 <button onClick={logWeight}>Log Weight</button>
             </div>
-            {weightLogs.length > 0 && (
-                <div>
-                    <h3>Recent Weight Logs</h3>
-                    {/* Render weight logs */}
-                    {weightLogs.map((log, index) => (
-                        <div key={index}>
-                            <p>Date: {new Date(log.date).toLocaleDateString()}</p>
-                            <p>Weight: {log.weight} lbs</p>
-                        </div>
-                    ))}
-                </div>
-            )}
             {error && <div className="error-message">{error}</div>}
         </div>
     );
