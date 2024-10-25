@@ -6,7 +6,7 @@ from ..xp_calculator import calculate_workout_xp
 from ..skill_manager import update_skill_xp
 from ..crud.activity_crud import update_activity_streak
 from datetime import datetime, timedelta
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 
 def get_workout_program_by_id(db: Session, program_id: int):
     """
@@ -186,11 +186,17 @@ def delete_exercise(db: Session, exercise_id: int, user_id: int):
     db.commit()
     return exercise
 
-def get_exercises(db: Session, user_id: int):
-    return db.query(workout_model.Exercise).filter(
-        (workout_model.Exercise.is_global == True) | 
-        (workout_model.Exercise.user_id == user_id)
-    ).all()
+def get_exercises(db: Session, user_id: Optional[int] = None):
+    query = db.query(workout_model.Exercise).filter(
+        workout_model.Exercise.is_global == True
+    )
+    if user_id is not None:
+        query = query.union(
+            db.query(workout_model.Exercise).filter(
+                workout_model.Exercise.user_id == user_id
+            )
+        )
+    return query.all()
 
 def log_workout_session(db: Session, session_data: workout_schema.WorkoutSessionCreate, user_id: int):
      # Check if the workout program exists and belongs to the user

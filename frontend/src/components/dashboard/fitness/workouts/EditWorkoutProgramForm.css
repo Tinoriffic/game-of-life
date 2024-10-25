@@ -1,100 +1,215 @@
+/* EditWorkoutProgramForm.css */
+
 .edit-workout-program-form {
-    display: flex;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 20px;
+  background-color: #1d1f20;
+  color: #f8f8f2;
+  border-radius: 10px;
+}
+
+.edit-workout-program-form h2 {
+  margin: 0;
+}
+
+.edit-workout-program-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.edit-workout-program-form input,
+.edit-workout-program-form textarea {
+  padding: 8px;
+  border-radius: 5px;
+  border: none;
+  background-color: #333;
+  color: #f8f8f2;
+  resize: none;
+}
+
+.workout-day {
+  padding: 15px;
+  border: 1px solid #f8f8f2;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.workout-exercise {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: #2a2d2e;
+}
+
+.workout-exercise label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+}
+
+.workout-exercise input[type="text"],
+.workout-exercise input[type="number"] {
+  width: 100%;
+  padding: 5px;
+  border: none;
+  border-radius: 4px;
+  background-color: #444;
+  color: #f8f8f2;
+}
+
+.exercise-option {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.exercise-option label {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  flex-direction: row;
+}
+
+.exercise-option input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+.exercise-option span {
+  font-size: 14px;
+  margin-left: 5px;
+}
+
+.edit-workout-program-form button {
+  padding: 10px;
+  border-radius: 5px;
+  border: none;
+  background-color: #4caf50;
+  color: #f8f8f2;
+  cursor: pointer;
+}
+
+.edit-workout-program-form button:hover {
+  background-color: #45a049;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.save-button {
+  background-color: #4caf50;
+}
+
+.archive-button,
+.delete-button {
+  background-color: #f44336 !important;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+}
+
+.cancel-button:hover {
+  background-color: #5a6268;
+}
+
+/* New styles for the exercise search functionality */
+
+.exercise-search-input {
+  position: relative;
+}
+
+.exercise-search-input input {
+  width: 100%;
+  padding-right: 30px;
+}
+
+.exercise-search-results {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: #1d1f20;
+  border: 1px solid #555;
+  border-radius: 5px;
+  z-index: 10;
+}
+
+.exercise-search-results li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.exercise-search-results li:hover {
+  background-color: #333;
+}
+
+.no-exercises-message {
+  padding: 8px;
+  color: #888;
+}
+
+/* Styles for the create new exercise form */
+
+.create-exercise-form {
+  padding: 15px;
+  border: 1px solid #f8f8f2;
+  border-radius: 10px;
+  background-color: #2a2d2e;
+  margin-bottom: 20px;
+}
+
+.create-exercise-form h3 {
+  margin-top: 0;
+}
+
+.create-exercise-form label {
+  margin-bottom: 10px;
+}
+
+.create-exercise-form input,
+.create-exercise-form textarea {
+  width: 100%;
+}
+
+.create-exercise-form button {
+  margin-right: 10px;
+}
+
+/* Adjustments for buttons within the forms */
+
+.edit-workout-program-form .add-button,
+.create-exercise-form .add-button {
+  background-color: #007bff;
+}
+
+.edit-workout-program-form .add-button:hover,
+.create-exercise-form .add-button:hover {
+  background-color: #0069d9;
+}
+
+/* Responsive adjustments */
+
+@media (max-width: 600px) {
+  .form-actions {
     flex-direction: column;
-    gap: 20px;
-    padding: 20px;
-    background-color: #1d1f20;
-    color: #f8f8f2;
-    border-radius: 10px;
+    align-items: stretch;
   }
-  
-  .edit-workout-program-form h2 {
-    margin: 0;
-  }
-  
-  .edit-workout-program-form label {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-  }
-  
-  .edit-workout-program-form input {
-    padding: 8px;
-    border-radius: 5px;
-    border: none;
-    background-color: #333;
-    color: #f8f8f2;
-  }
-  
-  .workout-day {
-    padding: 15px;
-    border: 1px solid #f8f8f2;
-    border-radius: 10px;
-  }
-  
-  .workout-exercise {
+
+  .form-actions button {
+    width: 100%;
     margin-bottom: 10px;
   }
 
-  .workout-exercise label {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 10px;
+  .exercise-search-results {
+    max-height: 200px;
   }
-  
-  .workout-exercise input[type="text"],
-  .workout-exercise input[type="number"] {
-    width: 100%;
-    padding: 5px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-  }
-  
-  .exercise-option {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .exercise-option label {
-    display: flex;
-    align-items: center;
-    margin-bottom: 0;
-    flex-direction: row;
-  }
-  
-  .exercise-option input[type="checkbox"] {
-    margin-right: 5px;
-  }
-  
-  .exercise-option span {
-    font-size: 14px;
-    margin-left: 5px;
-  }
-  
-  .edit-workout-program-form button {
-    padding: 10px;
-    border-radius: 5px;
-    border: none;
-    background-color: #4caf50;
-    color: #f8f8f2;
-    cursor: pointer;
-  }
-  
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-  }
-  
-  .save-button {
-    background-color: #4caf50;
-  }
-  
-  .archive-button, .delete-button {
-    background-color: #f44336 !important;
-  }
-  
-  .cancel-button {
-    background-color: #6c757d;
-  }
+}

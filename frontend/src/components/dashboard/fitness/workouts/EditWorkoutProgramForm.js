@@ -1,10 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import axiosInstance from '../../../../axios';
 import './EditWorkoutProgramForm.css';
 
 const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClose }) => {
   const [editedProgram, setEditedProgram] = useState({
     name: '',
     workout_days: [],
+  });
+  const [exercisesLibrary, setExercisesLibrary] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredExercises, setFilteredExercises] = useState([]);
+  const [showCreateExerciseForm, setShowCreateExerciseForm] = useState(false);
+  const [newExercise, setNewExercise] = useState({
+    name: '',
+    description: '',
+    // Add other necessary fields
   });
 
   useEffect(() => {
@@ -16,6 +26,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
               day_name: day.day_name,
               exercises: day.exercises
                 ? day.exercises.map((exercise) => ({
+                    exercise_id: exercise.exercise_id || null,
                     name: exercise.name || '',
                     sets: exercise.sets || 0,
                     recommended_reps: exercise.recommended_reps || 0,
@@ -27,6 +38,19 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
       });
     }
   }, [program]);
+
+  // Fetch exercises from the global library
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        const response = await axiosInstance.get('/exercises');
+        setExercisesLibrary(response.data);
+      } catch (error) {
+        console.error('Failed to fetch exercises', error);
+      }
+    };
+    fetchExercises();
+  }, []);
 
   const handleInputChange = (e, dayIndex, exerciseIndex = null) => {
     const { name, value } = e.target;
@@ -46,13 +70,22 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
   const addDay = () => {
     setEditedProgram({
       ...editedProgram,
-      workout_days: [...editedProgram.workout_days, { day_name: '', exercises: [{ name: '', sets: 3 }] }],
+      workout_days: [
+        ...editedProgram.workout_days,
+        { day_name: '', exercises: [] },
+      ],
     });
   };
 
   const addExercise = (dayIndex) => {
     const updatedProgram = { ...editedProgram };
-    updatedProgram.workout_days[dayIndex].exercises.push({ name: '', sets: 3 });
+    updatedProgram.workout_days[dayIndex].exercises.push({
+      exercise_id: null,
+      name: '',
+      sets: 3,
+      recommended_reps: 0,
+      recommended_weight: 0,
+    });
     setEditedProgram(updatedProgram);
   };
 
@@ -74,10 +107,51 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
   };
 
   const handleArchiveToggle = () => {
-    if (program.status == 'archived') {
+    if (program.status === 'archived') {
       onUnarchive(program.program_id);
     } else {
       onArchive(program.program_id);
+    }
+  };
+
+  // Search functionality
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+    const filtered = exercisesLibrary.filter((exercise) =>
+      exercise.name.toLowerCase().includes(e.target.value.toLowerCase())
+    );
+    setFilteredExercises(filtered);
+  };
+
+  // Add selected exercise to the program
+  const handleSelectExercise = (dayIndex, exerciseIndex, exercise) => {
+    const updatedProgram = { ...editedProgram };
+    updatedProgram.workout_days[dayIndex].exercises[exerciseIndex] = {
+      exercise_id: exercise.exercise_id,
+      name: exercise.name,
+      sets: 3,
+      recommended_reps: 0,
+      recommended_weight: 0,
+    };
+    setEditedProgram(updatedProgram);
+    setSearchTerm('');
+    setFilteredExercises([]);
+  };
+
+  // Handle creating a new exercise
+  const handleCreateExercise = async () => {
+    try {
+      const response = await axiosInstance.post('/exercises', newExercise);
+      // Add the new exercise to the library and select it
+      setExercisesLibrary([...exercisesLibrary, response.data]);
+      setShowCreateExerciseForm(false);
+      setNewExercise({
+        name: '',
+        description: '',
+        // Reset other fields
+      });
+    } catch (error) {
+      console.error('Failed to create new exercise', error);
     }
   };
 
@@ -106,66 +180,94 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
           </label>
           {day.exercises.map((exercise, exerciseIndex) => (
             <div key={exerciseIndex} className="workout-exercise">
-              <label>
-                Exercise Name
-                <input
-                  type="text"
-                  name="name"
-                  value={exercise.name}
-                  onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                />
-              </label>
-              <label>
-                Sets
-                <input
-                  type="number"
-                  name="sets"
-                  value={exercise.sets}
-                  onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                />
-              </label>
-              <label>
-                Target Reps
-                <input
-                  type="number"
-                  name="recommended_reps"
-                  value={exercise.recommended_reps}
-                  onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                />
-              </label>
-              <label>
-                {exercise.is_calisthenics ? 'Added Weight' : 'Target Weight'}
-                <input
-                  type="number"
-                  name="recommended_weight"
-                  value={exercise.recommended_weight || ''}
-                  onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                />
-              </label>
-              <div className="exercise-option">
-                <label>
-                  <input
-                    type="checkbox"
-                    name="is_calisthenics"
-                    checked={exercise.is_calisthenics}
-                    onChange={(e) => {
-                      const updatedProgram = { ...editedProgram };
-                      updatedProgram.workout_days[dayIndex].exercises[exerciseIndex].is_calisthenics = e.target.checked;
-                      setEditedProgram(updatedProgram);
-                    }}
-                  />
-                  <span>Calisthenics</span>
-                </label>
-              </div>
-              <button type="button" onClick={() => deleteExercise(dayIndex, exerciseIndex)} className='delete-button'>
-                Delete Exercise
-              </button>
+              {!exercise.exercise_id ? (
+                <>
+                  <label>
+                    Search Exercise
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={handleSearchChange}
+                    />
+                  </label>
+                  {filteredExercises.length > 0 && (
+                    <ul className="exercise-search-results">
+                      {filteredExercises.map((ex) => (
+                        <li
+                          key={ex.exercise_id}
+                          onClick={() =>
+                            handleSelectExercise(dayIndex, exerciseIndex, ex)
+                          }
+                        >
+                          {ex.name}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setShowCreateExerciseForm(true)}
+                  >
+                    Create New Exercise
+                  </button>
+                </>
+              ) : (
+                <>
+                  <p>
+                    <strong>Exercise:</strong> {exercise.name}
+                  </p>
+                  <label>
+                    Sets
+                    <input
+                      type="number"
+                      name="sets"
+                      value={exercise.sets}
+                      onChange={(e) =>
+                        handleInputChange(e, dayIndex, exerciseIndex)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Target Reps
+                    <input
+                      type="number"
+                      name="recommended_reps"
+                      value={exercise.recommended_reps}
+                      onChange={(e) =>
+                        handleInputChange(e, dayIndex, exerciseIndex)
+                      }
+                    />
+                  </label>
+                  <label>
+                    Target Weight
+                    <input
+                      type="number"
+                      name="recommended_weight"
+                      value={exercise.recommended_weight || ''}
+                      onChange={(e) =>
+                        handleInputChange(e, dayIndex, exerciseIndex)
+                      }
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => deleteExercise(dayIndex, exerciseIndex)}
+                    className="delete-button"
+                  >
+                    Delete Exercise
+                  </button>
+                </>
+              )}
             </div>
           ))}
           <button type="button" onClick={() => addExercise(dayIndex)}>
             Add Exercise
           </button>
-          <button type="button" onClick={() => deleteDay(dayIndex)} className='delete-button'>
+          <button
+            type="button"
+            onClick={() => deleteDay(dayIndex)}
+            className="delete-button"
+          >
             Delete Day
           </button>
         </div>
@@ -173,11 +275,55 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
       <button type="button" onClick={addDay}>
         Add Day
       </button>
+
+      {showCreateExerciseForm && (
+        <div className="create-exercise-form">
+          <h3>Create New Exercise</h3>
+          <label>
+            Name
+            <input
+              type="text"
+              name="name"
+              value={newExercise.name}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, name: e.target.value })
+              }
+            />
+          </label>
+          <label>
+            Description
+            <textarea
+              name="description"
+              value={newExercise.description}
+              onChange={(e) =>
+                setNewExercise({ ...newExercise, description: e.target.value })
+              }
+            />
+          </label>
+          {/* Add other necessary fields like category, muscle group, etc. */}
+          <button type="button" onClick={handleCreateExercise}>
+            Save Exercise
+          </button>
+          <button
+            type="button"
+            onClick={() => setShowCreateExerciseForm(false)}
+          >
+            Cancel
+          </button>
+        </div>
+      )}
+
       <div className="form-actions">
         <button type="submit" className="save-button">
           Save Changes
         </button>
-        <button type="button" onClick={handleArchiveToggle} className={program.status === 'archived' ? 'unarchive-button' : 'archive-button'}>
+        <button
+          type="button"
+          onClick={handleArchiveToggle}
+          className={
+            program.status === 'archived' ? 'unarchive-button' : 'archive-button'
+          }
+        >
           {program.status === 'archived' ? 'Unarchive Program' : 'Archive Program'}
         </button>
         <button type="button" onClick={onClose} className="cancel-button">

@@ -4,7 +4,7 @@ from ..schemas import workout_schema
 from ..models import workout_model
 from ..crud import workout_crud, user_crud
 from ..dependencies import get_db
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Optional
 import logging
 from datetime import datetime
 
@@ -45,7 +45,7 @@ def update_exercise(user_id: int, exercise_id: int, exercise_update: workout_sch
     return updated_exercise
 
 @router.get("/exercises", response_model=List[workout_schema.Exercise])
-def get_exercises(user_id: int, db: Session=Depends(get_db)):
+def get_exercises(user_id: Optional[int] = None, db: Session = Depends(get_db)):
     return workout_crud.get_exercises(db, user_id)
 
 @router.delete("/exercises/{exercise_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -59,7 +59,18 @@ def delete_exercise(user_id: int, exercise_id: int, db: Session = Depends(get_db
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
-    
+
+# Fetch exercise metadata values    
+@router.get("/exercises/lookup-data")
+def get_exercise_lookup_data(db: Session = Depends(get_db)):
+    return {
+        "categories": [{"id": cat.id, "name": cat.name} for cat in db.query(workout_model.ExerciseCategory).all()],
+        "muscleGroups": [{"id": mg.id, "name": mg.name} for mg in db.query(workout_model.ExerciseMuscleGroup).all()],
+        "equipment": [{"id": eq.id, "name": eq.name} for eq in db.query(workout_model.ExerciseEquipment).all()],
+        "difficultyLevels": [{"id": dl.id, "level": dl.level} for dl in db.query(workout_model.ExerciseDifficultyLevel).all()],
+        "exerciseTypes": [{"id": et.id, "type": et.type} for et in db.query(workout_model.ExerciseType).all()]
+    }
+
 # Get a workout program by ID
 @router.get("/workout-programs/{program_id}", response_model=workout_schema.WorkoutProgram)
 def read_workout_program(program_id: int, db: Session = Depends(get_db)):
