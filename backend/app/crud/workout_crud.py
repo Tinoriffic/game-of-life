@@ -81,11 +81,12 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
     new_program = workout_model.WorkoutProgram(
         user_id=user_id,
         name=program.name,
+        status='active',
         created_at=datetime.now(),
         updated_at=datetime.now()
     )
     db.add(new_program)
-    db.refresh(new_program)
+    db.flush()
 
     # Iterate over each day in the program
     for day in program.workout_days:
@@ -98,13 +99,10 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
 
         # Iterate over each exercise in the day
         for exercise in day.exercises:
-            db_exercise = db.query(workout_model.Exercise).filter(workout_model.Exercise.name == exercise.name).first()
-            if not db_exercise:
-                raise ValueError(f"Exercise '{exercise.name}' not found in the library.")
             
             new_program_exercise = workout_model.ProgramExercise(
                 day_id=new_day.day_id,
-                exercise_id=db_exercise.exercise_id,
+                exercise_id=exercise.exercise_id,
                 sets=exercise.sets,
                 recommended_reps=exercise.recommended_reps,
                 recommended_weight=exercise.recommended_weight
@@ -115,9 +113,11 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
     db.refresh(new_program)
 
     new_program = db.query(workout_model.WorkoutProgram).options(
-        joinedload(workout_model.WorkoutProgram.workout_days)
-        .joinedload(workout_model.WorkoutDay.exercises)).filter(
-            workout_model.WorkoutProgram.program_id == new_program.program_id).first()
+        joinedload(workout_model.WorkoutProgram.workout_days).joinedload(
+            workout_model.WorkoutDay.exercises)
+    ).filter(
+        workout_model.WorkoutProgram.program_id == new_program.program_id
+    ).first()
 
     return new_program
 

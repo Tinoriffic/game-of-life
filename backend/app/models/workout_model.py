@@ -13,14 +13,14 @@ class WorkoutProgram(Base):
     program_id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     name = Column(String, nullable=False)
-    status = Column(Enum('active', 'archived', name='program_status'), default='active')
-    created_at = Column(DateTime, default=utc_now)
+    status = Column(Enum('active', 'archived', name='program_status'), nullable=False, default='active')
+    created_at = Column(DateTime, nullable=False, default=utc_now)
+    updated_at = Column(DateTime, nullable=False, default=utc_now, onupdate=utc_now)
     archived_at = Column(DateTime, nullable=True)
-    updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)
     
     user = relationship("User", back_populates='workout_programs')
     workout_days = relationship('WorkoutDay', back_populates='workout_program')
-    workout_sessions = relationship('WorkoutSession', back_populates='workout_program')
+    workout_sessions = relationship('WorkoutSession', back_populates='workout_program', lazy='selectin')
 
 class WorkoutDay(Base):
     __tablename__ = "workout_days"
@@ -29,7 +29,7 @@ class WorkoutDay(Base):
     day_name = Column(String, nullable=False)
 
     workout_program = relationship('WorkoutProgram', back_populates='workout_days')
-    exercises = relationship('ProgramExercise', back_populates='workout_day')
+    exercises = relationship('ProgramExercise', back_populates='workout_day', lazy='selectin')
 
 class ProgramExercise(Base):
     __tablename__ = "program_exercises"

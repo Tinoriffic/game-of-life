@@ -96,7 +96,7 @@ class WorkoutProgram(BaseModel):
     status: str
     created_at: datetime
     updated_at: datetime
-    archived_at: Optional[datetime]
+    archived_at: Optional[datetime] = None
     workout_days: List[WorkoutDay]
 
     class Config:
@@ -160,3 +160,6 @@ class WorkoutSessionList(BaseModel):
 class WorkoutProgramsResponse(BaseModel):
     programs: List[WorkoutProgram]
     has_archived: bool
+    
+    class Config:
+        from_attributes = True

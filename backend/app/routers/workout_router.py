@@ -21,16 +21,13 @@ def create_workout_program(user_id: int, program: workout_schema.WorkoutProgramC
     
     try:
         new_program = workout_crud.create_workout_program(user_id=user_id, program=program, db=db)
-
-        return workout_schema.WorkoutProgram(
-            program_id=new_program.program_id,
-            user_id=new_program.user_id,
-            name=new_program.name,
-            days=[workout_schema.WorkoutDay(**day.__dict__) for day in new_program.workout_days]
-        )
+        return workout_schema.WorkoutProgram.model_validate(new_program)
     except TypeError as e:
+        logger.error(f"Error: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.error(f"Error creating workout program for user {user_id}: {str(e)}", exc_info=True)
+        logger.error(f"Program data: {program.model_dump()}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
     
 @router.post("/exercises", response_model=workout_schema.Exercise)
