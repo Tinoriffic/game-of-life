@@ -44,13 +44,13 @@ const WorkoutPrograms = () => {
       } else {
         await axiosInstance.post(`/users/${user.id}/workout-programs`, programData);
       }
-      fetchWorkoutPrograms();
+      await fetchWorkoutPrograms();
       setIsModalOpen(false);
       setError(null);
       console.log("Successfully saved workout program");
     } catch (error) {
-      console.error('Failed to save workout program', error);
-      setError("Failed to save workout program. Please try again.");
+      console.error('Failed to save workout program', error.response?.data);
+      throw error;
     }
   };
 

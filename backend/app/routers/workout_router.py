@@ -141,12 +141,7 @@ def update_workout_program(program_id: int, program_update: workout_schema.Worko
     if not updated_program:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
 
-    return workout_schema.WorkoutProgram(
-        program_id=updated_program.program_id,
-        user_id=updated_program.user_id,
-        name=updated_program.name,
-        days=[workout_schema.WorkoutDay(**day.__dict__) for day in updated_program.workout_days]
-    )
+    return workout_schema.WorkoutProgram.model_validate(updated_program)
 
 # Delete a workout program
 @router.delete("/workout-programs/{program_id}", status_code=status.HTTP_204_NO_CONTENT)

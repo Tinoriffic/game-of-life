@@ -17,6 +17,7 @@ const initialProgramState = {
 
 const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
   const [program, setProgram] = useState(initialProgramState);
+  const [error, setError] = useState('');
   const [exercisesLibrary, setExercisesLibrary] = useState([]);
   const { user } = useUser();
   const [showCreateExerciseForm, setShowCreateExerciseForm] = useState(false);
@@ -90,10 +91,16 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
     setProgram(updatedProgram);
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    onSave(program);
-    setProgram(initialProgramState);
+    setError('');
+
+    try {
+      await onSave(program);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create workout program');
+    }
+    //setProgram(initialProgramState);
   };
 
   // Prepare options for react-select
@@ -122,12 +129,10 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
   const handleCreateExercise = async (exerciseData) => {
     try {
       const response = await axiosInstance.post(`/exercises?user_id=${user.id}`, exerciseData);
-      // Add the new exercise to the library
       setExercisesLibrary([...exercisesLibrary, response.data]);
       //setShowCreateExerciseForm(false);
     } catch (error) {
       console.error('Failed to create new exercise', error);
-      //throw error;
     }
   };
 
@@ -185,6 +190,11 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
 
   return (
     <form onSubmit={handleSubmit} className="create-workout-program-form">
+      {error && (
+        <div className="error-message bg-red-500 bg-opacity-20 border border-red-500 text-red-500 p-3 rounded mb-4">
+          {error}
+        </div>
+      )}
       <label>
         Program Name
         <input
