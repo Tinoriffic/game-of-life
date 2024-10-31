@@ -136,7 +136,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
     }
   };
 
-  // Custom styles for react-select
+  // Custom styles to be injected to react-select dropdown menu
   const customStyles = {
     control: (provided) => ({
       ...provided,
@@ -230,7 +230,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
                       isSearchable
                       isClearable
                       placeholder="Search or select an exercise..."
-                      styles={customStyles} // Apply custom styles here
+                      styles={customStyles}
                     />
                   </label>
                   <button

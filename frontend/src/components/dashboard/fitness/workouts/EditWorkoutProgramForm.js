@@ -193,6 +193,58 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
       }))
     : [];
 
+  // Custom styles to be injected to react-select dropdown menu
+  const customStyles = {
+    control: (provided) => ({
+      ...provided,
+      backgroundColor: '#333',
+      borderColor: '#555',
+      color: '#f8f8f2',
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: '#1d1f20',
+      color: '#f8f8f2',
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? '#4caf50'
+        : state.isFocused
+        ? '#333'
+        : '#1d1f20',
+      color: '#f8f8f2',
+      cursor: 'pointer',
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: '#f8f8f2',
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: '#888',
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: '#f8f8f2',
+    }),
+    indicatorSeparator: (provided) => ({
+      ...provided,
+      backgroundColor: '#555',
+    }),
+    dropdownIndicator: (provided) => ({
+      ...provided,
+      color: '#f8f8f2',
+      '&:hover': {
+        color: '#f8f8f2',
+      },
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      backgroundColor: '#1d1f20',
+    }),
+  };
+
   return (
     <div className="edit-workout-form">
       <h2>Edit Workout Program</h2>
@@ -284,51 +336,11 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
                     options={exerciseOptions}
                     onChange={(option) => handleExerciseSelect(option, dayIndex)}
                     className="exercise-select"
+                    classNamePrefix="select"
                     placeholder="Add an exercise..."
                     isSearchable
                     isClearable
-                    styles={{
-                      control: (provided) => ({
-                        ...provided,
-                        backgroundColor: '#333',
-                        borderColor: '#555',
-                        color: '#f8f8f2',
-                        minHeight: '38px'
-                      }),
-                      menu: (provided) => ({
-                        ...provided,
-                        backgroundColor: '#282a36',
-                        border: '1px solid #44475a'
-                      }),
-                      option: (provided, state) => ({
-                        ...provided,
-                        backgroundColor: state.isSelected ? '#44475a' : state.isFocused ? '#383a59' : '#282a36',
-                        color: '#f8f8f2',
-                        cursor: 'pointer',
-                        ':active': {
-                          backgroundColor: '#44475a'
-                        }
-                      }),
-                      singleValue: (provided) => ({
-                        ...provided,
-                        color: '#f8f8f2'
-                      }),
-                      input: (provided) => ({
-                        ...provided,
-                        color: '#f8f8f2'
-                      }),
-                      placeholder: (provided) => ({
-                        ...provided,
-                        color: '#6272a4'
-                      }),
-                      dropdownIndicator: (provided) => ({
-                        ...provided,
-                        color: '#6272a4',
-                        ':hover': {
-                          color: '#f8f8f2'
-                        }
-                      })
-                    }}
+                    styles={customStyles}
                   />
                 </div>
                 <button
