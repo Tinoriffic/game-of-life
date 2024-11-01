@@ -70,6 +70,14 @@ class Exercise(BaseModel):
     class Config:
         from_attributes = True
 
+class ExerciseSet(BaseModel):
+    set_number: int
+    weight: Optional[float] = None
+    reps: int
+
+    class Config:
+        from_attributes = True
+
 class ProgramExercise(BaseModel):
     program_exercise_id: int
     exercise_id: int
@@ -102,18 +110,12 @@ class WorkoutProgram(BaseModel):
     class Config:
         from_attributes = True
 
-class WorkoutSet(WorkoutSetCreate):
-    set_id: int
-
-    class Config:
-        from_attributes = True
-
 class SessionExercise(BaseModel):
-    session_exercise_id: int
     exercise_id: int
+    name: str
     total_volume: float
     total_intensity_score: float
-    sets: List[WorkoutSet]
+    sets: List[ExerciseSet]
 
     class Config:
         from_attributes = True
@@ -122,6 +124,7 @@ class WorkoutSession(BaseModel):
     session_id: int
     user_id: int
     program_id: int
+    program_name: str
     session_date: datetime
     exercises: List[SessionExercise]
 
@@ -161,5 +164,11 @@ class WorkoutProgramsResponse(BaseModel):
     programs: List[WorkoutProgram]
     has_archived: bool
     
+    class Config:
+        from_attributes = True
+
+class WorkoutProgressResponse(BaseModel):
+    sessions: List[WorkoutSession]
+
     class Config:
         from_attributes = True

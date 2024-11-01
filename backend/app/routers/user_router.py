@@ -5,7 +5,7 @@ from ..models import user_model
 from ..schemas import user_schema
 from ..crud import user_crud, auth_utils, skill_crud
 from ..dependencies import get_db
-from typing import List
+from typing import List, Dict
 from urllib.parse import urlencode
 from sqlalchemy.inspection import inspect
 
@@ -184,6 +184,13 @@ async def read_current_user_data(db: Session = Depends(get_db), current_user: us
     print(user_dict)
 
     return user_schema.UserWithSkills(**user_dict, skills=skills_dicts)
+
+@router.get("/users/{user_id}/stats", response_model=Dict)
+def get_user_stats(user_id: int, db: Session = Depends(get_db)):
+    user = user_crud.get_user(db, user_id=user_id)
+    if user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user_crud.get_user_stats(db, user_id)
 
 def convert_to_dict(obj):
     return {c.key: getattr(obj, c.key) for c in inspect(obj).mapper.column_attrs}

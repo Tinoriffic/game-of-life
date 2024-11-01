@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
 from .models import skill_model
+from datetime import datetime
 
 def update_skill_xp(db: Session, user_id: int, skill_name: str, xp_to_add: int):
     """
@@ -34,3 +35,32 @@ def calculate_required_xp(level: int, base_xp: int = 100) -> int:
     :return: The XP required to reach the next level.
     """
     return int(base_xp * (level ** 1.5))
+
+def calculate_level(xp):
+    """
+    Calculates the current level of a stat
+    """
+    return int(xp ** 0.5 // 10) + 1
+
+def calculate_activity_streak(activities):
+    """
+    Calculates the current streak (days in a row) of activities completed.
+    """
+    if not activities:
+        return 0
+
+    streak = 0
+    current_date = datetime.now().date()
+
+    for activity in activities:
+        activity_date = activity.date.date()
+        
+        if activity_date == current_date:
+            streak += 1
+        elif (current_date - activity_date).days == 1:
+            streak += 1
+            current_date = activity_date
+        else:
+            break
+
+    return streak

@@ -242,7 +242,10 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
                 reps=set_data.reps
             )
             db.add(workout_set)
-            total_volume += set_data.weight * set_data.reps
+            if set_data.weight:
+                total_volume += set_data.weight * set_data.reps
+            else:
+                total_volume += set_data.reps
             total_intensity_score += (set_data.weight or 0) * (1 + (set_data.reps / 30))
 
         session_exercise.total_volume = total_volume
@@ -325,8 +328,8 @@ def get_user_workout_progress(db: Session, user_id: int, start_date: datetime = 
             session_date,
             SUM(total_volume) as total_volume,
             AVG(total_intensity_score) as avg_intensity,
-            MAX(weight) as max_weight,
-            MAX(reps) as max_reps
+            MAX(performed_weight) as max_weight,
+            MAX(performed_reps) as max_reps
         FROM workout_progress_view
         WHERE user_id = :user_id AND session_date BETWEEN :start_date AND :end_date
         GROUP BY exercise_name, session_date
@@ -519,8 +522,8 @@ def get_workout_progress(db: Session, user_id: int):
         workout_model.WorkoutSession.user_id == user_id
     ).options(
         joinedload(workout_model.WorkoutSession.workout_program),
-        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.WorkoutSessionExercise.exercise),
-        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.WorkoutSessionExercise.exercise_sets)
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.exercise),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.sets)
     ).order_by(workout_model.WorkoutSession.session_date.desc()).all()
 
     return {
@@ -540,9 +543,10 @@ def get_workout_progress(db: Session, user_id: int):
                                 set_number=set.set_number,
                                 weight=set.weight,
                                 reps=set.reps
-                            ) for set in exercise.exercise_sets
+                            ) for set in exercise.sets
                         ],
-                        total_volume=exercise.total_volume
+                        total_volume=exercise.total_volume,
+                        total_intensity_score=exercise.total_intensity_score
                     ) for exercise in session.exercises
                 ]
             ) for session in sessions
