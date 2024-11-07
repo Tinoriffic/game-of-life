@@ -120,11 +120,18 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
 # Log a workout session entry
 @router.post("/users/{user_id}/workout-sessions", response_model=workout_schema.WorkoutSession)
 def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):
+    logger.info(f"Received workout session data: {session_data.model_dump()}")
     try:
-        return workout_crud.log_workout_session(db, session_data, user_id)
+        logger.info("Attempting to log workout session...")
+        workout_entry = workout_crud.log_workout_session(db, session_data, user_id)
+        logger.info("Successfully logged workout session")
+        return workout_schema.WorkoutSession.model_validate(workout_entry)
     except ValueError as e:
+        logger.error(f"Validation error: {str(e)}")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
     except Exception as e:
+        logger.error(f"Error logging workout session: {str(e)}", exc_info=True)
+        logger.debug(f"Session data: {session_data.model_dump()}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
 @router.get("/users/{user_id}/workout-sessions", response_model=List[workout_schema.WorkoutSession])

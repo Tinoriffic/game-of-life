@@ -12,29 +12,35 @@ def calculate_meditation_xp(duration:int, daily_xp_earned: int) -> int:
     xp += (duration // 5) * 5
     return xp
 
-def calculate_workout_xp(daily_xp_earned: int, workout_data) -> int:
+def calculate_workout_xp(daily_xp_earned: int, workout_data: list) -> int:
     """
-    Calculate XP for workout activities including: daily logging, consistency and volume progression.
+    Calculate XP for the workout activities.
+    
+    Args:
+        daily_xp_earned (int): XP already earned today
+        workout_data (list): List of dicts containing exercise data
+            [{'exercise_id': int, 'volume': float, 'intensity': float}, ...]
+    
+    Returns:
+        int: XP earned from this workout
     """
-    # XP for logging a workout session
+    # Base XP for logging a workout
     xp = 15 if daily_xp_earned == 0 else 0
-
-    # Constants for additional XP calculation
-    CONSISTENCY_XP = 10  # XP for each consistent workout session
-    VOLUME_PROGRESS_XP = 5  # XP for each unit increase in volume
-
-    # Calculate consistency XP
-    unique_dates = set(date for _, date, _ in workout_data)
-    xp += CONSISTENCY_XP * len(unique_dates)
-
-    # Calculate volume progression XP
-    previous_volumes = {}  # To store previous volume for each exercise
-    for exercise, _, volume in workout_data:
-        if exercise not in previous_volumes or volume > previous_volumes[exercise]:
-            xp += VOLUME_PROGRESS_XP * (volume - previous_volumes.get(exercise, 0))
-            previous_volumes[exercise] = volume
-
-    return xp
+    
+    # Add XP based on total volume and intensity
+    total_volume = sum(exercise['volume'] for exercise in workout_data)
+    total_intensity = sum(exercise['intensity'] for exercise in workout_data)
+    
+    # Volume XP: 1 XP per 100 lbs, max 50
+    volume_xp = min(int(total_volume / 100), 50)
+    
+    # Intensity XP: 1 XP per 20 intensity points, max 35
+    intensity_xp = min(int(total_intensity / 20), 35)
+    
+    xp += volume_xp + intensity_xp
+    
+    # Cap total XP at 100 per workout
+    return min(xp, 100)
 
 def calculate_running_xp(duration: int, distance: float, daily_xp_earned: int) -> int:
     """

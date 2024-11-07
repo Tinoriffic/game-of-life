@@ -37,11 +37,11 @@ class WorkoutProgramCreate(BaseModel):
 
 class WorkoutSetCreate(BaseModel):
     set_number: int
-    weight: Optional[float] = None
-    reps: int
+    weight: float | None = None
+    reps: int | None = None
 
 class SessionExerciseCreate(BaseModel):
-    exercise_id: int
+    program_exercise_id: int
     sets: List[WorkoutSetCreate]
 
 class WorkoutSessionCreate(BaseModel):

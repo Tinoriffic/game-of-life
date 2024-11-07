@@ -199,14 +199,18 @@ def get_exercises(db: Session, user_id: Optional[int] = None):
     return query.all()
 
 def log_workout_session(db: Session, session_data: workout_schema.WorkoutSessionCreate, user_id: int):
-     # Check if the workout program exists and belongs to the user
+    """
+    Log a workout session with performed exercises and sets.
+    """
+    # Fetch program with name
     workout_program = db.query(workout_model.WorkoutProgram).filter(
         workout_model.WorkoutProgram.program_id == session_data.program_id,
         workout_model.WorkoutProgram.user_id == user_id
     ).first()
     if not workout_program:
         raise ValueError("Workout program not found or doesn't belong to the user")
-    
+
+    # Create new workout session
     new_session = workout_model.WorkoutSession(
         user_id=user_id,
         program_id=session_data.program_id,
@@ -215,17 +219,24 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
     db.add(new_session)
     db.flush()
 
+    session_exercises = []
+    
+    # Process each exercise
     for exercise_data in session_data.exercises:
-        # Check if exercise exists
-        exercise = db.query(workout_model.Exercise).filter(
-            workout_model.Exercise.exercise_id == exercise_data.exercise_id
+        # Fetch program exercise with exercise info
+        program_exercise = db.query(workout_model.ProgramExercise).join(
+            workout_model.Exercise
+        ).filter(
+            workout_model.ProgramExercise.program_exercise_id == exercise_data.program_exercise_id
         ).first()
-        if not exercise:
-            raise ValueError(f"Exercise with id {exercise_data.exercise_id} not found")
+        
+        if not program_exercise:
+            raise ValueError(f"Exercise with id {exercise_data.program_exercise_id} not found")
 
+        # Create session exercise record
         session_exercise = workout_model.SessionExercise(
             session_id=new_session.session_id,
-            exercise_id=exercise.exercise_id,
+            exercise_id=program_exercise.exercise_id,
             total_volume=0,
             total_intensity_score=0
         )
@@ -233,43 +244,83 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
         db.flush()
 
         total_volume = 0
-        total_intensity_score = 0
+        total_intensity = 0
+
+        # Process each set
         for set_data in exercise_data.sets:
+            weight = set_data.weight or 0
+            reps = set_data.reps or 0
+            
             workout_set = workout_model.WorkoutSet(
                 session_exercise_id=session_exercise.session_exercise_id,
                 set_number=set_data.set_number,
-                weight=set_data.weight,
-                reps=set_data.reps
+                performed_weight=weight,
+                performed_reps=reps
             )
             db.add(workout_set)
-            if set_data.weight:
-                total_volume += set_data.weight * set_data.reps
-            else:
-                total_volume += set_data.reps
-            total_intensity_score += (set_data.weight or 0) * (1 + (set_data.reps / 30))
+            
+            # Calculate volume for this set
+            set_volume = weight * reps
+            total_volume += set_volume
+            total_intensity += set_volume * (1 + (reps / 30))
 
-        session_exercise.total_volume = total_volume
-        session_exercise.total_intensity_score = total_intensity_score
+        # Update session exercise with totals (round intensity to integer)
+        session_exercise.total_volume = round(total_volume, 2)  # Keep 2 decimal places for volume
+        session_exercise.total_intensity_score = round(total_intensity)  # Round to nearest integer
+        session_exercises.append(session_exercise)
         db.flush()
 
+    # Update strength skill and calculate XP
     strength_skill = db.query(skill_model.Skill).filter(
         skill_model.Skill.user_id == user_id,
         skill_model.Skill.name == "Strength"
     ).first()
 
-    # Reset daily XP if it's a new day
-    if strength_skill and strength_skill.last_updated.date() < datetime.now().date():
+    if strength_skill and strength_skill.last_updated.date() < datetime.utcnow().date():
         strength_skill.daily_xp_earned = 0
 
-    # Update Skill XP
-    workout_data = get_user_workout_progress(db, user_id)
+    # Calculate and award XP
+    workout_data = []
+    for session_exercise in session_exercises:
+        workout_data.append({
+            'exercise_id': session_exercise.exercise_id,
+            'volume': session_exercise.total_volume,
+            'intensity': session_exercise.total_intensity_score
+        })
+
     xp_to_add = calculate_workout_xp(strength_skill.daily_xp_earned, workout_data)
     update_skill_xp(db, user_id, "Strength", xp_to_add)
     update_activity_streak(db, user_id, "workout")
 
     db.commit()
-    db.refresh(new_session)
-    return new_session
+    
+    # Fetch the complete session data for the response
+    complete_session = db.query(workout_model.WorkoutSession).options(
+        joinedload(workout_model.WorkoutSession.workout_program),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.exercise),
+        joinedload(workout_model.WorkoutSession.exercises).joinedload(workout_model.SessionExercise.sets)
+    ).filter(
+        workout_model.WorkoutSession.session_id == new_session.session_id
+    ).first()
+
+    return {
+        "session_id": complete_session.session_id,
+        "user_id": complete_session.user_id,
+        "program_id": complete_session.program_id,
+        "program_name": complete_session.workout_program.name,
+        "session_date": complete_session.session_date,
+        "exercises": [{
+            "exercise_id": ex.exercise_id,
+            "name": ex.exercise.name,
+            "total_volume": ex.total_volume,
+            "total_intensity_score": ex.total_intensity_score,
+            "sets": [{
+                "set_number": s.set_number,
+                "weight": s.performed_weight,
+                "reps": s.performed_reps
+            } for s in ex.sets]
+        } for ex in complete_session.exercises]
+    }
 
 def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     result = db.execute(
@@ -541,8 +592,8 @@ def get_workout_progress(db: Session, user_id: int):
                         sets=[
                             workout_schema.ExerciseSet(
                                 set_number=set.set_number,
-                                weight=set.weight,
-                                reps=set.reps
+                                weight=set.performed_weight,
+                                reps=set.performed_reps
                             ) for set in exercise.sets
                         ],
                         total_volume=exercise.total_volume,
