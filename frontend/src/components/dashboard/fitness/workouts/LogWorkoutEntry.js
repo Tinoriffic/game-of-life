@@ -53,16 +53,30 @@ const LogWorkoutEntry = ({ program, onClose }) => {
       );
   
       if (exerciseIndex !== -1) {
+        // Make sure sets array exists and has enough elements
+        if (!updatedExercises[exerciseIndex].sets) {
+          updatedExercises[exerciseIndex].sets = [];
+        }
+        while (updatedExercises[exerciseIndex].sets.length <= setIndex) {
+          updatedExercises[exerciseIndex].sets.push({
+            set_number: updatedExercises[exerciseIndex].sets.length + 1,
+            weight: null,
+            reps: null
+          });
+        }
         updatedExercises[exerciseIndex].sets[setIndex] = {
           ...updatedExercises[exerciseIndex].sets[setIndex],
-          [field]: value,
+          set_number: setIndex + 1,
+          [field === 'performed_weight' ? 'weight' : 'reps']: value || null
         };
       } else {
         const newExercise = {
           program_exercise_id: programExerciseId,
-          sets: Array(setIndex + 1)
-            .fill()
-            .map((_, index) => (index === setIndex ? { [field]: value } : {})),
+          sets: Array(setIndex + 1).fill().map((_, i) => ({
+            set_number: i + 1,
+            weight: i === setIndex && field === 'performed_weight' ? value : null,
+            reps: i === setIndex && field === 'performed_reps' ? value : null
+          }))
         };
         updatedExercises.push(newExercise);
       }
@@ -73,14 +87,45 @@ const LogWorkoutEntry = ({ program, onClose }) => {
 
   const handleSubmit = async () => {
     try {
-      await axiosInstance.post(`/users/${user.id}/workout-sessions`, {
+      // Validate that we have data
+      if (!loggedExercises.length) {
+        alert('Please log at least one exercise');
+        return;
+      }
+
+      // Filter out exercises with incomplete sets
+      const formattedExercises = loggedExercises
+        .map(exercise => ({
+          program_exercise_id: exercise.program_exercise_id,
+          sets: exercise.sets
+            .filter(set => set.reps != null || set.weight != null) // Only include sets with data
+            .map(set => ({
+              set_number: set.set_number,
+              weight: set.weight || 0,
+              reps: set.reps || 0
+            }))
+        }))
+        .filter(exercise => exercise.sets.length > 0); // Only include exercises with sets
+
+      if (!formattedExercises.length) {
+        alert('Please complete at least one exercise set');
+        return;
+      }
+
+      const payload = {
         program_id: program.program_id,
-        date: new Date().toISOString(),
-        exercises: loggedExercises,
-      });
+        session_date: new Date().toISOString(),
+        exercises: formattedExercises
+      };
+
+      console.log('Sending payload:', JSON.stringify(payload, null, 2));
+
+      await axiosInstance.post(`/users/${user.id}/workout-sessions`, payload);
       onClose();
     } catch (error) {
       console.error('Failed to log workout entry', error.response);
+      const errorMessage = error.response?.data?.detail || 'Failed to log workout';
+      alert(errorMessage);
     }
   };
 
@@ -112,16 +157,16 @@ const LogWorkoutEntry = ({ program, onClose }) => {
                           Set {setIndex + 1} Weight:
                           <input
                             type="number"
-                            value={loggedExercises.find((e) => e.program_exercise_id === exercise.program_exercise_id)?.sets[setIndex]?.performed_weight || ''}
-                            onChange={(e) => handleExerciseChange(exercise.program_exercise_id, setIndex, 'performed_weight', parseInt(e.target.value))}
+                            value={loggedExercises.find((e) => e.program_exercise_id === exercise.program_exercise_id)?.sets?.[setIndex]?.weight || ''}
+                            onChange={(e) => handleExerciseChange(exercise.program_exercise_id, setIndex, 'performed_weight', parseInt(e.target.value) || null)}
                           />
                         </label>
                         <label>
                           Set {setIndex + 1} Reps:
                           <input
                             type="number"
-                            value={loggedExercises.find((e) => e.program_exercise_id === exercise.program_exercise_id)?.sets[setIndex]?.performed_reps || ''}
-                            onChange={(e) => handleExerciseChange(exercise.program_exercise_id, setIndex, 'performed_reps', parseInt(e.target.value))}
+                            value={loggedExercises.find((e) => e.program_exercise_id === exercise.program_exercise_id)?.sets?.[setIndex]?.reps || ''}
+                            onChange={(e) => handleExerciseChange(exercise.program_exercise_id, setIndex, 'performed_reps', parseInt(e.target.value) || null)}
                           />
                         </label>
                       </div>
