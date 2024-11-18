@@ -2,7 +2,7 @@ import React from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import './ExerciseAnalyticsView.css';
 
-const OverallProgressView = ({ data, selectedExercise, setSelectedExercise }) => {
+const ExerciseAnalyticsView = ({ data, selectedExercise, setSelectedExercise }) => {
   if (!data || !data.exercises) return null;
 
   const exerciseData = data.exercises.find(e => e.name === selectedExercise);
@@ -33,7 +33,7 @@ const OverallProgressView = ({ data, selectedExercise, setSelectedExercise }) =>
   }));
 
   return (
-    <div className="overall-progress-view">
+    <div className="exercise-analytics-view">
       <div className="exercise-selector">
         <select
           value={selectedExercise}
@@ -110,4 +110,4 @@ const OverallProgressView = ({ data, selectedExercise, setSelectedExercise }) =>
   );
 };
 
-export default OverallProgressView;
+export default ExerciseAnalyticsView;
