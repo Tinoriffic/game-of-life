@@ -1,4 +1,4 @@
-## The Game of Life
+## Me v2
 
 ### First Time Set Up
 This is a Python-based application. Ensure you have both Python and Node.js installed on your machine. Set up a virtual environment by running:

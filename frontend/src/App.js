@@ -10,20 +10,22 @@ import JournalLogs from './components/dashboard/daily/JournalLogs';
 import MeditationLogs from './components/dashboard/daily/MeditationLogs';
 import LearningLogs from './components/dashboard/daily/LearningLogs';
 import FitnessLogger from './components/dashboard/fitness/FitnessLogger';
+import StatsPage from './components/dashboard/stats/StatsPage';
 
 function App() {
   return (
     <Router>
       <header className="main-header">
-        <h1>Game of Life</h1>
+        <h1>Me v2</h1>
       </header>
       <nav className="main-nav">
         <ul>
           <li><Link to="/">Home</Link></li>
-          <li>Skill Tree</li>
+          <li>Quests</li>
+          {/* <li>Skill Tree</li> */}
           <li>Milestones</li>
           <li><Link to="/dashboard">Action Logger</Link></li>
-          <li>Stats</li>
+          <li><Link to="/stats">Stats</Link></li>
         </ul>
       </nav>
       <Routes>
@@ -38,6 +40,7 @@ function App() {
         <Route path="/log-meditation" element={<MeditationLogs />} />
         <Route path="/log-learning-session" element={<LearningLogs />} />
         <Route path="/fitness" element={<FitnessLogger />} />
+        <Route path="/stats" element={<StatsPage />} />
       </Routes>
     </Router>
   );
