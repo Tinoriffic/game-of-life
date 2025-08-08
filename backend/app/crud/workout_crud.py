@@ -5,7 +5,7 @@ from ..models import workout_model, skill_model, activity_model
 from ..xp_calculator import calculate_workout_xp
 from ..skill_manager import update_skill_xp
 from ..crud.activity_crud import update_activity_streak
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Tuple, Optional
 
 def get_workout_program_by_id(db: Session, program_id: int):
@@ -276,7 +276,7 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
         skill_model.Skill.name == "Strength"
     ).first()
 
-    if strength_skill and strength_skill.last_updated.date() < datetime.utcnow().date():
+    if strength_skill and strength_skill.last_updated.date() < datetime.now(timezone.utc).date()():
         strength_skill.daily_xp_earned = 0
 
     # Calculate and award XP

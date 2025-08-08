@@ -6,7 +6,7 @@ from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
 from .skill_crud import get_user_skills
-from datetime import datetime, timedelta, date
+from datetime import datetime, timedelta, timezone, date
 from typing import List, Tuple, Optional
 
 logger = logging.getLogger(__name__)
@@ -28,7 +28,7 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
 
     # Check if it's a new day
     for skill in user_skills:
-        if skill.last_updated.date() < datetime.utcnow().date():
+        if skill.last_updated.date() < datetime.now(timezone.utc).date()():
             skill.daily_xp_earned = 0
 
     # Step 2: Calculate XP based on activity type
