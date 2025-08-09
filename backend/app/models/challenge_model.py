@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Boo
 from sqlalchemy.orm import relationship
 
 from ..database import Base
-from datetime import datetime, timedelta, timezone
+from ..utils.time import utc_today, utc_now
 
 class Badge(Base):
     __tablename__ = "badges"
@@ -36,7 +36,7 @@ class UserChallenge(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     challenge_id = Column(Integer, ForeignKey('challenges.id'))
-    start_date = Column(Date, default=datetime.now(timezone.utc).date())
+    start_date = Column(Date, default=utc_today)
     end_date = Column(Date)  # Computed: start_date + duration_days
     is_active = Column(Boolean, default=True)
     is_completed = Column(Boolean, default=False)
@@ -53,7 +53,7 @@ class UserChallenge(Base):
         """Calculate which day of the challenge we're on"""
         if not self.is_active:
             return 0
-        today = datetime.now(timezone.utc).date()()
+        today = utc_today()
         if today < self.start_date:
             return 0
         elif today > self.end_date:
@@ -74,7 +74,7 @@ class UserChallenge(Base):
         
         sorted_entries = sorted(self.progress_entries, key=lambda x: x.completion_date, reverse=True)
         streak = 0
-        expected_date = datetime.now(timezone.utc).date()()
+        expected_date = utc_today()
         
         for entry in sorted_entries:
             if entry.completion_date == expected_date or entry.completion_date == expected_date - timedelta(days=1):
@@ -89,10 +89,10 @@ class ChallengeProgress(Base):
     __tablename__ = "challenge_progress"
     id = Column(Integer, primary_key=True, index=True)
     user_challenge_id = Column(Integer, ForeignKey('user_challenges.id', ondelete='CASCADE'))
-    completion_date = Column(Date, default=datetime.now(timezone.utc).date())
+    completion_date = Column(Date, default=utc_today)
     activity_data = Column(JSON, nullable=True)  # Store activity-specific data (distance, duration, etc.)
     xp_awarded = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=utc_now)
     
     user_challenge = relationship("UserChallenge", back_populates="progress_entries")
 
