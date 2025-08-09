@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Boo
 from sqlalchemy.orm import relationship
 
 from ..database import Base
-from datetime import datetime
+from ..utils.time import utc_now
 
 class UserActivities(Base):
     __tablename__ = "user_activities"
@@ -12,7 +12,7 @@ class UserActivities(Base):
     description = Column(String)
     notes = Column(String, nullable=True)
     xp_earned = Column(Integer)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=utc_now)
     duration = Column(Integer, default=0)
     volume = Column(Integer, default=0) # for workouts (weight * reps)
     distance = Column(Float, default=0.0)
@@ -35,7 +35,7 @@ class WeightTracking(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     weight = Column(Float)
-    date = Column(DateTime, default=datetime.utcnow)
+    date = Column(DateTime, default=utc_now)
     weight_goal = Column(Float)
     is_starting_weight = Column(Boolean, default=False)
     

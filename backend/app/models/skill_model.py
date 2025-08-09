@@ -2,7 +2,7 @@ from sqlalchemy import Column, ForeignKey, Integer, String, DateTime
 from sqlalchemy.orm import relationship
 
 from ..database import Base
-from datetime import datetime
+from ..utils.time import utc_now
 
 class Skill(Base):
     __tablename__ = "skills"
@@ -11,7 +11,7 @@ class Skill(Base):
     level = Column(Integer, default=1)
     xp = Column(Integer, default=0)
     daily_xp_earned = Column(Integer, default=0)
-    last_updated = Column(DateTime(timezone=True), default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_updated = Column(DateTime(timezone=True), default=utc_now, onupdate=utc_now)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     parent_skill_id = Column(Integer, ForeignKey('skills.id'))
     
@@ -24,7 +24,7 @@ class SkillProgression(Base):
     skill_name = Column(String, index=True)
     xp = Column(Integer)
     level = Column(Integer)
-    last_updated = Column(DateTime, default=datetime.utcnow)
+    last_updated = Column(DateTime, default=utc_now)
     
     user = relationship('User', back_populates='skill_progression')
     

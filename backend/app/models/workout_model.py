@@ -1,12 +1,8 @@
 from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Enum, Float, Text, Boolean
 from sqlalchemy.orm import relationship
-from datetime import datetime, timezone
 
 from ..database import Base
-
-# Helper method for returning the current time in UTC
-def utc_now():
-    return datetime.now(timezone.utc)
+from ..utils.time import utc_now
 
 class WorkoutProgram(Base):
     __tablename__ = "workout_programs"
