@@ -1,0 +1,277 @@
+.no-active-challenge {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 80px 20px;
+    text-align: center;
+}
+
+.no-challenge-content {
+    background-color: #282c34;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 40px;
+    max-width: 400px;
+}
+
+.no-challenge-content h2 {
+    color: #F8F8F2;
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 15px;
+}
+
+.no-challenge-content p {
+    color: #F8F8F2;
+    opacity: 0.8;
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.active-challenge {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: #282c34;
+    border: 2px solid #fff;
+    border-radius: 10px;
+    padding: 30px;
+    color: #F8F8F2;
+}
+
+.challenge-header {
+    text-align: center;
+    margin-bottom: 25px;
+}
+
+.challenge-header h2 {
+    color: #F8F8F2;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0 0 10px 0;
+}
+
+.challenge-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.day-counter {
+    color: #4caf50;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+.days-remaining {
+    color: #2196F3;
+    font-size: 14px;
+}
+
+.challenge-progress {
+    margin: 25px 0;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #1D1F20;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #444;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #2196F3);
+    transition: width 0.5s ease;
+}
+
+.progress-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 8px;
+    font-size: 14px;
+    color: #F8F8F2;
+    opacity: 0.9;
+}
+
+.challenge-description {
+    background: #1D1F20;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #444;
+}
+
+.challenge-description p {
+    margin: 0;
+    line-height: 1.5;
+}
+
+.daily-rewards {
+    background: #1D1F20;
+    padding: 15px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #4caf50;
+}
+
+.daily-rewards h4 {
+    color: #4caf50;
+    margin: 0 0 10px 0;
+    font-family: 'Orbitron', sans-serif;
+}
+
+.daily-rewards p {
+    margin: 5px 0;
+    color: #2196F3;
+}
+
+.total-xp {
+    font-weight: bold;
+    color: #F8F8F2;
+}
+
+.completion-section {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.day-completed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    color: #4caf50;
+    font-size: 18px;
+    font-weight: bold;
+    background: #1D1F20;
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid #4caf50;
+}
+
+.completed-icon {
+    font-size: 24px;
+}
+
+.complete-day-btn {
+    background-color: #4caf50;
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 18px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    min-width: 200px;
+}
+
+.complete-day-btn:hover {
+    background-color: #43a047;
+    transform: translateY(-2px);
+}
+
+.complete-day-btn:disabled {
+    background-color: #666;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.cannot-complete {
+    color: #ff9800;
+    font-style: italic;
+    padding: 15px;
+    background: #1D1F20;
+    border-radius: 8px;
+    border: 1px solid #ff9800;
+}
+
+.challenge-actions {
+    text-align: center;
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #444;
+}
+
+.quit-challenge-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.quit-challenge-btn:hover {
+    background-color: #d32f2f;
+}
+
+.quit-confirmation-modal {
+    background: #1D1F20;
+    color: #F8F8F2;
+    padding: 30px;
+    border-radius: 10px;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.quit-confirmation-modal h3 {
+    color: #f44336;
+    font-family: 'Orbitron', sans-serif;
+    margin-bottom: 15px;
+}
+
+.quit-confirmation-modal p {
+    margin: 10px 0;
+    line-height: 1.5;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.cancel-btn {
+    background-color: #666;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex: 1;
+}
+
+.cancel-btn:hover {
+    background-color: #555;
+}
+
+.quit-btn {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    flex: 1;
+}
+
+.quit-btn:hover {
+    background-color: #d32f2f;
+}
+
+.error-message {
+    background-color: #f44336;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    text-align: center;
+    margin: 15px 0;
+}

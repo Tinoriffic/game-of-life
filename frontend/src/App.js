@@ -11,6 +11,7 @@ import MeditationLogs from './components/dashboard/daily/MeditationLogs';
 import LearningLogs from './components/dashboard/daily/LearningLogs';
 import FitnessLogger from './components/dashboard/fitness/FitnessLogger';
 import StatsPage from './components/dashboard/stats/StatsPage';
+import ChallengesPage from './components/dashboard/challenges/ChallengesPage';
 
 function App() {
   return (
@@ -21,7 +22,7 @@ function App() {
       <nav className="main-nav">
         <ul>
           <li><Link to="/">Home</Link></li>
-          <li>Quests</li>
+          <li><Link to="/challenges">Challenges</Link></li>
           {/* <li>Skill Tree</li> */}
           <li>Milestones</li>
           <li><Link to="/dashboard">Action Logger</Link></li>
@@ -41,6 +42,7 @@ function App() {
         <Route path="/log-learning-session" element={<LearningLogs />} />
         <Route path="/fitness" element={<FitnessLogger />} />
         <Route path="/stats" element={<StatsPage />} />
+        <Route path="/challenges" element={<ChallengesPage />} />
       </Routes>
     </Router>
   );

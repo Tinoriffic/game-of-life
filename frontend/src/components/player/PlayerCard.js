@@ -1,12 +1,29 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types'
 import './PlayerCard.css'
 import defaultAvatar from '../../assets/default-avatar.png'
+import { challengeService } from '../../services/challengeService'
 
 const PlayerCard = ({ playerData }) => {
   const { avatar_url, first_name, city, occupation, skills } = playerData;
+  const [badges, setBadges] = useState([]);
+  const [hoveredBadge, setHoveredBadge] = useState(null);
   const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
   console.log("avatar_url", avatar_url)
+
+  useEffect(() => {
+    loadBadges();
+  }, []);
+
+  const loadBadges = async () => {
+    try {
+      const badgeData = await challengeService.getUserBadges();
+      setBadges(badgeData.badges || []);
+    } catch (err) {
+      console.error('Error loading badges:', err);
+      setBadges([]);
+    }
+  };
 
   const renderStatBar = (skill) => {
     const maxXP = 100 * (skill.level * 1.5)
@@ -31,6 +48,46 @@ const PlayerCard = ({ playerData }) => {
       <div className="player-stats">
         {skills && skills.map(renderStatBar)}
       </div>
+      
+      {badges.length > 0 && (
+        <div className="player-badges">
+          <h4>Badges ({badges.length})</h4>
+          <div className="badges-container">
+            {badges.map((userBadge) => (
+              <div 
+                key={userBadge.id}
+                className="badge-item"
+                onMouseEnter={() => setHoveredBadge(userBadge)}
+                onMouseLeave={() => setHoveredBadge(null)}
+              >
+                {userBadge.badge.icon_url ? (
+                  <img 
+                    src={userBadge.badge.icon_url} 
+                    alt={userBadge.badge.title}
+                    className="badge-icon"
+                  />
+                ) : (
+                  <div className="default-badge-icon">🏅</div>
+                )}
+                
+                {hoveredBadge && hoveredBadge.id === userBadge.id && (
+                  <div className="badge-tooltip">
+                    <div className="badge-tooltip-title">{userBadge.badge.title}</div>
+                    {userBadge.badge.description && (
+                      <div className="badge-tooltip-description">
+                        {userBadge.badge.description}
+                      </div>
+                    )}
+                    <div className="badge-tooltip-date">
+                      Earned: {new Date(userBadge.earned_date).toLocaleDateString()}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
