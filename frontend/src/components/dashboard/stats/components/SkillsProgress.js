@@ -11,7 +11,8 @@ const SkillsProgress = ({ data }) => {
       'Intelligence': '#00ff00',
       'Charisma': '#00ff00',
       'Wisdom': '#00ff00',
-      'Awareness': '#00ff00'
+      'Awareness': '#00ff00',
+      'Resilience': '#00ff00'
     };
     return colors[skillName] || '#ffffff';
   };

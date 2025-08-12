@@ -19,7 +19,7 @@ def mock_user():
 
 @pytest.fixture(scope="module")
 def mock_skills():
-    base_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom']
+    base_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom', 'Resilience']
     skills = []
     for skill in base_skills:
         if skill == 'Awareness':
