@@ -101,7 +101,7 @@ class UserBadge(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     badge_id = Column(Integer, ForeignKey('badges.id'))
-    earned_date = Column(DateTime, default=datetime.utcnow)
+    earned_date = Column(DateTime, default=utc_now)
     user_challenge_id = Column(Integer, ForeignKey('user_challenges.id'), nullable=True)  # Track which challenge earned this badge
     
     user = relationship('User', back_populates='user_badges')
