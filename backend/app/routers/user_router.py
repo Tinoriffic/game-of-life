@@ -185,6 +185,30 @@ async def read_current_user_data(db: Session = Depends(get_db), current_user: us
 
     return user_schema.UserWithSkills(**user_dict, skills=skills_dicts)
 
+@router.put("/users/me/timezone")
+async def update_user_timezone(
+    timezone: str = Body(..., embed=True),
+    db: Session = Depends(get_db), 
+    current_user: user_model.User = Depends(auth_utils.get_current_user)
+):
+    """
+    Update the current user's timezone
+    """
+    try:
+        import pytz
+        pytz.timezone(timezone)  # This will raise an exception if timezone is invalid
+        
+        current_user.timezone = timezone
+        db.commit()
+        db.refresh(current_user)
+        
+        return {"message": "Timezone updated successfully", "timezone": timezone}
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid timezone: {str(e)}"
+        )
+
 @router.get("/users/{user_id}/stats", response_model=Dict)
 def get_user_stats(user_id: int, db: Session = Depends(get_db)):
     user = user_crud.get_user(db, user_id=user_id)

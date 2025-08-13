@@ -5,6 +5,7 @@ import PlayerCard from './player/PlayerCard';
 import { useNavigate } from 'react-router-dom';
 import { baseUrl } from '../config/apiConfig';
 import { useUser } from './player/UserContext';
+import { userService } from '../services/userService';
 
 function MainMenu() {
   const token = localStorage.getItem('accessToken');
@@ -27,6 +28,11 @@ function MainMenu() {
         setPlayerData(response.data);
         localStorage.setItem('userId', response.data.id.toString());
         setUser({id: response.data.id});
+
+        // Detect and save user's timezone (non-blocking)
+        userService.detectAndSaveTimezone().catch(err => {
+          console.warn('Failed to update timezone, continuing normally:', err);
+        });
       } catch (error) {
         if (error.response && error.response.status === 401) {
           setError(error.response.data.detail);

@@ -14,6 +14,7 @@ class User(Base):
     city = Column(String)
     occupation = Column(String)
     avatar_url = Column(String, nullable=True)
+    timezone = Column(String, default='UTC', nullable=False)
     
     skills = relationship("Skill", back_populates="user")
     activities = relationship("UserActivities", back_populates="user")

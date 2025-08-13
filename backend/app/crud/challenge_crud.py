@@ -1,12 +1,11 @@
 from sqlalchemy.orm import Session
-from sqlalchemy import and_, func
-from datetime import datetime, timedelta, timezone, date
+from sqlalchemy import and_
+from datetime import timedelta
 from typing import List, Optional
 
-from ..models.challenge_model import Challenge, UserChallenge, ChallengeProgress, Badge, UserBadge
-from ..models.user_model import User
-from ..schemas import challenge_schema
+from ..models.challenge_model import Challenge, UserChallenge, ChallengeProgress, UserBadge
 from ..skill_manager import update_skill_xp
+from ..utils.time import get_user_today
 
 def get_available_challenges(db: Session) -> List[Challenge]:
     """
@@ -38,9 +37,10 @@ def check_and_fail_expired_challenges(db: Session, user_id: int = None):
         query = query.filter(UserChallenge.user_id == user_id)
     
     active_challenges = query.all()
-    today = datetime.now(timezone.utc).date()
     
     for user_challenge in active_challenges:
+        today = get_user_today(db, user_challenge.user_id)
+        
         # Check if challenge period is over
         if today > user_challenge.end_date:
             user_challenge.is_failed = True
@@ -104,7 +104,7 @@ def join_challenge(db: Session, user_id: int, challenge_id: int) -> UserChalleng
         raise ValueError("Challenge is not active")
     
     # Create user challenge
-    start_date = datetime.now(timezone.utc).date()
+    start_date = get_user_today(db, user_id)
     end_date = start_date + timedelta(days=challenge.duration_days - 1)  # -1 because start day counts as day 1
     
     user_challenge = UserChallenge(
@@ -131,7 +131,7 @@ def quit_challenge(db: Session, user_id: int) -> Optional[UserChallenge]:
         return None
     
     user_challenge.is_active = False
-    user_challenge.quit_date = datetime.now(timezone.utc).date()
+    user_challenge.quit_date = get_user_today(db, user_id)
     
     db.commit()
     db.refresh(user_challenge)
@@ -145,7 +145,7 @@ def mark_day_complete(db: Session, user_id: int, activity_data: dict = None) -> 
     if not user_challenge:
         raise ValueError("No active challenge found")
     
-    today = datetime.now(timezone.utc).date()
+    today = get_user_today(db, user_id)
     
     # Check if today is within the challenge period
     if today < user_challenge.start_date or today > user_challenge.end_date:
@@ -193,7 +193,7 @@ def check_challenge_completion(db: Session, user_challenge: UserChallenge):
     if not user_challenge.is_active:
         return
     
-    today = datetime.now(timezone.utc).date()
+    today = get_user_today(db, user_challenge.user_id)
     completed_days = len(user_challenge.progress_entries)
     
     # Check if challenge should be completed
@@ -250,7 +250,7 @@ def get_challenge_with_progress(db: Session, user_id: int) -> Optional[dict]:
     if not user_challenge:
         return None
     
-    today = datetime.now(timezone.utc).date()
+    today = get_user_today(db, user_id)
     
     # Calculate progress stats
     current_day = (today - user_challenge.start_date).days + 1 if today >= user_challenge.start_date else 0
