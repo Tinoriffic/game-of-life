@@ -24,8 +24,8 @@ def upgrade() -> None:
     # Insert badges first (due to foreign key constraint)
     badges_data = [
         (1, 'Road Warrior', 'Conquered 30 consecutive days of running at least 1 mile', None),
-        (2, 'Zen Architect', 'Built a mind palace through 30 days of consistent meditation', None),
-        (3, 'Wisdom Collector', 'Hoarded knowledge for 30 days straight', None),
+        (2, 'Zen Master', 'Built a mind palace through 30 days of consistent meditation', None),
+        (3, 'Knowledge Hoarder', 'Hoarded knowledge for 30 days straight', None),
         (4, 'Ice Walker', 'Survived 30 days of cold showers without flinching', None)
     ]
     
@@ -58,7 +58,7 @@ def upgrade() -> None:
         ),
         (
             2,
-            'Mind Palace Builder',
+            'Zen Master',
             'Meditate for at least 10 minutes every day for 30 days. Construct your inner sanctuary and master the art of mental clarity.',
             30,
             '[{"stat": "Wisdom", "xp": 7}, {"stat": "Resilience", "xp": 6}]',
@@ -84,7 +84,7 @@ def upgrade() -> None:
         ),
         (
             4,
-            'Arctic Survivor',
+            'Ice Walker',
             'Take a cold shower every day for 30 days. Embrace the freeze and forge unbreakable mental toughness.',
             30,
             '[{"stat": "Resilience", "xp": 12}]',
@@ -98,30 +98,30 @@ def upgrade() -> None:
     ]
     
     for challenge_data in challenges_data:
-        validation_rules_val = challenge_data[8]
-        if validation_rules_val is None:
-            validation_rules_val = 'null'
-        else:
-            validation_rules_val = f"'{validation_rules_val}'"
-            
-        activity_type_val = challenge_data[7]
-        if activity_type_val is None:
-            activity_type_val = 'NULL'
-        else:
-            activity_type_val = f"'{activity_type_val}'"
-            
-        connection.execute(text(f"""
+        connection.execute(text("""
             INSERT INTO challenges (
                 id, title, description, duration_days, target_stats, 
                 completion_xp_bonus, badge_id, activity_type, validation_rules, 
                 icon, is_active
             ) VALUES (
-                {challenge_data[0]}, '{challenge_data[1]}', '{challenge_data[2]}', {challenge_data[3]}, '{challenge_data[4]}'::jsonb,
-                {challenge_data[5]}, {challenge_data[6]}, {activity_type_val}, {validation_rules_val}::jsonb,
-                '{challenge_data[9]}', {challenge_data[10]}
+                :id, :title, :description, :duration_days, :target_stats::jsonb,
+                :completion_xp_bonus, :badge_id, :activity_type, :validation_rules::jsonb,
+                :icon, :is_active
             )
             ON CONFLICT (id) DO NOTHING
-        """))
+        """), {
+            "id": challenge_data[0],
+            "title": challenge_data[1],
+            "description": challenge_data[2],
+            "duration_days": challenge_data[3],
+            "target_stats": challenge_data[4],
+            "completion_xp_bonus": challenge_data[5],
+            "badge_id": challenge_data[6],
+            "activity_type": challenge_data[7],
+            "validation_rules": challenge_data[8],
+            "icon": challenge_data[9],
+            "is_active": challenge_data[10]
+        })
 
 
 def downgrade() -> None:
