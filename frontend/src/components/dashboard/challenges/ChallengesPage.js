@@ -43,9 +43,15 @@ const ChallengesPage = () => {
     };
 
     const handleChallengeJoined = async (newChallenge) => {
-        setActiveChallenge(newChallenge);
-        setActiveTab('active');
-        await refreshUserData();
+        try {
+            const activeData = await challengeService.getActiveChallenge();
+            setActiveChallenge(activeData.active_challenge);
+            setActiveTab('active');
+            await refreshUserData();
+        } catch (err) {
+            console.error('Error loading active challenge after joining:', err);
+            await loadChallengeData();
+        }
     };
 
     const handleChallengeCompleted = async () => {
@@ -70,7 +76,7 @@ const ChallengesPage = () => {
 
     return (
         <div className="challenges-page">
-            <BackButton />
+            {/* <BackButton /> */}
             <div className="challenges-header">
                 <h1>Challenges</h1>
                 <div className="challenges-tabs">
