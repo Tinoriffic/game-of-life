@@ -6,7 +6,8 @@ from jose import jwt, JWTError, ExpiredSignatureError
 from ..crud import user_crud
 from ..models import user_model
 from ..dependencies import get_db
-from datetime import datetime, timedelta
+from ..utils.time import utc_now
+from datetime import timedelta
 import httpx
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -17,8 +18,8 @@ def issue_registration_token(user_info: dict, stage: str = "initial"):
 
     payload = {
         "user_info": user_info,  # User's email or other identifier
-        "exp": datetime.utcnow() + expiration_time,
-        "iat": datetime.utcnow(),  # Issued at time,
+        "exp": utc_now() + expiration_time,
+        "iat": utc_now(),  # Issued at time,
         "stage": stage, # indicates current stage of registration
         "type": "registration"
     }
@@ -35,12 +36,12 @@ def generate_tokens(user: user_model.User):
     access_payload = {
         "sub": str(user.id),
         "type": "access",
-        "exp": datetime.utcnow() + access_token_expires
+        "exp": utc_now() + access_token_expires
     }
     refresh_payload = {
         "sub": str(user.id),
         "type": "refresh",
-        "exp": datetime.utcnow() + refresh_token_expires
+        "exp": utc_now() + refresh_token_expires
     }
 
     access_token = jwt.encode(access_payload, Config.SECRET_KEY, algorithm="HS256")

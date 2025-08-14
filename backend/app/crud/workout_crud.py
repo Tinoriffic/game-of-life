@@ -5,7 +5,8 @@ from ..models import workout_model, skill_model, activity_model
 from ..xp_calculator import calculate_workout_xp
 from ..skill_manager import update_skill_xp
 from ..crud.activity_crud import update_activity_streak
-from datetime import datetime, timedelta, timezone
+from ..utils.time import utc_now, utc_today
+from datetime import datetime, timedelta
 from typing import List, Dict, Tuple, Optional
 
 def get_workout_program_by_id(db: Session, program_id: int):
@@ -82,8 +83,8 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
         user_id=user_id,
         name=program.name,
         status='active',
-        created_at=datetime.now(),
-        updated_at=datetime.now()
+        created_at=utc_now(),
+        updated_at=utc_now()
     )
     db.add(new_program)
     db.flush()
@@ -135,8 +136,8 @@ def create_user_exercise(db: Session, user_id: int, exercise: workout_schema.Exe
         exercise_type_id=exercise.exercise_type_id,
         is_global=exercise.is_global,
         user_id=user_id,
-        created_at=datetime.now(),
-        updated_at=datetime.now()
+        created_at=utc_now(),
+        updated_at=utc_now()
     )
     db.add(new_exercise)
     db.commit()
@@ -158,7 +159,7 @@ def edit_exercise(db: Session, exercise_id: int, user_id: int, exercise_update: 
     for key, value in update_data.items():
         setattr(exercise, key, value)
 
-    exercise.updated_at = datetime.now()
+    exercise.updated_at = utc_now()
     db.commit()
     db.refresh(exercise)
     return exercise
@@ -276,7 +277,7 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
         skill_model.Skill.name == "Strength"
     ).first()
 
-    if strength_skill and strength_skill.last_updated.date() < datetime.now(timezone.utc).date()():
+    if strength_skill and strength_skill.last_updated.date() < utc_today():
         strength_skill.daily_xp_earned = 0
 
     # Calculate and award XP
@@ -368,9 +369,9 @@ def get_user_workout_progress(db: Session, user_id: int, start_date: datetime = 
     Fetch workout progress data for a user over a specified time frame.
     """
     if not start_date:
-        start_date = datetime.now() - timedelta(days=30)  # Default to last 30 days
+        start_date = utc_now() - timedelta(days=30)  # Default to last 30 days
     if not end_date:
-        end_date = datetime.now()
+        end_date = utc_now()
     
     result = db.execute(
         text("""
@@ -426,7 +427,7 @@ def archive_workout_program(db: Session, program_id: int):
     program = db.query(workout_model.WorkoutProgram).filter(workout_model.WorkoutProgram.program_id == program_id).first()
     if program:
         program.status = 'archived'
-        program.archived_at = datetime.now()
+        program.archived_at = utc_now()
         db.commit()
         return {"detail": "Workout program archived successfully"}
     else:
@@ -477,7 +478,7 @@ def update_workout_program(db: Session, program_id: int, program_update: workout
                 )
                 db.add(new_program_exercise)
 
-    db_program.updated_at=datetime.now()
+    db_program.updated_at=utc_now()
     db.commit()
     db.refresh(db_program)
     return db_program
@@ -502,7 +503,7 @@ def get_running_progress(db: Session, user_id: int):
         "history": [{"date": log.date, "distance": log.distance, "duration": log.duration} for log in running_logs]
     }
     # # Get running data for the last 30 days
-    # thirty_days_ago = datetime.now() - timedelta(days=30)
+    # thirty_days_ago = utc_now() - timedelta(days=30)
     # running_logs = db.query(activity_model.UserActivities).filter(
     #     activity_model.UserActivities.user_id == user_id,
     #     activity_model.UserActivities.activity_type == "run",

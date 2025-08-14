@@ -5,8 +5,9 @@ from ..schemas import activity_schema
 from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
+from ..utils.time import utc_now, utc_today
 from .skill_crud import get_user_skills
-from datetime import datetime, timedelta, timezone, date
+from datetime import timedelta, date
 from typing import List, Tuple, Optional
 
 logger = logging.getLogger(__name__)
@@ -28,7 +29,7 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
 
     # Check if it's a new day
     for skill in user_skills:
-        if skill.last_updated.date() < datetime.now(timezone.utc).date()():
+        if skill.last_updated.date() < utc_today():
             skill.daily_xp_earned = 0
 
     # Step 2: Calculate XP based on activity type
@@ -116,7 +117,7 @@ def get_recent_weight_logs(db: Session, user_id: int) -> Tuple[List[activity_mod
     Fetch the user's weight logs from the past two weeks.
     """
     logger.info(f"Fetching recent weight logs for user {user_id}")
-    two_weeks_ago = datetime.now().date() - timedelta(days=14)
+    two_weeks_ago = utc_today() - timedelta(days=14)
     
     subquery = db.query(
         activity_model.WeightTracking.date,
@@ -167,7 +168,7 @@ def update_activity_streak(db: Session, user_id: int, activity_type: str):
         db.add(streak)
 
 def get_daily_activities(db: Session, user_id: int):
-    thirty_days_ago = datetime.now() - timedelta(days=30)
+    thirty_days_ago = utc_now() - timedelta(days=30)
     activities = db.query(activity_model.UserActivities).filter(
         activity_model.UserActivities.user_id == user_id,
         activity_model.UserActivities.date >= thirty_days_ago

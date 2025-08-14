@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from .models import skill_model
-from datetime import datetime
+from .utils.time import utc_today
 
 def update_skill_xp(db: Session, user_id: int, skill_name: str, xp_to_add: int):
     """
@@ -50,7 +50,7 @@ def calculate_activity_streak(activities):
         return 0
 
     streak = 0
-    current_date = datetime.now().date()
+    current_date = utc_today()
 
     for activity in activities:
         activity_date = activity.date.date()
