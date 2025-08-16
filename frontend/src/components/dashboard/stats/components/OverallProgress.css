@@ -1,0 +1,121 @@
+.overall-progress {
+    background-color: #000;
+    color: #00ff00;
+    border: 2px solid #00ff00;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 0 10px #00ff00;
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    box-sizing: border-box;
+  }
+  
+  .progress-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-grow: 1;
+    margin-bottom: 20px;
+  }
+  
+  .level-progress {
+    width: 50%;
+    max-width: 250px;
+    margin: 0 auto;
+  }
+  
+  .progress-details {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    height: 100%;
+    width: 45%;
+  }
+  
+  .xp-info, .activity-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .stat-item {
+    background-color: #111;
+    padding: 10px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .stat-label {
+    font-size: 12px;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+  }
+  
+  .stat-value {
+    font-size: 18px;
+    color: #ff00ff;
+    font-weight: bold;
+  }
+  
+  .progress-bar {
+    background-color: #111;
+    border: 1px solid #00ff00;
+    height: 30px;
+    position: relative;
+    margin-top: auto;
+  }
+  
+  .progress-fill {
+    background-color: #00ff00;
+    height: 100%;
+    transition: width 0.5s ease-in-out;
+  }
+  
+  .progress-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: #ff00ff;
+    font-size: 14px;
+    text-shadow: 1px 1px 2px #000;
+    font-weight: bold;
+  }
+  
+  /* Overriding some CircularProgressbar styles */
+  .CircularProgressbar-text {
+    font-weight: bold;
+    font-family: 'Orbitron', sans-serif;
+  }
+  
+  .CircularProgressbar-trail {
+    stroke: #111;
+  }
+  
+  @media (max-width: 768px) {
+    .progress-container {
+      flex-direction: column;
+    }
+  
+    .level-progress {
+      width: 70%;
+      margin-bottom: 20px;
+    }
+  
+    .progress-details {
+      width: 100%;
+    }
+  
+    .xp-info, .activity-info {
+      flex-direction: row;
+      justify-content: space-between;
+    }
+  
+    .stat-item {
+      width: 48%;
+    }
+  }
