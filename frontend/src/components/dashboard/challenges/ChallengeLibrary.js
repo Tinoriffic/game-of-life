@@ -3,7 +3,7 @@ import { challengeService } from '../../../services/challengeService';
 import Modal from '../../common/Modal';
 import './ChallengeLibrary.css';
 
-const ChallengeLibrary = ({ challenges, hasActiveChallenge, onChallengeJoined }) => {
+const ChallengeLibrary = ({ challenges, hasActiveChallenge, activeChallenge, onChallengeJoined }) => {
     const [selectedChallenge, setSelectedChallenge] = useState(null);
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [joining, setJoining] = useState(false);
@@ -46,24 +46,54 @@ const ChallengeLibrary = ({ challenges, hasActiveChallenge, onChallengeJoined })
         return targetStats.map(stat => `+${stat.xp} ${stat.stat}`).join(', ');
     };
 
+
+    const getBadgeFileName = (challenge) => {
+        const activityType = challenge.activity_type?.toLowerCase() || '';
+        const title = challenge.title?.toLowerCase() || '';
+        
+        if (activityType === 'meditation') return 'zen-master.png';
+        if (activityType === 'learning') return 'knowledge-hoarder.png';
+        if (activityType === 'cardio') return 'road-warrior.png';
+        
+        // Check title for specific challenge types
+        if (title.includes('arctic')) return 'arctic-survivor.png';
+        
+        return 'zen-master.png'; // default fallback
+    };
+
     const renderChallengeCard = (challenge) => (
         <div key={challenge.id} className="challenge-card" onClick={() => openChallengeDetails(challenge)}>
-            <div className="challenge-icon">
-                {challenge.icon ? (
-                    <img src={challenge.icon} alt={challenge.title} />
-                ) : (
-                    <div className="default-challenge-icon">🎯</div>
-                )}
-            </div>
-            <div className="challenge-info">
-                <h3>{challenge.title}</h3>
-                <p className="challenge-duration">{challenge.duration_days} days</p>
-                <p className="challenge-description">{challenge.description}</p>
-                <div className="challenge-stats">
-                    <small>Rewards: {formatStatRewards(challenge.target_stats)}</small>
+            <div className="challenge-card-header">
+                <div className="challenge-icon">
+                    <img 
+                        src={`/images/badges/${getBadgeFileName(challenge)}`}
+                        alt={challenge.title} 
+                        className="badge-icon"
+                    />
+                </div>
+                <div className="challenge-title-section">
+                    <h3>{challenge.title}</h3>
+                    <div className="challenge-meta">
+                        <span className="challenge-duration">{challenge.duration_days} days</span>
+                        <span className="challenge-type">{challenge.activity_type || 'General'}</span>
+                    </div>
                 </div>
             </div>
-            <div className="challenge-action">
+            
+            <div className="challenge-card-body">
+                <p className="challenge-description">{challenge.description}</p>
+                
+                <div className="challenge-rewards">
+                    <h5>Daily Rewards</h5>
+                    <div className="rewards-list">
+                        {challenge.target_stats.map((stat, index) => (
+                            <span key={index} className="reward-stat">+{stat.xp} {stat.stat}</span>
+                        ))}
+                    </div>
+                </div>
+            </div>
+            
+            <div className="challenge-card-footer">
                 <button className="join-preview-btn">View Details</button>
             </div>
         </div>
@@ -136,7 +166,7 @@ const ChallengeLibrary = ({ challenges, hasActiveChallenge, onChallengeJoined })
                         {error && <div className="error-message">{error}</div>}
 
                         <div className="modal-actions">
-                            <button onClick={closeChallengeDetails} className="cancel-btn">
+                            <button onClick={closeChallengeDetails} className="modal-cancel-btn">
                                 Cancel
                             </button>
                             <button 
@@ -144,7 +174,9 @@ const ChallengeLibrary = ({ challenges, hasActiveChallenge, onChallengeJoined })
                                 disabled={joining || hasActiveChallenge}
                                 className={hasActiveChallenge ? 'join-btn disabled' : 'join-btn'}
                             >
-                                {joining ? 'Joining...' : hasActiveChallenge ? 'Already Active' : 'Join Challenge'}
+                                {joining ? 'Joining...' : 
+                                 activeChallenge && selectedChallenge && activeChallenge.id === selectedChallenge.id ? 'Already Active' :
+                                 hasActiveChallenge ? 'Join Challenge' : 'Join Challenge'}
                             </button>
                         </div>
                     </div>

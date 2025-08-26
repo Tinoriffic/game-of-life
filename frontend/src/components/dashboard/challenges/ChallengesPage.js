@@ -116,6 +116,7 @@ const ChallengesPage = () => {
                     <ChallengeLibrary 
                         challenges={availableChallenges}
                         hasActiveChallenge={!!activeChallenge}
+                        activeChallenge={activeChallenge?.user_challenge?.challenge}
                         onChallengeJoined={handleChallengeJoined}
                     />
                 )}
