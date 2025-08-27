@@ -824,7 +824,7 @@ popular_exercises = [
 ]
 
 from sqlalchemy.orm import Session
-from .models import workout_model
+from app.models import workout_model
 from sqlalchemy.exc import IntegrityError
 
 def populate_lookup_table(db: Session, model, data):
