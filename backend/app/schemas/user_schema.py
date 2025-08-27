@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
 from .skill_schema import Skill
+from ..models.user_model import UserRole
 
 class UserCreate(BaseModel):
     username: str
@@ -30,6 +31,7 @@ class User(BaseModel):
     city: str
     occupation: str
     avatar_url: Optional[str] = None
+    role: UserRole = UserRole.USER
 
     class ConfigDict:
         from_attributes = True
@@ -44,6 +46,7 @@ class UserWithSkills(BaseModel):
     occupation: str
     skills: List[Skill]
     avatar_url: Optional[str] = None
+    role: UserRole = UserRole.USER
 
     class ConfigDict:
         from_attributes = True

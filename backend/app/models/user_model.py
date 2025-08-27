@@ -1,7 +1,13 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Enum
 from sqlalchemy.orm import relationship
+import enum
 
 from ..database import Base
+
+class UserRole(enum.Enum):
+    USER = "user"
+    ADMIN = "admin"
+    MODERATOR = "moderator"
 
 class User(Base):
     __tablename__ = "users"
@@ -15,6 +21,7 @@ class User(Base):
     occupation = Column(String)
     avatar_url = Column(String, nullable=True)
     timezone = Column(String, default='UTC', nullable=False)
+    role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     
     skills = relationship("Skill", back_populates="user")
     activities = relationship("UserActivities", back_populates="user")

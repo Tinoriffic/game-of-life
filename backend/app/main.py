@@ -5,7 +5,7 @@ load_dotenv()
 
 from .oauth2_config import OAuth2Config
 from .cors import setup_cors
-from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router
+from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router
 from . import models
 from .database import engine
 
@@ -29,6 +29,7 @@ app.include_router(skill_router.router)
 app.include_router(user_router.router)
 app.include_router(workout_router.router)
 app.include_router(challenge_router.router)
+app.include_router(admin_router.router)
 
 
 # Example Routes

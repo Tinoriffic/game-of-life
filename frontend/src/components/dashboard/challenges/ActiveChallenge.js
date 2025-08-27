@@ -36,9 +36,10 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
             setCompletingDay(true);
             setError('');
 
-            const progressEntry = await challengeService.markDayComplete(activityData);
+            const response = await challengeService.markDayComplete(activityData);
+            const progressEntry = response.progress;
             
-            if (user_challenge.is_completed) {
+            if (response.challenge_completed) {
                 setCompletionData({
                     challenge: challenge,
                     progressEntry: progressEntry,

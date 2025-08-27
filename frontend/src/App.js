@@ -12,8 +12,12 @@ import LearningLogs from './components/dashboard/daily/LearningLogs';
 import FitnessLogger from './components/dashboard/fitness/FitnessLogger';
 import StatsPage from './components/dashboard/stats/StatsPage';
 import ChallengesPage from './components/dashboard/challenges/ChallengesPage';
+import AdminPanel from './components/admin/AdminPanel';
+import { useUser } from './components/player/UserContext';
 
 function App() {
+  const { user } = useUser();
+  
   return (
     <Router>
       <header className="main-header">
@@ -27,6 +31,9 @@ function App() {
           <li>Milestones</li>
           <li><Link to="/dashboard">Action Logger</Link></li>
           <li><Link to="/stats">Stats</Link></li>
+          {user?.role === 'ADMIN' && (
+            <li><Link to="/admin">Admin Panel</Link></li>
+          )}
         </ul>
       </nav>
       <Routes>
@@ -43,6 +50,7 @@ function App() {
         <Route path="/fitness" element={<FitnessLogger />} />
         <Route path="/stats" element={<StatsPage />} />
         <Route path="/challenges" element={<ChallengesPage />} />
+        <Route path="/admin" element={<AdminPanel />} />
       </Routes>
     </Router>
   );

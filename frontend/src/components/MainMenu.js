@@ -27,7 +27,7 @@ function MainMenu() {
 
         setPlayerData(response.data);
         localStorage.setItem('userId', response.data.id.toString());
-        setUser({id: response.data.id});
+        setUser(response.data);
 
         // Detect and save user's timezone (non-blocking)
         userService.detectAndSaveTimezone().catch(err => {

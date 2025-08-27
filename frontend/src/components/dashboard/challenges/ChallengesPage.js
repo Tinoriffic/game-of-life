@@ -8,7 +8,7 @@ import BackButton from '../../common/BackButton';
 import './ChallengesPage.css';
 
 const ChallengesPage = () => {
-    const { user, refreshUserData } = useUser();
+    const { user } = useUser();
     const [activeTab, setActiveTab] = useState('active');
     const [activeChallenge, setActiveChallenge] = useState(null);
     const [availableChallenges, setAvailableChallenges] = useState([]);
@@ -47,7 +47,6 @@ const ChallengesPage = () => {
             const activeData = await challengeService.getActiveChallenge();
             setActiveChallenge(activeData.active_challenge);
             setActiveTab('active');
-            await refreshUserData();
         } catch (err) {
             console.error('Error loading active challenge after joining:', err);
             await loadChallengeData();
@@ -56,13 +55,11 @@ const ChallengesPage = () => {
 
     const handleChallengeCompleted = async () => {
         await loadChallengeData();
-        await refreshUserData();
     };
 
     const handleChallengeQuit = async () => {
         setActiveChallenge(null);
         await loadChallengeData();
-        await refreshUserData();
     };
 
     if (loading) {

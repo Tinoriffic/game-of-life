@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from ..oauth2_config import OAuth2Config
 from ..models import user_model
 from ..schemas import user_schema
-from ..crud import user_crud, auth_utils, skill_crud
+from ..crud import user_crud, skill_crud
+from ..auth import auth_utils
 from ..dependencies import get_db
 from typing import List, Dict
 from urllib.parse import urlencode
@@ -51,8 +52,8 @@ async def set_username(request: user_schema.SetUsernameRequest, db: Session = De
         "username": request.username,
         "email": user_info["email"],
         "first_name": user_info["given_name"],
-        "last_name": user_info["family_name"],
-        "avatar_url": user_info["picture"]
+        "last_name": user_info.get("family_name", ""),  # Default to empty string if no last name
+        "avatar_url": user_info.get("picture")
     }, stage="set_username")
 
     print("Temporary Token")

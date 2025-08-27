@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 
 from ..models import user_model
 from ..schemas import challenge_schema
-from ..crud import challenge_crud, auth_utils
+from ..crud import challenge_crud
+from ..auth import auth_utils
 from ..dependencies import get_db
 
 router = APIRouter(prefix="/challenges", tags=["challenges"])
@@ -69,7 +70,7 @@ async def get_active_challenge(
             detail=f"Failed to fetch active challenge: {str(e)}"
         )
 
-@router.post("/complete", response_model=challenge_schema.ChallengeProgress)
+@router.post("/complete")
 async def mark_day_complete(
     request: challenge_schema.MarkCompleteRequest,
     db: Session = Depends(get_db),
@@ -84,7 +85,15 @@ async def mark_day_complete(
             user_id=current_user.id,
             activity_data=request.activity_data
         )
-        return progress
+        
+        # Get the updated challenge data to check completion status
+        updated_challenge_data = challenge_crud.get_challenge_with_progress(db, current_user.id)
+        
+        return {
+            "progress": progress,
+            "challenge_completed": updated_challenge_data["user_challenge"].is_completed if updated_challenge_data else False,
+            "challenge_data": updated_challenge_data
+        }
     except ValueError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

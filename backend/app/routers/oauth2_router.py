@@ -4,7 +4,7 @@ from fastapi.responses import RedirectResponse
 from sqlalchemy.orm import Session
 from ..config import Config
 from ..oauth2_config import OAuth2Config
-from ..crud.auth_utils import handle_user_authentication, issue_registration_token
+from ..auth.auth_utils import handle_user_authentication, issue_registration_token
 from ..dependencies import get_db
 import httpx
 
