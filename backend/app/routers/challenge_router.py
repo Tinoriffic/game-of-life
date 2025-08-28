@@ -86,12 +86,22 @@ async def mark_day_complete(
             activity_data=request.activity_data
         )
         
-        # Get the updated challenge data to check completion status
+        # Get the user challenge to check completion status
+        # After mark_day_complete, if the challenge was completed, it will have is_active=False and is_completed=True
+        from ..models.challenge_model import UserChallenge
+        user_challenge = db.query(UserChallenge).filter(
+            UserChallenge.user_id == current_user.id,
+            UserChallenge.id == progress.user_challenge_id
+        ).first()
+        
+        challenge_completed = user_challenge.is_completed if user_challenge else False
+        
+        # Get the updated challenge data (might be None if challenge is completed)
         updated_challenge_data = challenge_crud.get_challenge_with_progress(db, current_user.id)
         
         return {
             "progress": progress,
-            "challenge_completed": updated_challenge_data["user_challenge"].is_completed if updated_challenge_data else False,
+            "challenge_completed": challenge_completed,
             "challenge_data": updated_challenge_data
         }
     except ValueError as e:

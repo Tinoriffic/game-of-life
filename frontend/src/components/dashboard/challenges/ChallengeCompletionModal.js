@@ -24,11 +24,16 @@ const ChallengeCompletionModal = ({ completionData, onClose }) => {
     };
 
     const getTotalDailyXp = () => {
-        return challenge.target_stats.reduce((total, stat) => total + stat.xp, 0);
+        if (!challenge?.target_stats) return 0;
+        return challenge.target_stats.reduce((total, stat) => {
+            const xp = Number(stat?.xp || 0);
+            return total + (isNaN(xp) ? 0 : xp);
+        }, 0);
     };
 
     const getCompletionBonusXp = () => {
-        return challenge.completion_xp_bonus || 0;
+        const bonus = Number(challenge?.completion_xp_bonus || 0);
+        return isNaN(bonus) ? 0 : bonus;
     };
 
     return (
@@ -36,87 +41,54 @@ const ChallengeCompletionModal = ({ completionData, onClose }) => {
             <div className="challenge-completion-modal">
                 {showConfetti && <div className="confetti">🎉✨🎊✨🎉</div>}
                 
-                <div className="completion-header">
-                    <div className="completion-icon">🏆</div>
-                    <h2>Challenge Complete!</h2>
-                    <h3>{challenge.title}</h3>
+                <div className="celebration-header">
+                    <div className="celebration-title">
+                        <span className="celebration-emoji">🏆 🎉 🏆</span>
+                        <h1>Challenge Complete!</h1>
+                        <h2>{challenge.title}</h2>
+                    </div>
                 </div>
 
-                <div className="completion-stats">
-                    <div className="stat-summary">
-                        <h4>Your Achievement</h4>
-                        <div className="achievement-grid">
-                            <div className="achievement-item">
-                                <span className="achievement-value">{challenge.duration_days}</span>
-                                <span className="achievement-label">Days Completed</span>
-                            </div>
-                            <div className="achievement-item">
-                                <span className="achievement-value">{totalXpEarned}</span>
-                                <span className="achievement-label">Total XP Earned</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="xp-breakdown">
-                        <h4>XP Breakdown</h4>
-                        <div className="xp-details">
-                            <div className="xp-line">
-                                <span>Daily rewards ({challenge.duration_days} days):</span>
-                                <span>+{getTotalDailyXp() * challenge.duration_days} XP</span>
-                            </div>
-                            {getCompletionBonusXp() > 0 && (
-                                <div className="xp-line bonus">
-                                    <span>Completion bonus:</span>
-                                    <span>+{getCompletionBonusXp()} XP</span>
-                                </div>
+                {challenge.badge && (
+                    <div className="badge-showcase">
+                        <div className="badge-earned-text">Badge Earned!</div>
+                        <div className="badge-display-large">
+                            {challenge.badge.icon_url ? (
+                                <img src={challenge.badge.icon_url} alt={challenge.badge.title} className="badge-icon-large" />
+                            ) : (
+                                <div className="default-badge-icon-large">🏅</div>
                             )}
-                            <div className="xp-line total">
-                                <span><strong>Total XP Earned:</strong></span>
-                                <span><strong>+{totalXpEarned} XP</strong></span>
-                            </div>
+                        </div>
+                        <div className="badge-info-large">
+                            <div className="badge-title-large">{challenge.badge.title}</div>
+                            {challenge.badge.description && (
+                                <div className="badge-description-large">{challenge.badge.description}</div>
+                            )}
                         </div>
                     </div>
+                )}
 
-                    <div className="stats-affected">
-                        <h4>Stats Improved</h4>
-                        <div className="stats-grid">
-                            {formatStatRewards(challenge.target_stats).map((stat, index) => (
-                                <div key={index} className="stat-reward">
-                                    <span className="stat-name">{stat.name}</span>
-                                    <span className="stat-gain">+{stat.xp * challenge.duration_days} XP</span>
-                                </div>
-                            ))}
-                        </div>
+                <div className="stats-summary">
+                    <div className="summary-item">
+                        <span className="summary-value">{Number(challenge?.duration_days || 0)}</span>
+                        <span className="summary-label">Days</span>
                     </div>
-
-                    {challenge.badge && (
-                        <div className="badge-earned">
-                            <h4>Badge Unlocked!</h4>
-                            <div className="badge-display">
-                                {challenge.badge.icon_url ? (
-                                    <img src={challenge.badge.icon_url} alt={challenge.badge.title} className="badge-icon" />
-                                ) : (
-                                    <div className="default-badge-icon">🏅</div>
-                                )}
-                                <div className="badge-info">
-                                    <span className="badge-title">{challenge.badge.title}</span>
-                                    {challenge.badge.description && (
-                                        <span className="badge-description">{challenge.badge.description}</span>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    <div className="summary-divider">•</div>
+                    <div className="summary-item">
+                        <span className="summary-value">+{Number(totalXpEarned || 0)}</span>
+                        <span className="summary-label">Total XP</span>
+                    </div>
+                    <div className="summary-divider">•</div>
+                    <div className="summary-item">
+                        <span className="summary-value">{formatStatRewards(challenge?.target_stats || []).map(stat => stat?.name).join(', ')}</span>
+                        <span className="summary-label">Stats Boosted</span>
+                    </div>
                 </div>
 
-                <div className="completion-message">
-                    <p>Congratulations! You've successfully completed the {challenge.title} challenge.</p>
-                    <p>Your dedication and consistency have paid off. Keep up the great work!</p>
-                </div>
 
                 <div className="modal-actions">
                     <button onClick={onClose} className="close-btn">
-                        Awesome! Continue
+                        Continue
                     </button>
                 </div>
             </div>

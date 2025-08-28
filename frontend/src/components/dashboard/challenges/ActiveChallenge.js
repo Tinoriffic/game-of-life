@@ -40,15 +40,18 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
             const progressEntry = response.progress;
             
             if (response.challenge_completed) {
+                const totalXp = calculateTotalXpEarned() + (progressEntry?.xp_awarded || 0);
                 setCompletionData({
                     challenge: challenge,
                     progressEntry: progressEntry,
-                    totalXpEarned: calculateTotalXpEarned() + progressEntry.xp_awarded
+                    totalXpEarned: totalXp || 0
                 });
                 setShowCompletionModal(true);
+            } else {
+                // Only refresh data if challenge isn't completed
+                await onChallengeCompleted();
             }
             
-            await onChallengeCompleted();
             setShowActivityModal(false);
         } catch (err) {
             console.error('Error marking day complete:', err);
@@ -184,7 +187,10 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
             {showCompletionModal && completionData && (
                 <ChallengeCompletionModal
                     completionData={completionData}
-                    onClose={() => setShowCompletionModal(false)}
+                    onClose={async () => {
+                        setShowCompletionModal(false);
+                        await onChallengeCompleted(); // Refresh data after modal closes
+                    }}
                 />
             )}
 

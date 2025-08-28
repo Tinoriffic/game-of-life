@@ -88,7 +88,7 @@ const AdminPanel = () => {
     };
 
     // Check if user is admin
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || user.role !== 'admin') {
         return (
             <div className="admin-panel">
                 <div className="access-denied">

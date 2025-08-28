@@ -96,10 +96,10 @@ async def admin_complete_challenge_day(
         raise HTTPException(status_code=404, detail="User has no active challenge")
     
     # Import here to avoid circular imports
-    from ..crud.challenge_crud import complete_challenge_day
+    from ..crud.challenge_crud import mark_day_complete
     
     try:
-        progress_entry = await complete_challenge_day(user_challenge.id, db)
+        progress_entry = mark_day_complete(db, user_id)
         return {
             "message": f"Challenge day completed for user {user_id}",
             "progress_entry": progress_entry

@@ -31,7 +31,7 @@ function App() {
           <li>Milestones</li>
           <li><Link to="/dashboard">Action Logger</Link></li>
           <li><Link to="/stats">Stats</Link></li>
-          {user?.role === 'ADMIN' && (
+          {user?.role === 'admin' && (
             <li><Link to="/admin">Admin Panel</Link></li>
           )}
         </ul>

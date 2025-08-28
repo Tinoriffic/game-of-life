@@ -1,13 +1,15 @@
 .player-card {
     border: 2px solid #fff;
     border-radius: 10px;
-    padding: 20px;
+    padding: 20px 20px 25px 20px;
     margin: 10px;
     text-align: center;
     background: #1D1F20;
     color: #F8F8F2;
     min-width: 250px;
     width: auto;
+    position: relative;
+    overflow: visible;
   }
   
   .player-card img {
@@ -59,7 +61,9 @@
   .player-badges {
     border-top: 1px solid #ccc;
     padding-top: 15px;
+    padding-bottom: 25px;
     margin-top: 15px;
+    margin-bottom: 25px;
   }
 
   .player-badges h4 {
@@ -71,14 +75,14 @@
   .badges-container {
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 8px;
   }
 
   .badge-item {
     position: relative;
-    width: 32px;
-    height: 32px;
+    width: 20px;
+    height: 20px;
     cursor: pointer;
     transition: transform 0.2s ease;
   }
@@ -88,19 +92,19 @@
   }
 
   .badge-icon {
-    width: 100%;
-    height: 100%;
+    width: 72px !important;
+    height: 72px !important;
     border-radius: 50%;
     object-fit: cover;
   }
 
   .default-badge-icon {
-    width: 100%;
-    height: 100%;
+    width: 72px !important;
+    height: 72px !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 20px;
+    font-size: 16px;
     background: linear-gradient(45deg, #FFD700, #FFA500);
     border-radius: 50%;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
@@ -108,26 +112,28 @@
 
   .badge-tooltip {
     position: absolute;
-    bottom: 40px;
+    top: -10px;
     left: 50%;
-    transform: translateX(-50%);
+    transform: translateX(-50%) translateY(-100%);
     background: #2D2F30;
     color: #F8F8F2;
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.8em;
-    white-space: nowrap;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     z-index: 1000;
     border: 1px solid #444;
     min-width: 150px;
+    max-width: 200px;
     text-align: center;
+    white-space: normal;
+    line-height: 1.3;
   }
 
   .badge-tooltip::after {
     content: '';
     position: absolute;
-    top: 100%;
+    bottom: -6px;
     left: 50%;
     transform: translateX(-50%);
     border: 6px solid transparent;
