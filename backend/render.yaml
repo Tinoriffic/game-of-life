@@ -2,7 +2,7 @@ services:
   - type: web
     name: me-v2-backend
     env: python
-    buildCommand: pip install --only-binary=all -r requirements.txt
+    buildCommand: pip install --upgrade pip && pip install --no-cache-dir -r requirements-simple.txt
     startCommand: gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --host 0.0.0.0 --port $PORT 
     # Environment variables
     envVars:
