@@ -47,6 +47,14 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
         xp_to_add = calculate_learning_xp(activity_data.activity_type, activity_data.duration, skill_xp_dict.get("Intelligence", 0))
     elif activity_data.activity_type == "journal":
         xp_to_add = calculate_reflection_xp(skill_xp_dict.get("Wisdom", 0))
+        # Award XP to both Wisdom and Creativity for journaling
+        update_skill_xp(db, user_id, "Wisdom", xp_to_add)
+        update_skill_xp(db, user_id, "Creativity", xp_to_add)
+        # Skip the regular skill mapping below for journal
+        new_activity.xp_earned = xp_to_add
+        update_activity_streak(db, user_id, activity_data.activity_type)
+        db.commit()
+        return new_activity
 
     # Step 3: Update Skill XP
     skill_name = map_activity_to_skill(activity_data.activity_type)

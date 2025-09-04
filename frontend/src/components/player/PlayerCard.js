@@ -9,7 +9,8 @@ const PlayerCard = ({ playerData }) => {
   const [badges, setBadges] = useState([]);
   const [hoveredBadge, setHoveredBadge] = useState(null);
   const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-  console.log("avatar_url", avatar_url)
+  //console.log("avatar_url", avatar_url)
+  //console.log("badges", badges)
 
   useEffect(() => {
     loadBadges();
@@ -27,11 +28,15 @@ const PlayerCard = ({ playerData }) => {
 
   const renderStatBar = (skill) => {
     const maxXP = 100 * (skill.level * 1.5)
-    const percentage = (skill.xp / maxXP) * 100; // Adjust according to actual skill data structure
+    const percentage = (skill.xp / maxXP) * 100;
     const skillName = skill.name.charAt(0).toUpperCase() + skill.name.slice(1);
+    //console.log(`${skillName}: ${skill.xp}/${maxXP} = ${percentage}%`);
     return (
-      <div className="stat-bar-container" key={skill.name}>
-        <label>{`${skillName} (Level ${skill.level})`}</label>
+      <div className="stat-item" key={skill.name}>
+        <div className="stat-header">
+          <span className="stat-name">{skillName}</span>
+          <span className="stat-level">Lv.{skill.level}</span>
+        </div>
         <div className="stat-bar">
           <div className="stat-bar-fill" style={{ width: `${percentage}%` }}></div>
         </div>
@@ -41,17 +46,33 @@ const PlayerCard = ({ playerData }) => {
 
   return (
     <div className="player-card">
-      <img className="avatar" src={avatar_url || defaultAvatar} alt={`${first_name}'s avatar`} />
-      <h3>{capitalizeFirstLetter(first_name)}</h3>
-      <p>Region: {capitalizeFirstLetter(city)}</p>
-      <p>Occupation: {capitalizeFirstLetter(occupation)}</p>
-      <div className="player-stats">
-        {skills && skills.map(renderStatBar)}
+      {/* Character Header */}
+      <div className="character-header">
+        <div className="avatar-section">
+          <img className="avatar" src={avatar_url || defaultAvatar} alt={`${first_name}'s avatar`} />
+        </div>
+        <div className="character-info">
+          <h2 className="character-name">{capitalizeFirstLetter(first_name)}</h2>
+          <div className="character-title">{capitalizeFirstLetter(occupation)}</div>
+          <div className="character-location">📍 {capitalizeFirstLetter(city)}</div>
+        </div>
+      </div>
+
+      {/* Stats Section */}
+      <div className="stats-section">
+        <h3 className="stats-header">Attributes</h3>
+        <div className="stats-grid">
+          {skills && skills.map(renderStatBar)}
+        </div>
       </div>
       
-      {badges.length > 0 && (
-        <div className="player-badges">
-          <h4>Badges ({badges.length})</h4>
+      {/* Badges Section */}
+      {(
+        <div className="badges-section">
+          <div className="badges-header">
+            🏆 Achievements
+            <span className="badge-count">{badges.length}</span>
+          </div>
           <div className="badges-container">
             {badges.map((userBadge) => (
               <div 

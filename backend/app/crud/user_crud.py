@@ -49,7 +49,7 @@ def create_user(db: Session, user: user_schema.UserCreate):
     db.commit()
     db.refresh(new_user)
 
-    default_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom', 'Resilience']
+    default_skills = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom', 'Resilience', 'Creativity']
     for skill in default_skills:
         db_skill = skill_model.Skill(name=skill, user_id=new_user.id)
         db.add(db_skill)

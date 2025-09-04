@@ -5,7 +5,7 @@ def get_user_skills(db: Session, user_id: int):
     """
     Retrieve a user's skills
     """
-    skill_order = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom', 'Resilience']
+    skill_order = ['Awareness', 'Charisma', 'Endurance', 'Intelligence', 'Strength', 'Wisdom', 'Resilience', 'Creativity']
     
     skills = db.query(skill_model.Skill).filter(skill_model.Skill.user_id == user_id).all()
     
