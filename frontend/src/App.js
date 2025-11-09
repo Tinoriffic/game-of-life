@@ -1,4 +1,5 @@
 import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';
+import { useState } from 'react';
 import MainMenu from './components/MainMenu';
 import LoginPage from './components/auth/LoginPage';
 import ActivityLogger from './components/dashboard/daily/ActivityLogger';
@@ -17,24 +18,44 @@ import { useUser } from './components/player/UserContext';
 
 function App() {
   const { user } = useUser();
-  
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const toggleMenu = () => setMenuOpen(!menuOpen);
+  const closeMenu = () => setMenuOpen(false);
+
   return (
     <Router>
+      {/* Backdrop overlay when menu is open */}
+      {menuOpen && <div className="menu-backdrop" onClick={closeMenu}></div>}
+
       <header className="main-header">
         <h1>Me v2</h1>
+        <button className="hamburger" onClick={toggleMenu} aria-label="Toggle menu">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
       </header>
-      <nav className="main-nav">
+      <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
+        <div className="nav-header">
+          <h2>Main Menu</h2>
+          <button className="close-button" onClick={closeMenu} aria-label="Close menu">×</button>
+        </div>
         <ul>
-          <li><Link to="/">Home</Link></li>
-          <li><Link to="/challenges">Challenges</Link></li>
+          <li><Link to="/" onClick={closeMenu}><span className="nav-icon">🏠</span> Home</Link></li>
+          <li><Link to="/challenges" onClick={closeMenu}><span className="nav-icon">🎯</span> Challenges</Link></li>
           {/* <li>Skill Tree</li> */}
-          <li>Milestones</li>
-          <li><Link to="/dashboard">Action Logger</Link></li>
-          <li><Link to="/stats">Stats</Link></li>
+          {/* <li>Milestones</li> - No route implemented yet */}
+          <li><Link to="/dashboard" onClick={closeMenu}><span className="nav-icon">📝</span> Action Logger</Link></li>
+          <li><Link to="/stats" onClick={closeMenu}><span className="nav-icon">📊</span> Stats</Link></li>
           {user?.role === 'admin' && (
-            <li><Link to="/admin">Admin Panel</Link></li>
+            <li><Link to="/admin" onClick={closeMenu}><span className="nav-icon">⚙️</span> Admin Panel</Link></li>
           )}
         </ul>
+        <div className="nav-footer">
+          {user && <div className="nav-user-info">👤 {user.display_name || user.username}</div>}
+          <div className="nav-version">v0.1.0</div>
+        </div>
       </nav>
       <Routes>
         <Route path="/login" element={<LoginPage />} />

@@ -5,6 +5,7 @@
     gap: 30px;
     padding: 20px;
     background: #1D1F20;
+    flex-wrap: wrap;
 }
 
 .activity-card {
@@ -53,6 +54,60 @@
     margin: 40px auto; /* Centering */
 }
 
+/* Mobile styles for tablets and smaller */
+@media (max-width: 768px) {
+    .dashboard {
+        gap: 15px;
+        padding: 10px;
+    }
+
+    .activity-card {
+        width: calc(50% - 20px);
+        min-width: 150px;
+        padding: 15px;
+        margin: 5px;
+    }
+
+    .activity-logo {
+        width: 70px;
+        height: 70px;
+        margin-bottom: 10px;
+    }
+
+    .activity-card h3 {
+        font-size: 14px;
+    }
+
+    .activity-logger {
+        width: 95%;
+        padding: 15px;
+        margin: 20px auto;
+    }
+}
+
+/* Extra small phones */
+@media (max-width: 480px) {
+    .dashboard {
+        gap: 10px;
+        padding: 8px;
+    }
+
+    .activity-card {
+        width: calc(50% - 15px);
+        min-width: 140px;
+        padding: 12px;
+    }
+
+    .activity-logo {
+        width: 60px;
+        height: 60px;
+    }
+
+    .activity-card h3 {
+        font-size: 12px;
+    }
+}
+
 .activity-options {
     display: flex;
     flex-wrap: wrap;
@@ -70,6 +125,7 @@
     cursor: pointer;
     border-radius: 5px;
     transition: background-color 0.3s ease;
+    min-height: 44px; /* Touch-friendly size */
 }
 
 .activity-options button:hover {
@@ -86,8 +142,39 @@
     border-radius: 5px;
     margin-top: 30px; /* Space from options */
     transition: background-color 0.3s ease;
+    min-height: 44px; /* Touch-friendly size */
 }
 
 .back-button:hover {
     background-color: #d32f2f;
+}
+
+/* Mobile button adjustments */
+@media (max-width: 768px) {
+    .activity-options {
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .activity-options button {
+        padding: 12px 16px;
+        font-size: 14px;
+        flex: 1 1 calc(50% - 10px);
+        min-width: 120px;
+    }
+
+    .back-button {
+        margin-top: 20px;
+        padding: 12px 16px;
+        font-size: 14px;
+        width: 100%;
+        max-width: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .activity-options button {
+        flex: 1 1 100%;
+        width: 100%;
+    }
 }

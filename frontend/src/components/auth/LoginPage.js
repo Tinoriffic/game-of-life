@@ -17,7 +17,7 @@ const LoginPage = () => {
   return (
     <div className="login-page">
       <div className="login-container">
-      <h2>Welcome to Game of Life</h2>
+      <h2>Welcome to Me v2</h2>
       <p>Start your journey now!</p>
       {loginUrl && (
         <a href={loginUrl} className="login-button">Login with Google</a>

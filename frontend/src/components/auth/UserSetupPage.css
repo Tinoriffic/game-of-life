@@ -1,4 +1,13 @@
-.user-setup-container {
+.user-setup-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1D1F20;
+    padding: 20px;
+  }
+
+  .user-setup-container {
     background-color: #282c34; /* Dark background for the arcade game vibe */
     color: #F8F8F2; /* Bright text color */
     width: 50%; /* Adjust as needed */
@@ -90,3 +99,92 @@
     display: block;
     font-weight: bold;
   }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .user-setup-page {
+    padding: 30px 20px;
+    align-items: center;
+    min-height: 100vh;
+  }
+
+  .user-setup-container {
+    width: calc(100% - 40px);
+    max-width: 100%;
+    padding: 40px 30px;
+    min-height: auto;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    margin: 0 auto;
+  }
+
+  input[type="text"] {
+    width: 100%;
+    padding: 14px;
+    box-sizing: border-box;
+  }
+
+  .user-setup-container .avatar-preview {
+    max-width: 150px;
+    max-height: 150px;
+  }
+
+  .image-container {
+    margin-bottom: 30px;
+    margin-top: 20px;
+  }
+
+  .image-container img {
+    width: 80px;
+  }
+
+  button {
+    padding: 14px 20px;
+    width: 100%;
+    max-width: 100%;
+    margin-top: 15px;
+  }
+
+  form {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .user-setup-page {
+    padding: 25px 15px;
+  }
+
+  .user-setup-container {
+    width: calc(100% - 30px);
+    padding: 35px 25px;
+  }
+
+  input[type="text"] {
+    padding: 12px;
+  }
+
+  .user-setup-container .avatar-preview {
+    max-width: 120px;
+    max-height: 120px;
+  }
+
+  .image-container {
+    margin-bottom: 25px;
+  }
+
+  .image-container img {
+    width: 60px;
+  }
+
+  button {
+    padding: 12px 16px;
+    font-size: 14px;
+  }
+
+  .user-setup-container .file-input {
+    width: 100%;
+    font-size: 14px;
+    box-sizing: border-box;
+  }
+}

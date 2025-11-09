@@ -13,6 +13,175 @@
     display: flex;
     flex-direction: column;
   }
+
+  /* Mobile responsive PlayerCard */
+  @media (max-width: 768px) {
+    .player-card {
+      min-width: unset;
+      width: calc(100% - 20px);
+      margin: 10px;
+    }
+
+    .character-header {
+      padding: 15px;
+      gap: 15px;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+    }
+
+    .character-name {
+      font-size: 20px;
+    }
+
+    .character-title {
+      font-size: 12px;
+    }
+
+    .character-location {
+      font-size: 11px;
+    }
+
+    .stats-section, .badges-section {
+      padding: 15px;
+    }
+
+    .stats-header, .badges-header {
+      font-size: 14px;
+    }
+
+    .stats-grid {
+      gap: 10px;
+    }
+
+    .stat-name {
+      font-size: 12px;
+    }
+
+    .stat-level {
+      font-size: 9px;
+      padding: 2px 5px;
+    }
+
+    .stat-bar {
+      height: 14px;
+    }
+
+    .stat-xp {
+      font-size: 9px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .player-card {
+      margin: 5px;
+      width: calc(100% - 10px);
+      border-radius: 10px;
+    }
+
+    .character-header {
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .avatar {
+      width: 50px;
+      height: 50px;
+    }
+
+    .character-name {
+      font-size: 18px;
+    }
+
+    .character-title {
+      font-size: 11px;
+    }
+
+    .character-location {
+      font-size: 10px;
+    }
+
+    .stats-section, .badges-section {
+      padding: 12px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    .stats-header, .badges-header {
+      font-size: 13px;
+    }
+
+    .stats-grid {
+      display: grid !important;
+      grid-template-columns: 1fr !important;
+      gap: 12px;
+      width: 100%;
+      padding: 0;
+      margin: 0;
+    }
+
+    .stat-item {
+      padding: 10px;
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 6px;
+      display: block;
+    }
+
+    .stat-name {
+      font-size: 13px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
+    }
+
+    .stat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      width: 100%;
+      margin-bottom: 6px;
+    }
+
+    .stat-level {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    .stat-bar {
+      width: 100%;
+      display: block;
+    }
+
+    .stat-bar-fill {
+      display: block;
+    }
+
+    .stat-xp {
+      font-size: 10px;
+      width: 100%;
+      text-align: right;
+    }
+
+    .badge-icon, .default-badge-icon {
+      width: 35px !important;
+      height: 35px !important;
+    }
+
+    .default-badge-icon {
+      font-size: 18px;
+    }
+
+    .badges-container {
+      gap: 10px;
+    }
+  }
   
 /* Character Header */
 .character-header {

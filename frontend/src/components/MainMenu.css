@@ -14,14 +14,56 @@
   .main-header {
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 20px;
   }
-  
+
+  .main-header h1 {
+    margin: 0;
+  }
+
+  /* Hamburger menu button - hidden on desktop */
+  .hamburger {
+    display: none;
+    flex-direction: column;
+    justify-content: space-around;
+    width: 30px;
+    height: 25px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    position: absolute;
+    right: 20px;
+    z-index: 998;
+    transition: opacity 0.3s ease;
+  }
+
+  .hamburger span {
+    width: 30px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+  }
+
+  /* Hide hamburger when menu is open */
+  .menu-backdrop ~ .main-header .hamburger {
+    opacity: 0;
+    pointer-events: none;
+  }
+
   .main-nav ul {
     list-style: none;
     display: flex;
     justify-content: center;
+    padding: 0;
+    margin: 0;
   }
-  
+
   .main-nav li {
     margin: 0 10px;
     cursor: pointer;
@@ -30,17 +72,260 @@
   .main-nav a {
     text-decoration: none;
     color: inherit;
+    display: block;
+    padding: 10px 15px;
+    min-height: 44px; /* Touch-friendly */
+    display: flex;
+    align-items: center;
   }
-  
+
   .main-nav a:hover {
     text-decoration: underline;
     color: #4d4949;
   }
-  
+
   .player-card, .skill-tree {
     border: 1px solid white;
     margin: 20px 0;
     padding: 20px;
+  }
+
+  /* Hide mobile-only elements on desktop */
+  .nav-header,
+  .nav-footer,
+  .close-button,
+  .menu-backdrop,
+  .nav-icon {
+    display: none;
+  }
+
+  /* Mobile navigation */
+  @media (max-width: 768px) {
+    .main-screen {
+      padding: 15px;
+    }
+
+    .main-header {
+      margin-bottom: 0;
+    }
+
+    .main-header h1 {
+      font-size: 24px;
+    }
+
+    /* Show hamburger button on mobile */
+    .hamburger {
+      display: flex;
+    }
+
+    /* Backdrop overlay - show on mobile */
+    .menu-backdrop {
+      display: block !important;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100vh;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 999;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    /* Hide nav by default on mobile */
+    .main-nav {
+      position: fixed;
+      top: 0;
+      right: -280px;
+      width: 280px;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e, #16213e);
+      transition: right 0.3s ease;
+      z-index: 1000;
+      box-shadow: -4px 0 20px rgba(0, 0, 0, 0.5);
+      border-left: 2px solid rgba(255, 215, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Show nav when open class is added */
+    .main-nav.open {
+      right: 0;
+    }
+
+    /* Nav header with close button - show on mobile */
+    .nav-header {
+      display: flex !important;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      background: rgba(255, 215, 0, 0.05);
+      border-bottom: 2px solid rgba(255, 215, 0, 0.3);
+    }
+
+    .nav-header h2 {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      font-size: 18px;
+      color: #FFD700;
+      text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+    }
+
+    .close-button {
+      background: transparent;
+      border: 2px solid #FFD700;
+      color: #FFD700;
+      font-size: 28px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .close-button:hover {
+      background: rgba(255, 215, 0, 0.2);
+      transform: rotate(90deg);
+    }
+
+    .main-nav ul {
+      flex-direction: column;
+      width: 100%;
+      gap: 0;
+      padding: 0;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    /* Nav footer - show on mobile */
+    .nav-footer {
+      display: block !important;
+      padding: 16px 20px;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(255, 215, 0, 0.2);
+      text-align: center;
+    }
+
+    .nav-user-info {
+      color: #F8F8F2;
+      font-size: 14px;
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .nav-version {
+      color: #888;
+      font-size: 11px;
+      font-family: 'Orbitron', sans-serif;
+      letter-spacing: 1px;
+    }
+
+    .main-nav li {
+      margin: 0;
+      width: 100%;
+      border-bottom: 1px solid rgba(255, 215, 0, 0.1);
+    }
+
+    .main-nav li:last-child {
+      border-bottom: none;
+    }
+
+    .main-nav a {
+      justify-content: flex-start;
+      padding: 16px 24px;
+      width: 100%;
+      color: #F8F8F2;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      background: transparent;
+      border-left: 3px solid transparent;
+    }
+
+    .main-nav a:hover {
+      background: rgba(255, 215, 0, 0.1);
+      border-left-color: #FFD700;
+      color: #FFD700;
+      text-decoration: none;
+      padding-left: 28px;
+    }
+
+    /* Show icons on mobile */
+    .nav-icon {
+      display: inline !important;
+      margin-right: 8px;
+    }
+
+    .player-card, .skill-tree {
+      margin: 15px 0;
+      padding: 15px;
+      width: 100%;
+    }
+
+    /* Hide page footer on mobile (shown in sidebar nav-footer instead) */
+    .page-footer {
+      display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .main-screen {
+      padding: 10px;
+    }
+
+    .main-header h1 {
+      font-size: 20px;
+    }
+
+    .main-nav {
+      width: 240px;
+      right: -240px;
+    }
+
+    .nav-header {
+      padding: 14px 16px;
+    }
+
+    .nav-header h2 {
+      font-size: 16px;
+    }
+
+    .close-button {
+      width: 32px;
+      height: 32px;
+      font-size: 24px;
+    }
+
+    .main-nav a {
+      font-size: 14px;
+      padding: 14px 20px;
+    }
+
+    .main-nav a:hover {
+      padding-left: 24px;
+    }
+
+    .nav-footer {
+      padding: 12px 16px;
+    }
+
+    .nav-user-info {
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .nav-version {
+      font-size: 10px;
+      text-transform: none;
+    }
   }
 
   body {
@@ -56,4 +341,30 @@
 
   .funny {
     text-align: center;
+  }
+
+  /* Desktop page footer (below PlayerCard on home) */
+  .page-footer {
+    margin-top: 20px;
+    padding: 20px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border-radius: 15px;
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    min-width: 400px;
+  }
+
+  .footer-user-info {
+    color: #FFD700;
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  .footer-version {
+    color: #B8B8B8;
+    font-size: 13px;
+    opacity: 0.8;
   }

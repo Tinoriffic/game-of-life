@@ -63,6 +63,12 @@ function MainMenu() {
   return (
     <div className="main-screen">
         <PlayerCard playerData={playerData} />
+        <div className="page-footer">
+          <div className="footer-user-info">
+            👤 {playerData.display_name || playerData.username}
+          </div>
+          <div className="footer-version">v0.1.0</div>
+        </div>
       {/* Add more sections as needed */}
     </div>
   );
