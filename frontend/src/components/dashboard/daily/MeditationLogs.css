@@ -39,4 +39,37 @@
     font-size: 16px;
     cursor: pointer;
   }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .meditation-logs {
+      padding: 15px;
+    }
+
+    .duration-input, .log-meditation-btn, .show-exercises-btn, .next-exercise-btn {
+      width: 100%;
+      max-width: 100%;
+      padding: 12px;
+      font-size: 16px;
+    }
+
+    .meditation-exercises {
+      padding: 12px;
+    }
+
+    .meditation-exercise {
+      padding: 12px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .meditation-logs {
+      padding: 10px;
+    }
+
+    .duration-input, .log-meditation-btn, .show-exercises-btn, .next-exercise-btn {
+      padding: 10px;
+      font-size: 14px;
+    }
+  }
   

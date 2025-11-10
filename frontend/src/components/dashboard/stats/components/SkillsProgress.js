@@ -19,7 +19,7 @@ const SkillsProgress = ({ data }) => {
 
   return (
     <div className="arcade-card skills-progress">
-      <div className="arcade-header">SKILLS PROGRESS</div>
+      <div className="arcade-header">SKILLS</div>
       <div className="skills-grid">
         {data.map((skill) => (
           <div key={skill.name} className="skill-item">

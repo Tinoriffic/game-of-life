@@ -86,20 +86,20 @@ const RunningProgress = ({ data }) => {
         <ResponsiveContainer width="100%" height={200}>
           <LineChart data={runningHistory}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis 
-              dataKey="date" 
-              stroke="#00ff00" 
+            <XAxis
+              dataKey="date"
+              stroke="#B8B8B8"
               tickFormatter={dateFormatter}
               interval="preserveStartEnd"
             />
-            <YAxis yAxisId="left" stroke="#00ff00" />
-            <YAxis yAxisId="right" orientation="right" stroke="#00ff00" />
-            <Tooltip 
-              contentStyle={{ backgroundColor: '#000', border: '1px solid #00ff00' }}
+            <YAxis yAxisId="left" stroke="#B8B8B8" />
+            <YAxis yAxisId="right" orientation="right" stroke="#B8B8B8" />
+            <Tooltip
+              contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.9)', border: '1px solid rgba(255, 215, 0, 0.5)', color: '#F8F8F2' }}
               labelFormatter={dateFormatter}
             />
-            <Line yAxisId="left" type="monotone" dataKey="distance" name="Distance (mi)" stroke="#ff00ff" strokeWidth={2} dot={{ fill: '#ff00ff', r: 4 }} activeDot={{ r: 8 }} />
-            <Line yAxisId="right" type="monotone" dataKey="duration" name="Duration (min)" stroke="#00ffff" strokeWidth={2} dot={{ fill: '#00ffff', r: 4 }} activeDot={{ r: 8 }} />
+            <Line yAxisId="left" type="monotone" dataKey="distance" name="Distance (mi)" stroke="#FFD700" strokeWidth={2} dot={{ fill: '#FFD700', r: 4 }} activeDot={{ r: 8, fill: '#4caf50' }} />
+            <Line yAxisId="right" type="monotone" dataKey="duration" name="Duration (min)" stroke="#2196F3" strokeWidth={2} dot={{ fill: '#2196F3', r: 4 }} activeDot={{ r: 8, fill: '#4caf50' }} />
           </LineChart>
         </ResponsiveContainer>
       </div>

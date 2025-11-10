@@ -42,7 +42,6 @@
     flex-direction: column;
     overflow: hidden;
     min-height: 280px;
-    max-height: 380px;
 }
 
 .challenge-card:hover {
@@ -141,11 +140,6 @@
     opacity: 0.9;
     margin: 0 0 16px 0;
     line-height: 1.5;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 3;
-    line-clamp: 3;
-    -webkit-box-orient: vertical;
 }
 
 .challenge-rewards {
@@ -306,4 +300,64 @@
 
 .join-btn.disabled:hover {
     background-color: #666;
+}
+
+@media (max-width: 768px) {
+    .challenges-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        padding: 15px 0;
+    }
+
+    .challenge-library {
+        padding: 15px;
+    }
+}
+
+@media (max-width: 480px) {
+    .challenges-grid {
+        gap: 15px;
+        padding: 10px 0;
+    }
+
+    .challenge-library {
+        padding: 10px;
+    }
+
+    .challenge-card {
+        min-height: auto;
+    }
+
+    .challenge-card-header {
+        padding: 15px;
+    }
+
+    .challenge-icon {
+        width: 48px;
+        height: 48px;
+        margin-right: 12px;
+    }
+
+    .default-challenge-icon {
+        width: 48px;
+        height: 48px;
+        font-size: 24px;
+    }
+
+    .challenge-title-section h3 {
+        font-size: 16px;
+    }
+
+    .challenge-card-body {
+        padding: 15px;
+    }
+
+    .challenge-card-footer {
+        padding: 12px 15px;
+    }
+
+    .modal-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
 }

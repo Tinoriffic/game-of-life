@@ -9,16 +9,16 @@ const OverallProgress = ({ data }) => {
 
   return (
     <div className="arcade-card overall-progress">
-      <div className="arcade-header">OVERALL PROGRESS</div>
+      <div className="arcade-header">OVERALL</div>
       <div className="progress-container">
         <div className="level-progress">
           <CircularProgressbar
             value={progress}
             text={`LVL ${level}`}
             styles={buildStyles({
-              textColor: '#ff00ff',
-              pathColor: '#00ff00',
-              trailColor: '#111',
+              textColor: '#FFD700',
+              pathColor: '#4caf50',
+              trailColor: 'rgba(255, 255, 255, 0.1)',
               textSize: '16px',
             })}
           />

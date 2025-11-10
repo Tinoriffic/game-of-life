@@ -1,20 +1,22 @@
 .arcade-card {
-  background-color: #000;
-  color: #00ff00;
-  border: 2px solid #00ff00;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #282c34, #1a1a2e);
+  color: #F8F8F2;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 15px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 0 10px #00ff00;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .arcade-header {
   font-size: 24px;
   text-align: center;
   margin-bottom: 20px;
-  text-shadow: 0 0 5px #00ff00;
   font-weight: bold;
   letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
+  color: #FFD700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
 }
 
 .arcade-stats {
@@ -25,9 +27,10 @@
 }
 
 .stat-item {
-  background-color: #111;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.2);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 8px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -37,11 +40,12 @@
   font-size: 12px;
   margin-bottom: 5px;
   text-transform: uppercase;
+  color: #B8B8B8;
 }
 
 .stat-value {
   font-size: 18px;
-  color: #ff00ff;
+  color: #FFD700;
   font-weight: bold;
 }
 
@@ -61,26 +65,29 @@
   font-size: 14px;
   margin-bottom: 5px;
   text-transform: uppercase;
+  color: #B8B8B8;
 }
 
 .highlight-value {
   font-size: 24px;
-  color: #ff00ff;
+  color: #FFD700;
   font-weight: bold;
 }
 
 .progress-bar {
-  background-color: #111;
-  border: 1px solid #00ff00;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   height: 30px;
   position: relative;
   margin-bottom: 20px;
+  border-radius: 5px;
 }
 
 .progress-fill {
-  background-color: #00ff00;
+  background: linear-gradient(135deg, #4caf50, #45a049);
   height: 100%;
   transition: width 0.5s ease-in-out;
+  border-radius: 4px;
 }
 
 .progress-text {
@@ -88,17 +95,17 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  color: #ff00ff;
+  color: #F8F8F2;
   font-size: 14px;
-  text-shadow: 1px 1px 2px #000;
+  text-shadow: 1px 1px 3px #000;
   font-weight: bold;
 }
 
 .arcade-chart {
-  background-color: #111;
-  border: 1px solid #00ff00;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
   padding: 10px;
-  border-radius: 5px;
+  border-radius: 8px;
 }
 
 .recharts-cartesian-grid-horizontal line,
@@ -107,17 +114,17 @@
 }
 
 .recharts-tooltip-wrapper {
-  background-color: #000 !important;
-  border: 1px solid #00ff00 !important;
-  color: #00ff00 !important;
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid rgba(255, 215, 0, 0.5) !important;
+  color: #F8F8F2 !important;
 }
 
 .arcade-text {
-  color: #00ff00;
+  color: #F8F8F2;
   text-align: center;
   padding: 20px;
-  background-color: #000;
-  border: 2px solid #00ff00;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 215, 0, 0.3);
   border-radius: 10px;
   font-weight: bold;
   text-transform: uppercase;

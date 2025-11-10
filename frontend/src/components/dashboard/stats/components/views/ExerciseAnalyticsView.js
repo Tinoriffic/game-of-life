@@ -70,38 +70,41 @@ const ExerciseAnalyticsView = ({ data, selectedExercise, setSelectedExercise }) 
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis 
-              dataKey="date" 
-              stroke="#00ff00"
+            <XAxis
+              dataKey="date"
+              stroke="#B8B8B8"
             />
-            <YAxis stroke="#00ff00" />
-            <Tooltip 
-              contentStyle={{ 
-                backgroundColor: '#000', 
-                border: '1px solid #00ff00',
-                color: '#00ff00'
-              }} 
+            <YAxis stroke="#B8B8B8" />
+            <Tooltip
+              contentStyle={{
+                backgroundColor: 'rgba(0, 0, 0, 0.9)',
+                border: '1px solid rgba(255, 215, 0, 0.5)',
+                color: '#F8F8F2'
+              }}
             />
-            <Line 
-              type="monotone" 
-              dataKey="volume" 
-              stroke="#ff00ff" 
-              name="Volume" 
+            <Line
+              type="monotone"
+              dataKey="volume"
+              stroke="#4caf50"
+              name="Volume"
               dot={false}
+              strokeWidth={2}
             />
-            <Line 
-              type="monotone" 
-              dataKey="weight" 
-              stroke="#00ffff" 
-              name="Weight" 
+            <Line
+              type="monotone"
+              dataKey="weight"
+              stroke="#FFD700"
+              name="Weight"
               dot={false}
+              strokeWidth={2}
             />
-            <Line 
-              type="monotone" 
-              dataKey="intensity" 
-              stroke="#ffff00" 
-              name="Intensity" 
+            <Line
+              type="monotone"
+              dataKey="intensity"
+              stroke="#2196F3"
+              name="Intensity"
               dot={false}
+              strokeWidth={2}
             />
           </LineChart>
         </ResponsiveContainer>

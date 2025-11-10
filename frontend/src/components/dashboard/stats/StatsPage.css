@@ -6,9 +6,11 @@
 }
 
 .stats-page h1 {
-  color: #4caf50;
+  color: #FFD700;
+  font-family: 'Orbitron', sans-serif;
   text-align: center;
   margin-bottom: 30px;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
 }
 
 .stats-grid {
@@ -17,16 +19,32 @@
   gap: 20px;
 }
 
+@media (max-width: 1024px) {
+  .stats-grid {
+    grid-template-columns: 1fr !important;
+    gap: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    gap: 10px;
+  }
+}
+
 .stats-card {
-  background-color: #282c34;
-  border-radius: 10px;
+  background: linear-gradient(135deg, #282c34, #1a1a2e);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 15px;
   padding: 20px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 .stats-card h2 {
-  color: #4caf50;
+  color: #FFD700;
+  font-family: 'Orbitron', sans-serif;
   margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
 .loading, .error {
@@ -37,4 +55,51 @@
 
 .error {
   color: #ff6b6b;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .stats-page {
+    padding: 15px;
+  }
+
+  .stats-page h1 {
+    font-size: 1.8em;
+    margin-bottom: 20px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .stats-card {
+    padding: 15px;
+  }
+
+  .stats-card h2 {
+    font-size: 1.3em;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-page {
+    padding: 10px;
+  }
+
+  .stats-page h1 {
+    font-size: 1.5em;
+  }
+
+  .stats-grid {
+    gap: 10px;
+  }
+
+  .stats-card {
+    padding: 12px;
+  }
+
+  .stats-card h2 {
+    font-size: 1.2em;
+  }
 }

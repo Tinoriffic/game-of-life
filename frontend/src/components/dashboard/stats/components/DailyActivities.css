@@ -1,41 +1,75 @@
 .react-calendar-heatmap text {
     font-size: 10px;
-    fill: #aaa;
+    fill: #B8B8B8;
   }
-  
+
   .react-calendar-heatmap .react-calendar-heatmap-small-text {
     font-size: 5px;
   }
-  
+
   .react-calendar-heatmap rect:hover {
-    stroke: #555;
-    stroke-width: 1px;
+    stroke: #FFD700;
+    stroke-width: 2px;
   }
-  
+
   .react-calendar-heatmap .color-empty {
-    fill: #eeeeee;
+    fill: rgba(255, 255, 255, 0.1);
   }
-  
+
   .react-calendar-heatmap .color-scale-1 {
-    fill: #d6e685;
+    fill: #81c784;
   }
-  
+
   .react-calendar-heatmap .color-scale-2 {
-    fill: #8cc665;
+    fill: #66bb6a;
   }
-  
+
   .react-calendar-heatmap .color-scale-3 {
-    fill: #44a340;
+    fill: #4caf50;
   }
-  
+
   .react-calendar-heatmap .color-scale-4 {
-    fill: #1e6823;
+    fill: #2e7d32;
   }
-  
+
   .daily-activities {
     padding: 20px;
+    background: linear-gradient(135deg, #282c34, #1a1a2e);
+    border: 2px solid rgba(255, 215, 0, 0.3);
+    border-radius: 15px;
+    color: #F8F8F2;
   }
-  
+
   .daily-activities h2 {
     margin-bottom: 20px;
+    color: #FFD700;
+    font-family: 'Orbitron', sans-serif;
+  }
+
+  @media (max-width: 768px) {
+    .daily-activities {
+      padding: 15px;
+    }
+
+    .daily-activities h2 {
+      font-size: 1.3em;
+    }
+
+    .react-calendar-heatmap text {
+      font-size: 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .daily-activities {
+      padding: 12px;
+    }
+
+    .daily-activities h2 {
+      font-size: 1.2em;
+    }
+
+    .react-calendar-heatmap text {
+      font-size: 6px;
+    }
   }

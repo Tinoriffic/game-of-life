@@ -38,7 +38,7 @@ const StatsPage = () => {
 
   return (
     <div className="stats-page">
-      <h1 className="main-header">Your Progress Dashboard</h1>
+      <h1 className="main-header">My Progress</h1>
       <div className="stats-grid">
         <OverallProgress data={statsData.overall} />
         <WeightProgress data={statsData.weight} />

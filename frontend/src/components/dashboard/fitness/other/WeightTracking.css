@@ -42,4 +42,38 @@
   .weight-tracking button:hover {
     background-color: #367c39;
   }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .weight-tracking {
+      width: calc(100% - 30px);
+      padding: 15px;
+      margin: 15px;
+    }
+
+    .weight-tracking h2 {
+      font-size: 1.5em;
+    }
+
+    .weight-tracking input, .weight-tracking button {
+      padding: 12px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .weight-tracking {
+      width: calc(100% - 20px);
+      padding: 12px;
+      margin: 10px;
+    }
+
+    .weight-tracking h2 {
+      font-size: 1.3em;
+    }
+
+    .weight-tracking input, .weight-tracking button {
+      font-size: 14px;
+    }
+  }
   

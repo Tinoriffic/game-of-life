@@ -43,4 +43,43 @@
   .submit-btn:hover {
     background-color: #45a045;
   }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .social-logs-container {
+      padding: 15px;
+    }
+
+    .social-logs-form {
+      padding: 20px 15px;
+      max-width: 100%;
+    }
+
+    .form-group select, .form-group textarea {
+      font-size: 16px;
+    }
+
+    .submit-btn {
+      padding: 12px 20px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .social-logs-container {
+      padding: 10px;
+    }
+
+    .social-logs-form {
+      padding: 15px 12px;
+    }
+
+    .form-group select, .form-group textarea {
+      font-size: 14px;
+    }
+
+    .submit-btn {
+      font-size: 14px;
+    }
+  }
   

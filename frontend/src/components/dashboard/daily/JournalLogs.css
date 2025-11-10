@@ -14,4 +14,25 @@
     font-size: 16px;
     text-align: center;
   }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .journal-logs {
+      padding: 15px;
+    }
+
+    .prompt {
+      font-size: 14px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .journal-logs {
+      padding: 10px;
+    }
+
+    .prompt {
+      font-size: 13px;
+    }
+  }
   

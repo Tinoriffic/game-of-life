@@ -81,11 +81,44 @@
   /* Responsive adjustments */
   @media (max-width: 768px) {
     .fitness-page {
+      padding: 15px;
+    }
+
+    .fitness-page h1 {
+      font-size: 1.8em;
+      margin-bottom: 20px;
+    }
+
+    .fitness-page > div {
+      width: calc(100% - 20px);
+      padding: 15px;
+      margin: 15px 0;
+    }
+
+    .fitness-page input, .fitness-page button {
+      padding: 12px;
+      font-size: 16px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .fitness-page {
       padding: 10px;
     }
-  
+
+    .fitness-page h1 {
+      font-size: 1.5em;
+    }
+
     .fitness-page > div {
-      width: 100%;
+      width: calc(100% - 10px);
+      padding: 12px;
+      margin: 10px 0;
+    }
+
+    .fitness-page input, .fitness-page button {
+      padding: 10px;
+      font-size: 14px;
     }
   }
   

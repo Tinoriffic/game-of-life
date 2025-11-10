@@ -30,5 +30,48 @@
 .modal-close-button {
   float: right;
   cursor: pointer;
+  font-size: 24px;
+  line-height: 1;
+  padding: 5px;
 }
-  
+
+@media (max-width: 768px) {
+  .modal-content {
+    max-width: 90%;
+    max-height: 85%;
+    padding: 15px;
+  }
+
+  .modal-scroll-container {
+    max-height: 65vh;
+  }
+
+  .modal-close-button {
+    font-size: 28px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .modal-content {
+    max-width: 95%;
+    max-height: 90%;
+    padding: 12px;
+    border-radius: 8px;
+  }
+
+  .modal-scroll-container {
+    max-height: 70vh;
+    padding-right: 5px;
+  }
+
+  .modal-close-button {
+    font-size: 32px;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}

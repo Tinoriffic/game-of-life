@@ -108,7 +108,7 @@ const StrengthProgress = () => {
 
   return (
     <div className="arcade-card strength-progress">
-      <div className="arcade-header">STRENGTH PROGRESS</div>
+      <div className="arcade-header">STRENGTH</div>
       <div className="view-toggle">
         <button 
           onClick={() => setView('overall')} 
