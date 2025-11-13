@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Select from 'react-select';
 import axiosInstance from '../../../../axios';
+import { useUser } from '../../../player/UserContext';
 import CreateExerciseForm from './CreateExerciseForm';
 import './EditWorkoutProgramForm.css';
 
 const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClose }) => {
+  const { user } = useUser();
   const [editedProgram, setEditedProgram] = useState({
     name: '',
     workout_days: [],
@@ -43,7 +45,9 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
 
   const fetchExerciseLibrary = async () => {
     try {
-      const response = await axiosInstance.get('/exercises');
+      const response = await axiosInstance.get('/exercises', {
+        params: { user_id: user.id }
+      });
       setExerciseLibrary(response.data);
       setError('');
     } catch (err) {
@@ -174,12 +178,17 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
 
   const handleCreateExercise = async (exerciseData) => {
     try {
-      const response = await axiosInstance.post('/exercises', exerciseData);
+      console.log('Creating exercise with data:', exerciseData);
+      const response = await axiosInstance.post('/exercises', exerciseData, {
+        params: { user_id: user.id }
+      });
       await fetchExerciseLibrary(); // Refresh the library
       setShowCreateExercise(false);
       setError('');
     } catch (err) {
-      setError(err.response?.data?.detail || 'Failed to create exercise');
+      console.error('Exercise creation error:', err.response?.data);
+      console.error('Full error:', err);
+      setError(err.response?.data?.detail || err.response?.data?.message || 'Failed to create exercise');
     }
   };
 
