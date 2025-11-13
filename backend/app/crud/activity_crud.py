@@ -5,9 +5,9 @@ from ..schemas import activity_schema
 from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
-from ..utils.time import utc_now, utc_today
+from ..utils.time import utc_now, utc_today, get_user_today
 from .skill_crud import get_user_skills
-from datetime import timedelta, date
+from datetime import timedelta
 from typing import List, Tuple, Optional
 
 logger = logging.getLogger(__name__)
@@ -27,9 +27,12 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
     db.add(new_activity)
     user_skills = get_user_skills(db, user_id)
 
-    # Check if it's a new day
+    # Check if it's a new day (in user's timezone)
+    user_today = get_user_today(db, user_id)
+
     for skill in user_skills:
-        if skill.last_updated.date() < utc_today():
+        # Convert UTC timestamp to date and compare with user's today
+        if skill.last_updated.date() < user_today:
             skill.daily_xp_earned = 0
 
     # Step 2: Calculate XP based on activity type
@@ -155,18 +158,28 @@ def get_recent_weight_logs(db: Session, user_id: int) -> Tuple[List[activity_mod
     return recent_logs, latest_weight_goal
 
 def update_activity_streak(db: Session, user_id: int, activity_type: str):
-    today = date.today()
+    from ..utils.time import get_user_today
+
+    # Get today's date in user's timezone (not server time!)
+    today = get_user_today(db, user_id)
+
     streak = db.query(activity_model.ActivityStreak)\
                .filter_by(user_id=user_id, activity_type=activity_type)\
                .first()
 
     if streak:
         if streak.last_activity_date == today - timedelta(days=1):
+            # If last activity is yesterday -> increment streak
             streak.current_streak += 1
+        elif streak.last_activity_date == today:
+            # Already logged today -> don't update streak
+            pass
         elif streak.last_activity_date < today - timedelta(days=1):
+            # Missed days -> reset streak to 1
             streak.current_streak = 1
         streak.last_activity_date = today
     else:
+        # New streak
         streak = activity_model.ActivityStreak(
             user_id=user_id,
             activity_type=activity_type,
