@@ -46,6 +46,13 @@ class WorkoutSession(Base):
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
     session_date = Column(DateTime, default=utc_now)
 
+    # Audit fields for historical logging
+    logged_by_admin = Column(Boolean, default=False)
+    admin_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    user = relationship('User', foreign_keys=[user_id])
+    admin_user = relationship('User', foreign_keys=[admin_user_id])
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
     exercises = relationship('SessionExercise', back_populates='session')
 

@@ -1,5 +1,6 @@
-from sqlalchemy import Column, ForeignKey, Integer, String, Float, DateTime, Boolean, Date, JSON, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Boolean, Date, JSON, Text
 from sqlalchemy.orm import relationship
+from datetime import timedelta
 
 from ..database import Base
 from ..utils.time import utc_today, utc_now
@@ -43,7 +44,12 @@ class UserChallenge(Base):
     is_failed = Column(Boolean, default=False)
     quit_date = Column(Date, nullable=True)
     completion_date = Column(Date, nullable=True)
-    
+
+    # Grace period tracking for historical logging
+    failed_date = Column(Date, nullable=True)
+    grace_period_used = Column(Boolean, default=False)
+    grace_period_date = Column(Date, nullable=True)  # When grace period was used
+
     user = relationship('User', back_populates='user_challenges')
     challenge = relationship("Challenge", back_populates="user_challenges")
     progress_entries = relationship("ChallengeProgress", back_populates="user_challenge", cascade="all, delete-orphan")

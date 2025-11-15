@@ -268,8 +268,57 @@ def get_challenge_with_progress(db: Session, user_id: int) -> Optional[dict]:
         "completed_days": completed_days,
         "today_completed": today_completed,
         "can_complete_today": (
-            current_day > 0 and 
-            current_day <= user_challenge.challenge.duration_days and 
+            current_day > 0 and
+            current_day <= user_challenge.challenge.duration_days and
             not today_completed
         )
     }
+
+def restore_challenge_from_grace_period(db: Session, user_id: int, user_challenge_id: int) -> UserChallenge:
+    """
+    Restore a failed challenge if within the 24-hour grace period (failed yesterday).
+    Users restore by logging the missed activity. Full streak is maintained.
+    Raises ValueError if challenge cannot be restored (not failed, outside grace period, feature disabled, etc.).
+    """
+    from ..crud import system_settings_crud
+    from ..utils.time import is_within_grace_period
+
+    # Check if grace period feature is enabled
+    if not system_settings_crud.is_challenge_grace_period_enabled(db):
+        raise ValueError("Challenge grace period restoration is not currently enabled")
+
+    # Get the user challenge
+    user_challenge = db.query(UserChallenge).filter(
+        UserChallenge.id == user_challenge_id,
+        UserChallenge.user_id == user_id
+    ).first()
+
+    if not user_challenge:
+        raise ValueError("Challenge not found")
+
+    # Check if challenge is failed
+    if not user_challenge.is_failed:
+        raise ValueError("Challenge is not in failed state")
+
+    # Check if challenge has already used grace period
+    if user_challenge.grace_period_used:
+        raise ValueError("Grace period has already been used for this challenge")
+
+    # Check if we're within the grace period window
+    user_today = get_user_today(db, user_id)
+    if not is_within_grace_period(user_challenge.failed_date, user_today):
+        raise ValueError("Challenge is outside the 24-hour grace period window")
+
+    # Restore the challenge
+    user_challenge.is_failed = False
+    user_challenge.is_active = True
+    user_challenge.grace_period_used = True
+    user_challenge.grace_period_date = user_today
+
+    # Keep the same streak they had before (full restoration)
+    # The streak is already stored, we just un-fail the challenge
+
+    db.commit()
+    db.refresh(user_challenge)
+
+    return user_challenge

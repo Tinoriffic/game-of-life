@@ -206,3 +206,35 @@ async def get_challenge_by_id(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch challenge: {str(e)}"
         )
+
+@router.post("/restore-grace-period/{user_challenge_id}", response_model=challenge_schema.UserChallenge)
+async def restore_challenge_grace_period(
+    user_challenge_id: int,
+    db: Session = Depends(get_db),
+    current_user: user_model.User = Depends(auth_utils.get_current_user)
+):
+    """
+    Restore a failed challenge if within the 24-hour grace period.
+
+    This endpoint allows users to restore a challenge that failed yesterday
+    if they log the missed activity today. The user's full streak is restored.
+
+    Requires the 'allow_challenge_grace_period' system setting to be enabled.
+    """
+    try:
+        restored_challenge = challenge_crud.restore_challenge_from_grace_period(
+            db,
+            user_id=current_user.id,
+            user_challenge_id=user_challenge_id
+        )
+        return restored_challenge
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to restore challenge: {str(e)}"
+        )

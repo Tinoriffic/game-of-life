@@ -5,25 +5,39 @@ from ..schemas import activity_schema
 from ..models import activity_model
 from ..xp_calculator import calculate_meditation_xp, calculate_social_interaction_xp, calculate_running_xp, calculate_learning_xp, calculate_weight_tracking_xp, calculate_reflection_xp
 from ..skill_manager import update_skill_xp
-from ..utils.time import utc_now, utc_today, get_user_today
+from ..utils.time import utc_now, utc_today, get_user_today, validate_activity_date
 from .skill_crud import get_user_skills
-from datetime import timedelta
+from datetime import timedelta, date
 from typing import List, Tuple, Optional
 
 logger = logging.getLogger(__name__)
 
 def get_user_activity_streaks(db: Session, user_id: int):
-    """
-    Retrieve a user's activity streaks
-    """
+    """Retrieve a user's activity streaks."""
     return db.query(activity_model.ActivityStreak).filter(activity_model.ActivityStreak.user_id == user_id)
 
-def log_activity(db: Session, user_id: int, activity_data: activity_schema.ActivityLog):
+def log_activity(db: Session, user_id: int, activity_data: activity_schema.ActivityLog, is_admin: bool = False):
     """
     Log an activity for a user and update their skills' XP accordingly.
+    Raises ValueError if the activity date is not valid for this user.
     """
-    # Step 1: Log the activity
-    new_activity = activity_model.UserActivities(user_id=user_id, **activity_data.model_dump())
+    # Step 1: Validate the activity date
+    activity_date_to_validate = activity_data.date.date() if activity_data.date else None
+    is_valid, error_msg, validated_date = validate_activity_date(
+        db, user_id, activity_date_to_validate, is_admin
+    )
+
+    if not is_valid:
+        raise ValueError(error_msg)
+
+    # Step 2: Create the activity record
+    activity_dict = activity_data.model_dump()
+
+    # If no date provided, use current timestamp
+    if activity_dict['date'] is None:
+        activity_dict['date'] = utc_now()
+
+    new_activity = activity_model.UserActivities(user_id=user_id, **activity_dict)
     db.add(new_activity)
     user_skills = get_user_skills(db, user_id)
 
@@ -55,7 +69,7 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
         update_skill_xp(db, user_id, "Creativity", xp_to_add)
         # Skip the regular skill mapping below for journal
         new_activity.xp_earned = xp_to_add
-        update_activity_streak(db, user_id, activity_data.activity_type)
+        update_activity_streak(db, user_id, activity_data.activity_type, validated_date)
         db.commit()
         return new_activity
 
@@ -63,7 +77,7 @@ def log_activity(db: Session, user_id: int, activity_data: activity_schema.Activ
     skill_name = map_activity_to_skill(activity_data.activity_type)
     update_skill_xp(db, user_id, skill_name, xp_to_add)
     new_activity.xp_earned = xp_to_add
-    update_activity_streak(db, user_id, activity_data.activity_type)
+    update_activity_streak(db, user_id, activity_data.activity_type, validated_date)
 
     db.commit()
     return new_activity
@@ -83,10 +97,19 @@ def map_activity_to_skill(activity_type: str) -> str:
 
     return mapping.get(activity_type, "")
 
-def log_weight_entry(db: Session, user_id: int, weight_entry: activity_schema.WeightEntry):
+def log_weight_entry(db: Session, user_id: int, weight_entry: activity_schema.WeightEntry, is_admin: bool = False):
     """
     Log a weight entry for a user and update their skills' XP accordingly.
+    Raises ValueError if the weight entry date is not valid for this user.
     """
+    # Validate the weight entry date
+    is_valid, error_msg, validated_date = validate_activity_date(
+        db, user_id, weight_entry.date, is_admin
+    )
+
+    if not is_valid:
+        raise ValueError(error_msg)
+
     # Check if it's the first entry
     first_entry = db.query(activity_model.WeightTracking)\
                     .filter(activity_model.WeightTracking.user_id == user_id)\
@@ -118,7 +141,7 @@ def log_weight_entry(db: Session, user_id: int, weight_entry: activity_schema.We
     xp_to_add = calculate_weight_tracking_xp(weight_logs, starting_weight, weight_goal)
 
     update_skill_xp(db, user_id, "Strength", xp_to_add)
-    update_activity_streak(db, user_id, "weight_tracking")
+    update_activity_streak(db, user_id, "weight_tracking", validated_date)
 
     db.commit()
     return new_weight_entry
@@ -157,34 +180,42 @@ def get_recent_weight_logs(db: Session, user_id: int) -> Tuple[List[activity_mod
 
     return recent_logs, latest_weight_goal
 
-def update_activity_streak(db: Session, user_id: int, activity_type: str):
+def update_activity_streak(db: Session, user_id: int, activity_type: str, activity_date: Optional[date] = None):
+    """
+    Update user's activity streak for a given activity type.
+    If activity_date is None, uses today in user's timezone.
+    """
     from ..utils.time import get_user_today
 
-    # Get today's date in user's timezone (not server time!)
-    today = get_user_today(db, user_id)
+    # If no date provided, use today in user's timezone
+    if activity_date is None:
+        activity_date = get_user_today(db, user_id)
 
     streak = db.query(activity_model.ActivityStreak)\
                .filter_by(user_id=user_id, activity_type=activity_type)\
                .first()
 
     if streak:
-        if streak.last_activity_date == today - timedelta(days=1):
-            # If last activity is yesterday -> increment streak
+        if streak.last_activity_date == activity_date - timedelta(days=1):
+            # If last activity is yesterday (relative to activity_date) -> increment streak
             streak.current_streak += 1
-        elif streak.last_activity_date == today:
-            # Already logged today -> don't update streak
+        elif streak.last_activity_date == activity_date:
+            # Already logged for this date -> don't update streak
             pass
-        elif streak.last_activity_date < today - timedelta(days=1):
+        elif streak.last_activity_date < activity_date - timedelta(days=1):
             # Missed days -> reset streak to 1
             streak.current_streak = 1
-        streak.last_activity_date = today
+
+        # Only update last_activity_date if this activity is more recent
+        if activity_date > streak.last_activity_date:
+            streak.last_activity_date = activity_date
     else:
         # New streak
         streak = activity_model.ActivityStreak(
             user_id=user_id,
             activity_type=activity_type,
             current_streak=1,
-            last_activity_date=today
+            last_activity_date=activity_date
         )
         db.add(streak)
 

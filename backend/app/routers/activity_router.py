@@ -14,20 +14,38 @@ logger = logging.getLogger(__name__)
 # Logs an activity (action) and rewards XP
 @router.post("/users/{user_id}/log-activity/", response_model=activity_schema.ActivityLog)
 def log_activity(user_id: int, activity_data: activity_schema.ActivityLog, db: Session = Depends(get_db)):
-    if not user_crud.get_user(db, user_id):
+    user = user_crud.get_user(db, user_id)
+    if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    logged_activity = activity_crud.log_activity(db, user_id, activity_data)
-    return logged_activity
+
+    # Check if user is admin (for historical logging permissions)
+    from ..models.user_model import UserRole
+    is_admin = user.role == UserRole.ADMIN
+
+    try:
+        logged_activity = activity_crud.log_activity(db, user_id, activity_data, is_admin=is_admin)
+        return logged_activity
+    except ValueError as e:
+        # Date validation failed
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 # Log the user's weight and rewards XP
 @router.post("/users/{user_id}/track-weight/", response_model=activity_schema.WeightEntry)
 def track_weight(user_id: int, weight_entry: activity_schema.WeightEntry, db: Session = Depends(get_db)):
-    if not user_crud.get_user(db, user_id):
+    user = user_crud.get_user(db, user_id)
+    if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
-    
-    logged_activity = activity_crud.log_weight_entry(db, user_id, weight_entry)
-    return logged_activity
+
+    # Check if user is admin (for historical logging permissions)
+    from ..models.user_model import UserRole
+    is_admin = user.role == UserRole.ADMIN
+
+    try:
+        logged_activity = activity_crud.log_weight_entry(db, user_id, weight_entry, is_admin=is_admin)
+        return logged_activity
+    except ValueError as e:
+        # Date validation failed
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 def weight_tracking_to_dict(weight_tracking):
     return {

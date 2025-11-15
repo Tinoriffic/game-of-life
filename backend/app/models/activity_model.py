@@ -17,8 +17,14 @@ class UserActivities(Base):
     volume = Column(Integer, default=0) # for workouts (weight * reps)
     distance = Column(Float, default=0.0)
     counts_towards_streak = Column(Boolean, default=False)
-    
-    user = relationship('User', back_populates='activities')
+
+    # Audit fields for historical logging
+    logged_by_admin = Column(Boolean, default=False)
+    admin_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    created_at = Column(DateTime, default=utc_now)  # When record was created (separate from activity date)
+
+    user = relationship('User', foreign_keys=[user_id], back_populates='activities')
+    admin_user = relationship('User', foreign_keys=[admin_user_id])
 
 class ActivityStreak(Base):
     __tablename__ = "activity_streaks"
@@ -38,6 +44,12 @@ class WeightTracking(Base):
     date = Column(DateTime, default=utc_now)
     weight_goal = Column(Float)
     is_starting_weight = Column(Boolean, default=False)
-    
-    user = relationship('User', back_populates='weight_entries')
+
+    # Audit fields for historical logging
+    logged_by_admin = Column(Boolean, default=False)
+    admin_user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
+    created_at = Column(DateTime, default=utc_now)
+
+    user = relationship('User', foreign_keys=[user_id], back_populates='weight_entries')
+    admin_user = relationship('User', foreign_keys=[admin_user_id])
     

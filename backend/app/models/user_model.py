@@ -24,11 +24,11 @@ class User(Base):
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
     
     skills = relationship("Skill", back_populates="user")
-    activities = relationship("UserActivities", back_populates="user")
+    activities = relationship("UserActivities", foreign_keys="[UserActivities.user_id]", back_populates="user")
     skill_progression = relationship("SkillProgression", back_populates="user")
     workout_programs = relationship("WorkoutProgram", back_populates="user")
     activity_streaks = relationship("ActivityStreak", back_populates="user")
-    weight_entries = relationship("WeightTracking", back_populates="user")
+    weight_entries = relationship("WeightTracking", foreign_keys="[WeightTracking.user_id]", back_populates="user")
     created_exercises = relationship("Exercise", back_populates="user")
     user_challenges = relationship("UserChallenge", back_populates="user")
     user_badges = relationship("UserBadge", back_populates="user")

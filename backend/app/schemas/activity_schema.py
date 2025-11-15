@@ -11,7 +11,7 @@ class ActivityLog(BaseModel):
     volume: int = 0
     distance: float = 0.0
     counts_towards_streak: bool = False
-    date: datetime = None
+    date: Optional[datetime] = None  # If None, uses current time. If provided, must be valid for user
 
 class ActivityStreak(BaseModel):
     user_id: int
