@@ -1,0 +1,290 @@
+.failed-challenge-card {
+    max-width: 600px;
+    margin: 0 auto 30px auto;
+    background-color: #282c34;
+    border: 2px solid #ff9800;
+    border-radius: 10px;
+    padding: 30px;
+    color: #F8F8F2;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.2);
+}
+
+.failed-challenge-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #ff9800;
+}
+
+.failure-icon {
+    font-size: 32px;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+}
+
+.failed-challenge-header h2 {
+    color: #ff9800;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0;
+    font-size: 24px;
+}
+
+.challenge-info-section {
+    text-align: center;
+    margin: 20px 0;
+    padding: 15px;
+    background: #1D1F20;
+    border-radius: 8px;
+    border: 1px solid #444;
+}
+
+.challenge-info-section h3 {
+    color: #F8F8F2;
+    font-family: 'Orbitron', sans-serif;
+    margin: 0 0 12px 0;
+    font-size: 20px;
+}
+
+.missed-message {
+    margin: 0;
+    line-height: 1.6;
+    font-size: 15px;
+    color: #F8F8F2;
+    opacity: 0.9;
+}
+
+.missed-message strong {
+    color: #ff9800;
+    font-weight: bold;
+}
+
+.challenge-summary {
+    background: #1D1F20;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px 0;
+    border: 1px solid #444;
+}
+
+.challenge-summary h4 {
+    color: #4caf50;
+    margin: 0 0 15px 0;
+    font-family: 'Orbitron', sans-serif;
+    text-align: center;
+}
+
+.stats-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    background: #282c34;
+    border-radius: 6px;
+    border: 1px solid #444;
+}
+
+.stat-label {
+    color: #F8F8F2;
+    opacity: 0.8;
+    font-size: 14px;
+}
+
+.stat-value {
+    color: #2196F3;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+.stat-value.ended {
+    color: #ff9800;
+}
+
+.stat-value.xp {
+    color: #4caf50;
+}
+
+.grace-period-section {
+    margin-top: 25px;
+    padding: 20px;
+    background: linear-gradient(135deg, rgba(76, 175, 80, 0.1), rgba(33, 150, 243, 0.1));
+    border-radius: 8px;
+    border: 2px solid #4caf50;
+    text-align: center;
+}
+
+.grace-period-timer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 15px;
+    padding: 12px;
+    background: #1D1F20;
+    border-radius: 6px;
+    border: 1px solid #4caf50;
+}
+
+.timer-icon {
+    font-size: 20px;
+}
+
+.timer-text {
+    color: #F8F8F2;
+    font-size: 14px;
+}
+
+.timer-text strong {
+    color: #4caf50;
+    font-weight: bold;
+}
+
+.grace-period-prompt {
+    color: #F8F8F2;
+    margin: 15px 0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.restore-challenge-btn {
+    background: linear-gradient(135deg, #4caf50, #45a049);
+    color: white;
+    border: none;
+    padding: 15px 30px;
+    font-size: 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: bold;
+    width: 100%;
+    max-width: 400px;
+}
+
+.restore-challenge-btn:hover {
+    background: linear-gradient(135deg, #43a047, #3d8b40);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(76, 175, 80, 0.3);
+}
+
+.restore-challenge-btn:disabled {
+    background: #666;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.no-grace-period {
+    margin-top: 20px;
+    padding: 20px;
+    background: #1D1F20;
+    border-radius: 8px;
+    border: 1px solid #ff9800;
+    text-align: center;
+}
+
+.no-grace-period p {
+    color: #ff9800;
+    margin: 0 0 15px 0;
+    font-size: 14px;
+}
+
+.dismiss-btn {
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 14px;
+}
+
+.dismiss-btn:hover {
+    background-color: #1976D2;
+}
+
+.error-message {
+    background-color: #f44336;
+    color: white;
+    padding: 12px;
+    border-radius: 5px;
+    text-align: center;
+    margin-top: 15px;
+    font-size: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .failed-challenge-card {
+        padding: 20px;
+        margin: 0 auto 20px auto;
+    }
+
+    .failed-challenge-header h2 {
+        font-size: 20px;
+    }
+
+    .failure-icon {
+        font-size: 28px;
+    }
+
+    .challenge-info-section h3 {
+        font-size: 18px;
+    }
+
+    .missed-message {
+        font-size: 14px;
+    }
+
+    .restore-challenge-btn {
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+
+    .stats-grid {
+        gap: 10px;
+    }
+
+    .stat-item {
+        padding: 8px 12px;
+    }
+
+    .stat-label,
+    .stat-value {
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .failed-challenge-card {
+        padding: 15px;
+    }
+
+    .challenge-summary,
+    .grace-period-section {
+        padding: 15px;
+    }
+
+    .restore-challenge-btn {
+        font-size: 13px;
+        padding: 10px 15px;
+    }
+}

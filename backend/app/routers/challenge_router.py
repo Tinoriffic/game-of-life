@@ -53,17 +53,37 @@ async def join_challenge(
             detail=f"Failed to join challenge: {str(e)}"
         )
 
-@router.get("/active", response_model=challenge_schema.ActiveChallengeResponse)
+@router.get("/active")
 async def get_active_challenge(
     db: Session = Depends(get_db),
     current_user: user_model.User = Depends(auth_utils.get_current_user)
 ):
     """
-    Get user's currently active challenge with progress information
+    Get user's currently active challenge with progress information,
+    plus any failed challenge within grace period
     """
     try:
-        challenge_data = challenge_crud.get_challenge_with_progress(db, current_user.id)
-        return challenge_schema.ActiveChallengeResponse(active_challenge=challenge_data)
+        from ..crud import system_settings_crud
+
+        active_challenge_data = challenge_crud.get_challenge_with_progress(db, current_user.id)
+        failed_challenge = challenge_crud.get_user_failed_challenge_in_grace_period(db, current_user.id)
+        allow_grace_period = system_settings_crud.is_challenge_grace_period_enabled(db)
+
+        # If there's a failed challenge, get its progress data
+        failed_challenge_data = None
+        if failed_challenge:
+            completed_days = len(failed_challenge.progress_entries)
+            failed_challenge_data = {
+                "user_challenge": failed_challenge,
+                "completed_days": completed_days,
+                "current_streak": failed_challenge.current_streak
+            }
+
+        return {
+            "active_challenge": active_challenge_data,
+            "failed_challenge": failed_challenge_data,
+            "allow_grace_period": allow_grace_period
+        }
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,

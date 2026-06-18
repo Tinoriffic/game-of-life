@@ -52,9 +52,7 @@ def generate_tokens(user: user_model.User):
 def validate_refresh_token(token: str):
     try:
         decoded_token = jwt.decode(token, Config.SECRET_KEY, algorithms=["HS256"])
-        print(f"Decoded token: {decoded_token}")
         if decoded_token.get("type") != "refresh":
-            print("Token is not of type 'refresh'")
             return None
         return decoded_token
     except JWTError as e:

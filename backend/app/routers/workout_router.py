@@ -74,15 +74,10 @@ def read_workout_program(program_id: int, db: Session = Depends(get_db)):
     program = workout_crud.get_workout_program_by_id(db, program_id=program_id)
     if not program:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
-    
-    return workout_schema.WorkoutProgram(
-            program_id=program.program_id,
-            user_id=program.user_id,
-            name=program.name,
-            days=[
-                workout_schema.WorkoutDay(**day.__dict__) for day in program.workout_days
-            ]
-        )
+    # WorkoutProgram has from_attributes=True; FastAPI serializes the ORM object
+    # (workout_days -> exercises load within the request). The old hand-built
+    # response used a non-existent `days=` kwarg and omitted required fields.
+    return program
 
 # Get all of a user's workout programs
 @router.get("/users/{user_id}/workout-programs", response_model=workout_schema.WorkoutProgramsResponse)

@@ -421,3 +421,26 @@
     padding-top: 4px;
     margin-top: 4px;
   }
+
+/* ---------------------------------------------------------------------------
+   Collision guard. `.stat-item` and `.stats-grid` are also defined (with
+   backgrounds/padding/flex) in OverallProgress.css, FailedChallengeCard.css and
+   AdminPanel.css. Because CSS is bundled globally, whichever loads last wins —
+   and the v1.0.0 import reshuffle let those foreign rules box PlayerCard's stats.
+   Scoping under `.player-card` raises specificity so PlayerCard's own design
+   always wins, independent of bundle order.
+   --------------------------------------------------------------------------- */
+.player-card .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  width: 100%;
+}
+
+.player-card .stat-item {
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 8px;
+  display: block;
+}

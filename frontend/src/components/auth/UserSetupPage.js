@@ -85,7 +85,6 @@ const UserSetupPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    console.log("Registration Token at submission:", registrationToken);
     try {
         const response = await axiosInstance.post(`${baseUrl}/finalize-oauth-registration`, {
           occupation,

@@ -4,17 +4,27 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import { UserProvider } from './components/player/UserContext';
+import { FeedbackProvider } from './components/feedback/FeedbackContext';
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
     <UserProvider>
-      <App />
+      <FeedbackProvider>
+        <App />
+      </FeedbackProvider>
     </UserProvider>
   </React.StrictMode>
 );
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+// PWA: instant shell loads + offline fallback (production only, so dev
+// never fights a stale cache).
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register(`${process.env.PUBLIC_URL}/service-worker.js`)
+      .catch((err) => console.warn('Service worker registration failed:', err));
+  });
+}
+
 reportWebVitals();

@@ -1,0 +1,119 @@
+.profile-page {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 18px 14px 96px;
+  color: #f8f8f2;
+}
+
+.profile-level-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.profile-level-badge {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #ffd700;
+  border: 2px solid #ffd700;
+  border-radius: 12px;
+  padding: 10px 14px;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+  flex: none;
+}
+
+.profile-level-info { flex: 1; }
+
+.profile-xp-text {
+  font-size: 12px;
+  color: #b8b8b8;
+  display: block;
+  margin-top: 6px;
+}
+
+.profile-consistency {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.pc-stat {
+  flex: 1;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 6px;
+}
+
+.pc-value {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.pc-label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.profile-top-streaks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 14px;
+}
+
+.top-streak-chip {
+  font-size: 12px;
+  background: rgba(255, 159, 67, 0.1);
+  border: 1px solid rgba(255, 159, 67, 0.5);
+  color: #ff9f43;
+  border-radius: 14px;
+  padding: 6px 12px;
+}
+
+.profile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.profile-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f8f8f2;
+  border-radius: 12px;
+  padding: 13px 16px;
+  font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.profile-link.logout {
+  color: #ff8787;
+  border-color: rgba(255, 107, 107, 0.35);
+}
+
+.profile-version {
+  text-align: center;
+  color: #666;
+  font-size: 11px;
+  margin-top: 22px;
+  font-family: 'Orbitron', sans-serif;
+}

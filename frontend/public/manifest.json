@@ -1,6 +1,7 @@
 {
   "short_name": "Me v2",
-  "name": "Me v2",
+  "name": "Me v2 — the second version of you",
+  "description": "A habit tracker that plays like an RPG. Your habits, your XP, your second version.",
   "icons": [
     {
       "src": "favicon.ico",
@@ -10,16 +11,19 @@
     {
       "src": "logo192.png",
       "type": "image/png",
-      "sizes": "192x192"
+      "sizes": "192x192",
+      "purpose": "any maskable"
     },
     {
       "src": "logo512.png",
       "type": "image/png",
-      "sizes": "512x512"
+      "sizes": "512x512",
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "orientation": "portrait",
+  "theme_color": "#16213e",
+  "background_color": "#1D1F20"
 }

@@ -2,10 +2,11 @@ import React, { useState } from 'react';
 import { challengeService } from '../../../services/challengeService';
 import ChallengeCompletionModal from './ChallengeCompletionModal';
 import ChallengeActivityModal from './ChallengeActivityModal';
+import FailedChallengeCard from './FailedChallengeCard';
 import Modal from '../../common/Modal';
 import './ActiveChallenge.css';
 
-const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQuit }) => {
+const ActiveChallenge = ({ activeChallenge, failedChallenge, allowGracePeriod, onChallengeCompleted, onChallengeQuit }) => {
     const [completingDay, setCompletingDay] = useState(false);
     const [showActivityModal, setShowActivityModal] = useState(false);
     const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -13,7 +14,19 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
     const [completionData, setCompletionData] = useState(null);
     const [error, setError] = useState('');
 
-    if (!activeChallenge) {
+    const handleRestoreChallenge = async () => {
+        await onChallengeCompleted();
+    };
+
+    const handleDismissFailedChallenge = () => {
+        // Navigate to history or just refresh
+        onChallengeCompleted();
+    };
+
+    // Show failed challenge card if it exists (prioritize showing this first)
+    const hasFailedChallenge = failedChallenge !== null && failedChallenge !== undefined;
+
+    if (!activeChallenge && !hasFailedChallenge) {
         return (
             <div className="no-active-challenge">
                 <div className="no-challenge-content">
@@ -25,9 +38,35 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
         );
     }
 
-    const { user_challenge, current_day, completed_days, today_completed, can_complete_today } = activeChallenge;
-    const challenge = user_challenge.challenge;
-    const progressPercentage = (completed_days / challenge.duration_days) * 100;
+    // If there's a failed challenge, show it first
+    if (hasFailedChallenge) {
+        return (
+            <>
+                <FailedChallengeCard
+                    failedChallenge={failedChallenge}
+                    allowGracePeriod={allowGracePeriod}
+                    onRestore={handleRestoreChallenge}
+                    onDismiss={handleDismissFailedChallenge}
+                />
+                {activeChallenge && (
+                    <div style={{ marginTop: '30px' }}>
+                        <h3 style={{ textAlign: 'center', color: '#4caf50', marginBottom: '20px', fontFamily: 'Orbitron, sans-serif' }}>
+                            Current Active Challenge
+                        </h3>
+                        {renderActiveChallengeContent()}
+                    </div>
+                )}
+            </>
+        );
+    }
+
+    // Main render for active challenge only
+    return renderActiveChallengeContent();
+
+    function renderActiveChallengeContent() {
+        const { user_challenge, current_day, completed_days, today_completed, can_complete_today } = activeChallenge;
+        const challenge = user_challenge.challenge;
+        const progressPercentage = (completed_days / challenge.duration_days) * 100;
 
     const handleMarkComplete = async (activityData = null) => {
         if (!can_complete_today || completingDay) return;
@@ -215,6 +254,7 @@ const ActiveChallenge = ({ activeChallenge, onChallengeCompleted, onChallengeQui
             )}
         </div>
     );
+    }
 };
 
 export default ActiveChallenge;

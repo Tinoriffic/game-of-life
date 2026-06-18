@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import axiosInstance from '../../../../axios';
 import './LogWorkoutEntry.css';
 import { useUser } from '../../../player/UserContext';
+import { parseApiError } from '../../../../hooks/useYesterdayLogging';
 
-const LogWorkoutEntry = ({ program, onClose }) => {
+const LogWorkoutEntry = ({ program, onClose, habitId = null, onLogged = null }) => {
   const [workoutDays, setWorkoutDays] = useState([]);
   const [selectedDay, setSelectedDay] = useState(null);
   const [loggedExercises, setLoggedExercises] = useState([]);
+  const [logForYesterday, setLogForYesterday] = useState(false);
   const { user } = useUser();
 
   useEffect(() => {
@@ -112,20 +114,35 @@ const LogWorkoutEntry = ({ program, onClose }) => {
         return;
       }
 
+      // Calculate session date based on whether logging for yesterday
+      let sessionDate;
+      if (logForYesterday) {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        sessionDate = yesterday.toISOString();
+      } else {
+        sessionDate = new Date().toISOString();
+      }
+
       const payload = {
         program_id: program.program_id,
-        session_date: new Date().toISOString(),
-        exercises: formattedExercises
+        session_date: sessionDate,
+        exercises: formattedExercises,
+        habit_id: habitId,
       };
 
-      console.log('Sending payload:', JSON.stringify(payload, null, 2));
-
-      await axiosInstance.post(`/users/${user.id}/workout-sessions`, payload);
+      const res = await axiosInstance.post(`/users/${user.id}/workout-sessions`, payload);
+      if (onLogged) {
+        // v1.0.0 flow: hand the habit payout to the caller (feedback layer fires there).
+        onLogged(res.data);
+      } else {
+        const dayText = logForYesterday ? 'yesterday' : 'today';
+        alert(`Workout logged successfully for ${dayText}!`);
+      }
       onClose();
     } catch (error) {
       console.error('Failed to log workout entry', error.response);
-      const errorMessage = error.response?.data?.detail || 'Failed to log workout';
-      alert(errorMessage);
+      alert(parseApiError(error, 'Failed to log workout'));
     }
   };
 
@@ -175,6 +192,17 @@ const LogWorkoutEntry = ({ program, onClose }) => {
                 ))}
             </div>
           )}
+          <div className="yesterday-option">
+            <label>
+              <input
+                type="checkbox"
+                checked={logForYesterday}
+                onChange={(e) => setLogForYesterday(e.target.checked)}
+              />
+              <span>Forgot to log yesterday?</span>
+            </label>
+            {logForYesterday && <span className="date-indicator">Logging for yesterday</span>}
+          </div>
           <button onClick={handleSubmit}>Log Workout</button>
           <button onClick={onClose}>Cancel</button>
         </>

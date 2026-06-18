@@ -5,9 +5,9 @@ load_dotenv()
 
 from .oauth2_config import OAuth2Config
 from .cors import setup_cors
-from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router
+from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router, habit_router
 from . import models
-from .database import engine
+from .database import engine, SessionLocal
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -16,6 +16,43 @@ logging.basicConfig(
     level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
 )
+
+
+def _bootstrap():
+    """Idempotent startup migration + seed for the v1.0.0 habit overhaul."""
+    from sqlalchemy import text
+    with engine.connect() as conn:
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS player_xp INTEGER NOT NULL DEFAULT 0"
+        ))
+        # Workout-program link + measurement goal on habits (workout integration).
+        conn.execute(text(
+            "ALTER TABLE habits ADD COLUMN IF NOT EXISTS program_id INTEGER "
+            "REFERENCES workout_programs(program_id) ON DELETE SET NULL"
+        ))
+        conn.execute(text(
+            "ALTER TABLE habits ADD COLUMN IF NOT EXISTS target_value DOUBLE PRECISION"
+        ))
+        # Timed exercises (Workout Logger).
+        conn.execute(text(
+            "ALTER TABLE exercises ADD COLUMN IF NOT EXISTS tracking_type VARCHAR NOT NULL DEFAULT 'reps'"
+        ))
+        conn.execute(text(
+            "ALTER TABLE workout_sets ADD COLUMN IF NOT EXISTS performed_duration_seconds INTEGER"
+        ))
+        conn.commit()
+
+    from .seeds.bucket_seed import seed_buckets
+    from .seeds.exercise_seed import seed_exercises
+    db = SessionLocal()
+    try:
+        seed_buckets(db)
+        seed_exercises(db)
+    finally:
+        db.close()
+
+
+_bootstrap()
 
 app = FastAPI()
 
@@ -30,6 +67,7 @@ app.include_router(user_router.router)
 app.include_router(workout_router.router)
 app.include_router(challenge_router.router)
 app.include_router(admin_router.router)
+app.include_router(habit_router.router)
 
 
 # Example Routes

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import axiosInstance from '../../../../axios';
 import { baseUrl } from '../../../../config/apiConfig';
 import { useUser } from '../../../player/UserContext';
+import { useYesterdayLogging, parseApiError } from '../../../../hooks/useYesterdayLogging';
 import './CardioLogs.css';
 
 const CardioLog = () => {
@@ -11,6 +12,9 @@ const CardioLog = () => {
   const [error, setError] = useState('');
   const { user } = useUser(); // Get the current user's ID from context
 
+  // Use custom hook for yesterday logging functionality
+  const { canLogYesterday, logForYesterday, setLogForYesterday, loading, getLogEntry } = useYesterdayLogging(user.id, 'run');
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -19,25 +23,34 @@ const CardioLog = () => {
       return;
     }
 
-    const runEntry = {
+    const baseEntry = {
         activity_type: "run",
         description: description,
         duration: duration,
         distance: distance
     };
 
+    // Use helper to add date if logging for yesterday
+    const runEntry = getLogEntry(baseEntry);
+
     try {
         await axiosInstance.post(`${baseUrl}/users/${user.id}/log-activity/`, runEntry);
         setDistance('');
         setDuration('');
         setDescription('');
+        setLogForYesterday(false);
         setError('');
-        console.log('Cardio activity logged successfully');
+        const dayText = logForYesterday ? 'yesterday' : 'today';
+        console.log(`Cardio activity logged successfully for ${dayText}`);
     } catch (error) {
         console.error('Error logging cardio activity: ', error);
-        setError('Failed to log cardio activity. Please try again.');
-    } 
+        setError(parseApiError(error, 'Failed to log cardio activity. Please try again.'));
+    }
   };
+
+  if (loading) {
+    return <div className="cardio-log">Loading...</div>;
+  }
 
   return (
     <div className="cardio-log">
@@ -61,6 +74,19 @@ const CardioLog = () => {
             required
           />
         </div>
+        {canLogYesterday && (
+          <div className="yesterday-option">
+            <label>
+              <input
+                type="checkbox"
+                checked={logForYesterday}
+                onChange={(e) => setLogForYesterday(e.target.checked)}
+              />
+              <span>Forgot to log yesterday?</span>
+            </label>
+            {logForYesterday && <span className="date-indicator">Logging for yesterday</span>}
+          </div>
+        )}
         <button type="submit">Log Run</button>
       </form>
       {error && <div className="error-message">{error}</div>}

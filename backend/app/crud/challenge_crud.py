@@ -40,23 +40,29 @@ def check_and_fail_expired_challenges(db: Session, user_id: int = None):
     
     for user_challenge in active_challenges:
         today = get_user_today(db, user_challenge.user_id)
-        
+
         # Check if challenge period is over
         if today > user_challenge.end_date:
             user_challenge.is_failed = True
             user_challenge.is_active = False
+            if not user_challenge.failed_date:
+                user_challenge.failed_date = today
             continue
-            
+
         # Calculate expected days completed by now
         current_day = (today - user_challenge.start_date).days + 1
         completed_days = len(user_challenge.progress_entries)
-        
+
         # If we're past the start date and missing any previous days, fail the challenge
         # (Allow current day to be incomplete, but not previous days)
         if current_day > 1 and completed_days < (current_day - 1):
             user_challenge.is_failed = True
             user_challenge.is_active = False
-    
+            # Set failed_date to yesterday (the day that was missed)
+            if not user_challenge.failed_date:
+                from datetime import timedelta
+                user_challenge.failed_date = today - timedelta(days=1)
+
     db.commit()
 
 def get_user_active_challenge(db: Session, user_id: int) -> Optional[UserChallenge]:
@@ -75,6 +81,33 @@ def get_user_active_challenge(db: Session, user_id: int) -> Optional[UserChallen
             UserChallenge.is_failed == False
         )
     ).first()
+
+def get_user_failed_challenge_in_grace_period(db: Session, user_id: int) -> Optional[UserChallenge]:
+    """
+    Get user's failed challenge if it's within the grace period (failed yesterday)
+    Returns None if no failed challenge exists or if grace period has expired
+    """
+    from ..utils.time import is_within_grace_period
+
+    # Get the most recent failed challenge
+    failed_challenge = db.query(UserChallenge).filter(
+        and_(
+            UserChallenge.user_id == user_id,
+            UserChallenge.is_failed == True,
+            UserChallenge.is_active == False,
+            UserChallenge.grace_period_used == False
+        )
+    ).order_by(UserChallenge.failed_date.desc()).first()
+
+    if not failed_challenge:
+        return None
+
+    # Check if within grace period
+    user_today = get_user_today(db, user_id)
+    if is_within_grace_period(failed_challenge.failed_date, user_today):
+        return failed_challenge
+
+    return None
 
 def get_user_challenge_history(db: Session, user_id: int, skip: int = 0, limit: int = 10) -> List[UserChallenge]:
     """
@@ -201,12 +234,22 @@ def check_challenge_completion(db: Session, user_challenge: UserChallenge):
         user_challenge.is_completed = True
         user_challenge.is_active = False
         user_challenge.completion_date = today
-        
-        # Award completion bonus XP
+
+        # Completion bonus pays the player XP track (XP engine)
         if user_challenge.challenge.completion_xp_bonus > 0:
-            pass
-            # TODO: Award bonus to user's overall level XP (this needs to be adjusted)
-        
+            from ..models.user_model import User
+            from ..models.habit_model import PlayerXPEvent
+            user = db.query(User).filter(User.id == user_challenge.user_id).first()
+            if user:
+                user.player_xp = (user.player_xp or 0) + user_challenge.challenge.completion_xp_bonus
+                db.add(PlayerXPEvent(
+                    user_id=user.id,
+                    amount=user_challenge.challenge.completion_xp_bonus,
+                    source="challenge",
+                    source_key=f"challenge:{user_challenge.id}:completion",
+                    meta={"challenge": user_challenge.challenge.title},
+                ))
+
         award_challenge_badge(db, user_challenge)
 
 def award_challenge_badge(db: Session, user_challenge: UserChallenge):

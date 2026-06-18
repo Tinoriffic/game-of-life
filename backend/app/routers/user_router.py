@@ -56,10 +56,6 @@ async def set_username(request: user_schema.SetUsernameRequest, db: Session = De
         "avatar_url": user_info.get("picture")
     }, stage="set_username")
 
-    print("Temporary Token")
-    print("------------------")
-    print(registration_token)
-
     return {"registration_token": registration_token}
 
 # Final step of the OAuth registration process
@@ -96,22 +92,18 @@ async def create_oauth_user(request: user_schema.CreateAccountRequest, db: Sessi
 # Used for refreshing expired tokens
 @router.post("/refresh-token")
 async def refresh_token_endpoint(request: user_schema.RefreshTokenRequest, db: Session = Depends(get_db)):
-    print("DEBUG: Refresh Token Received", request.refresh_token)
     decoded_token = auth_utils.validate_refresh_token(request.refresh_token)
     if not decoded_token:
-        print("DEBUG: Invalid refresh token")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid refresh token")
 
     # Fetch user from the database using user ID in the token
     user_id = int(decoded_token.get("sub"))
     user = db.query(user_model.User).filter(user_model.User.id == user_id).first()
     if not user:
-        print("DEBUG: User not found with ID", user_id)
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
     # Issue a new access token
     new_access_token, _ = auth_utils.generate_tokens(user)
-    print("DEBUG: New access token generated", new_access_token)
     return {"access_token": new_access_token}
 
 

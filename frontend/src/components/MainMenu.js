@@ -14,8 +14,6 @@ function MainMenu() {
   const navigate = useNavigate();
   const { setUser } = useUser();
 
-  console.log('MainMenu: Using access token:', token);
-
   useEffect(() => {
     const fetchUserData = async () => {
       try {
@@ -67,7 +65,7 @@ function MainMenu() {
           <div className="footer-user-info">
             👤 {playerData.display_name || playerData.username}
           </div>
-          <div className="footer-version">v0.1.0</div>
+          <div className="footer-version">v1.0.0</div>
         </div>
       {/* Add more sections as needed */}
     </div>

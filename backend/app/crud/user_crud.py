@@ -91,11 +91,11 @@ def get_user_stats(db: Session, user_id: int):
 
 def get_user_overall_progress(db: Session, user):
     """
-    Get a user's overall stats including information about their XP & days active
+    Get a user's overall stats including information about their XP & days active.
+    Player level is its own track (XP engine), not a sum of attribute XP.
     """
-    total_xp = sum(skill.xp for skill in user.skills)
-    level = calculate_level(total_xp)
-    xp_to_next_level = calculate_required_xp(level)
+    from ..xp_engine import player_level_from_xp
+    player = player_level_from_xp(user.player_xp)
 
     activities = db.query(activity_model.UserActivities).filter(
         activity_model.UserActivities.user_id == user.id
@@ -105,21 +105,25 @@ def get_user_overall_progress(db: Session, user):
     activity_streak = calculate_activity_streak(activities)
 
     return {
-        "level": level,
-        "xp": total_xp,
-        "xpToNextLevel": xp_to_next_level,
+        "level": player["level"],
+        "xp": player["xp_into_level"],
+        "xpToNextLevel": player["xp_to_next"],
+        "totalXp": player["total_xp"],
         "daysActive": days_active,
         "activityStreak": activity_streak
     }
 
 def get_skills_progress(db: Session, user):
     skills = db.query(skill_model.Skill).filter(skill_model.Skill.user_id == user.id).all()
+    # skill.xp resets to 0 at each level-up, so the XP still needed is the
+    # current level's requirement minus progress (never negative — the old
+    # `required(level + 1) - xp` math caused the "XP TO NEXT: -22" bug).
     return [
         {
             "name": skill.name,
             "level": skill.level,
             "xp": skill.xp,
-            "xpToNextLevel": calculate_required_xp(skill.level + 1) - skill.xp
+            "xpToNextLevel": max(0, calculate_required_xp(skill.level) - skill.xp)
         }
         for skill in skills
     ]

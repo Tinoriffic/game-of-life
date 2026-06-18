@@ -135,6 +135,7 @@ def create_user_exercise(db: Session, user_id: int, exercise: workout_schema.Exe
         difficulty_level_id=exercise.difficulty_level_id,
         exercise_type_id=exercise.exercise_type_id,
         is_global=exercise.is_global,
+        tracking_type=getattr(exercise, "tracking_type", "reps") or "reps",
         user_id=user_id,
         created_at=utc_now(),
         updated_at=utc_now()
@@ -251,17 +252,22 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
         for set_data in exercise_data.sets:
             weight = set_data.weight or 0
             reps = set_data.reps or 0
-            
+            duration = set_data.duration_seconds or 0
+
             workout_set = workout_model.WorkoutSet(
                 session_exercise_id=session_exercise.session_exercise_id,
                 set_number=set_data.set_number,
                 performed_weight=weight,
-                performed_reps=reps
+                performed_reps=reps,
+                performed_duration_seconds=duration or None,
             )
             db.add(workout_set)
-            
-            # Calculate volume for this set
-            set_volume = weight * reps
+
+            # Volume: rep sets = weight x reps; time sets = weight x minutes held/carried.
+            if duration:
+                set_volume = weight * (duration / 60.0)
+            else:
+                set_volume = weight * reps
             total_volume += set_volume
             total_intensity += set_volume * (1 + (reps / 30))
 
@@ -271,30 +277,19 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
         session_exercises.append(session_exercise)
         db.flush()
 
-    # Update strength skill and calculate XP
-    strength_skill = db.query(skill_model.Skill).filter(
-        skill_model.Skill.user_id == user_id,
-        skill_model.Skill.name == "Strength"
-    ).first()
-
-    if strength_skill and strength_skill.last_updated.date() < utc_today():
-        strength_skill.daily_xp_earned = 0
-
-    # Calculate and award XP
-    workout_data = []
-    for session_exercise in session_exercises:
-        workout_data.append({
-            'exercise_id': session_exercise.exercise_id,
-            'volume': session_exercise.total_volume,
-            'intensity': session_exercise.total_intensity_score
-        })
-
-    xp_to_add = calculate_workout_xp(strength_skill.daily_xp_earned, workout_data)
-    update_skill_xp(db, user_id, "Strength", xp_to_add)
-    update_activity_streak(db, user_id, "workout")
-
+    # NOTE: XP is awarded once, by the linked habit log below (volume -> Strength
+    # XP via the bucket's detail_kind). The legacy calculate_workout_xp path was
+    # removed here to avoid double-counting Strength XP in the v1.0.0 system.
     db.commit()
-    
+
+    # v1.0.0 daily loop: a logged session auto-completes the linked strength habit
+    # (per-set logger acts as the habit's detail sheet — no double logging).
+    habit_payout = _complete_strength_habit(
+        db, user_id, session_data.habit_id,
+        total_volume=sum(se.total_volume or 0 for se in session_exercises),
+        session_date=session_data.session_date,
+    )
+
     # Fetch the complete session data for the response
     complete_session = db.query(workout_model.WorkoutSession).options(
         joinedload(workout_model.WorkoutSession.workout_program),
@@ -320,8 +315,68 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
                 "weight": s.performed_weight,
                 "reps": s.performed_reps
             } for s in ex.sets]
-        } for ex in complete_session.exercises]
+        } for ex in complete_session.exercises],
+        "habit_payout": habit_payout
     }
+
+def _complete_strength_habit(db: Session, user_id: int, habit_id: int, total_volume: float,
+                             session_date: datetime = None):
+    """
+    Complete the strength habit tied to a logged workout session (today's log).
+    If no habit_id was passed, falls back to the user's single uncompleted
+    strength-bucket habit; skips quietly when ambiguous or already logged.
+    """
+    try:
+        from . import habit_crud
+        from ..schemas import habit_schema
+        from ..models.user_model import User
+        from ..utils.time import get_user_today
+
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return None
+
+        habit = None
+        if habit_id:
+            habit = habit_crud.get_user_habit(db, user_id, habit_id)
+        else:
+            today = get_user_today(db, user_id)
+            candidates = [
+                h for h in habit_crud.get_user_habits(db, user_id)
+                if h.bucket and h.bucket.key == "strength_training" and h.habit_type == "standard"
+            ]
+            uncompleted = [
+                h for h in candidates
+                if today not in habit_crud._habit_log_dates(db, h.id)
+            ]
+            if len(uncompleted) == 1:
+                habit = uncompleted[0]
+            elif len(candidates) == 1:
+                habit = candidates[0]
+
+        if not habit or habit.status != "active":
+            return None
+
+        # The session timestamp is UTC; the habit log must be dated by the user's
+        # *local* calendar day, or an evening session lands on tomorrow (UTC) and
+        # trips the future-date guard.
+        log_date = None
+        if session_date:
+            import pytz
+            from ..utils.time import get_user_timezone_from_db
+            tz = pytz.timezone(get_user_timezone_from_db(db, user_id))
+            aware = session_date if session_date.tzinfo else pytz.UTC.localize(session_date)
+            log_date = aware.astimezone(tz).date()
+
+        payload = habit_schema.HabitLogCreate(
+            value=total_volume or None,
+            date=log_date,
+        )
+        return habit_crud.log_habit(db, user, habit.id, payload)
+    except Exception:
+        import logging
+        logging.getLogger(__name__).exception("Strength habit auto-complete failed (non-fatal)")
+        return None
 
 def get_workout_program_details(db: Session, program_id: int) -> List[Dict]:
     result = db.execute(

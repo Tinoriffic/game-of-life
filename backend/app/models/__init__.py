@@ -4,3 +4,4 @@ from .user_model import *
 from .workout_model import *
 from .challenge_model import *
 from .system_settings_model import *
+from .habit_model import *

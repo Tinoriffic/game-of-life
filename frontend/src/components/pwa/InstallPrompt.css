@@ -1,0 +1,57 @@
+.install-banner {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(6, 214, 160, 0.08);
+  border: 1px solid rgba(6, 214, 160, 0.45);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin: 0 auto 14px;
+  max-width: 480px;
+  font-size: 13px;
+  color: #d8f8ee;
+}
+
+.install-banner-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.install-yes {
+  background: #06d6a0;
+  color: #0e1320;
+  border: none;
+  border-radius: 10px;
+  padding: 8px 18px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.install-no {
+  background: transparent;
+  color: #999;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.ios-guide h3 {
+  color: #ffd700;
+  margin-top: 0;
+}
+
+.ios-guide ol {
+  color: #d8d8d2;
+  font-size: 14px;
+  line-height: 1.9;
+  padding-left: 20px;
+}
+
+.ios-icon {
+  display: inline-block;
+  border: 1px solid #4ecdc4;
+  color: #4ecdc4;
+  border-radius: 5px;
+  padding: 0 6px;
+}

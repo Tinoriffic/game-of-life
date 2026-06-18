@@ -1,9 +1,18 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import './WeightProgress.css';
 
 const WeightProgress = ({ data }) => {
-  const weightHistory = useMemo(() => data?.history || [], [data]);
+  // Bucket entries by calendar day, keeping the last log of each day —
+  // multiple same-day entries used to duplicate x-axis dates.
+  const weightHistory = useMemo(() => {
+    const byDay = new Map();
+    for (const entry of data?.history || []) {
+      const day = String(entry.date).slice(0, 10);
+      byDay.set(day, { ...entry, date: day });
+    }
+    return [...byDay.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+  }, [data]);
 
   const { minWeight, maxWeight, weeklyChange, progressMessage } = useMemo(() => {
     if (!data || weightHistory.length === 0) {
@@ -106,6 +115,10 @@ const WeightProgress = ({ data }) => {
               contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.9)', border: '1px solid rgba(255, 215, 0, 0.5)', color: '#F8F8F2' }}
               labelFormatter={dateFormatter}
             />
+            {data.goal != null && (
+              <ReferenceLine y={data.goal} stroke="#06D6A0" strokeDasharray="5 4"
+                label={{ value: `Goal ${data.goal}`, fill: '#06D6A0', fontSize: 11, position: 'insideTopRight' }} />
+            )}
             <Line type="monotone" dataKey="weight" stroke="#FFD700" strokeWidth={2} dot={{ fill: '#FFD700', r: 4 }} activeDot={{ r: 8, fill: '#4caf50' }} />
           </LineChart>
         </ResponsiveContainer>

@@ -11,6 +11,8 @@ const ChallengesPage = () => {
     const { user } = useUser();
     const [activeTab, setActiveTab] = useState('active');
     const [activeChallenge, setActiveChallenge] = useState(null);
+    const [failedChallenge, setFailedChallenge] = useState(null);
+    const [allowGracePeriod, setAllowGracePeriod] = useState(false);
     const [availableChallenges, setAvailableChallenges] = useState([]);
     const [challengeHistory, setChallengeHistory] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -32,6 +34,8 @@ const ChallengesPage = () => {
             ]);
 
             setActiveChallenge(activeData.active_challenge);
+            setFailedChallenge(activeData.failed_challenge || null);
+            setAllowGracePeriod(activeData.allow_grace_period || false);
             setAvailableChallenges(availableData.challenges);
             setChallengeHistory(historyData.challenges);
         } catch (err) {
@@ -102,8 +106,10 @@ const ChallengesPage = () => {
 
             <div className="challenges-content">
                 {activeTab === 'active' && (
-                    <ActiveChallenge 
+                    <ActiveChallenge
                         activeChallenge={activeChallenge}
+                        failedChallenge={failedChallenge}
+                        allowGracePeriod={allowGracePeriod}
                         onChallengeCompleted={handleChallengeCompleted}
                         onChallengeQuit={handleChallengeQuit}
                     />

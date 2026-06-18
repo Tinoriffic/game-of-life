@@ -3,8 +3,9 @@ import axiosInstance from '../../../axios';
 import { baseUrl } from '../../../config/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../player/UserContext';
-import BackButton from '../../common/BackButton'
-import './SocialLogs.css'
+import BackButton from '../../common/BackButton';
+import { useYesterdayLogging, parseApiError } from '../../../hooks/useYesterdayLogging';
+import './SocialLogs.css';
 
 const SocialLogs = () => {
     const { user } = useUser();
@@ -22,26 +23,40 @@ const SocialLogs = () => {
         { value: 'make_laugh', label: 'Made Someone Laugh' },
       ];
 
+    // Use custom hook for yesterday logging functionality
+    const { canLogYesterday, logForYesterday, setLogForYesterday, loading, getLogEntry } = useYesterdayLogging(user.id, 'socialize');
+
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const logEntry = {
+        const baseEntry = {
             user_id: user.id,
             activity_type: "socialize",
             description: interactionType,
             notes: notes
         };
 
+        // Use helper to add date if logging for yesterday
+        const logEntry = getLogEntry(baseEntry);
+
         try {
             await axiosInstance.post(`${baseUrl}/users/${user.id}/log-activity/`, logEntry);
-            alert('Social activity logged successfully');
+            const dayText = logForYesterday ? 'yesterday' : 'today';
+            alert(`Social activity logged successfully for ${dayText}`);
+            setInteractionType('');
+            setNotes('');
+            setLogForYesterday(false);
             setError('');
             navigate('/dashboard');
         } catch (error) {
             console.error('Error logging social activity: ', error);
-            setError('Failed to log social activity. Please try again.');
+            setError(parseApiError(error, 'Failed to log social activity. Please try again.'));
         }
     };
+
+    if (loading) {
+        return <div className="social-logs-container">Loading...</div>;
+    }
 
     return (
         <div className="social-logs-container">
@@ -71,6 +86,19 @@ const SocialLogs = () => {
                 onChange={(e) => setNotes(e.target.value)}
               />
             </div>
+            {canLogYesterday && (
+                <div className="yesterday-option">
+                    <label>
+                        <input
+                            type="checkbox"
+                            checked={logForYesterday}
+                            onChange={(e) => setLogForYesterday(e.target.checked)}
+                        />
+                        <span>Forgot to log yesterday?</span>
+                    </label>
+                    {logForYesterday && <span className="date-indicator">Logging for yesterday</span>}
+                </div>
+            )}
             <button type="submit" className="submit-btn">Log Activity</button>
             <BackButton />
           </form>

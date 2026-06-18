@@ -9,7 +9,8 @@ const CHALLENGE_ENDPOINTS = {
     QUIT: '/challenges/quit',
     HISTORY: '/challenges/history',
     BADGES: '/challenges/badges',
-    BY_ID: (id) => `/challenges/${id}`
+    BY_ID: (id) => `/challenges/${id}`,
+    RESTORE_GRACE_PERIOD: (userChallengeId) => `/challenges/restore-grace-period/${userChallengeId}`
 };
 
 export const challengeService = {
@@ -103,6 +104,19 @@ export const challengeService = {
             return response.data;
         } catch (error) {
             console.error('Error fetching challenge:', error);
+            throw error;
+        }
+    },
+
+    // Restore a failed challenge within the grace period
+    async restoreChallenge(userChallengeId) {
+        try {
+            const response = await axiosInstance.post(
+                `${baseUrl}${CHALLENGE_ENDPOINTS.RESTORE_GRACE_PERIOD(userChallengeId)}`
+            );
+            return response.data;
+        } catch (error) {
+            console.error('Error restoring challenge:', error);
             throw error;
         }
     }

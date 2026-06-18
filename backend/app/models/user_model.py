@@ -22,8 +22,12 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     timezone = Column(String, default='UTC', nullable=False)
     role = Column(Enum(UserRole), default=UserRole.USER, nullable=False)
-    
+    # Player XP (overall level) is a separate track from attribute XP:
+    # earned through day-completes, measurements, milestones, challenges.
+    player_xp = Column(Integer, default=0, nullable=False)
+
     skills = relationship("Skill", back_populates="user")
+    habits = relationship("Habit", back_populates="user")
     activities = relationship("UserActivities", foreign_keys="[UserActivities.user_id]", back_populates="user")
     skill_progression = relationship("SkillProgression", back_populates="user")
     workout_programs = relationship("WorkoutProgram", back_populates="user")

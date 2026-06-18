@@ -1,0 +1,220 @@
+.wlog {
+    padding-bottom: 150px;  /* room for the sticky rest bar */
+}
+
+.wlog-loading,
+.wlog-error {
+    text-align: center;
+    padding: 40px 16px;
+    color: #b8b8b8;
+}
+.wlog-error { color: #ff8787; }
+.wlog-error.inline { padding: 10px; font-size: 0.85rem; }
+
+/* Day selector */
+.wlog-days {
+    gap: 6px;
+    padding-bottom: 12px;
+}
+/* <=5 days: one row of equal-width pills. >5 days: a 2-column grid. */
+.wlog-days.row { display: flex; }
+.wlog-days.row .wlog-day { flex: 1; }
+.wlog-days.grid { display: grid; grid-template-columns: 1fr 1fr; }
+.wlog-day {
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #d8d8d8;
+    border-radius: 16px;
+    padding: 8px 10px;
+    font-size: 13px;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.wlog-day.active {
+    background: rgba(255, 215, 0, 0.18);
+    border-color: #ffd700;
+    color: #ffd700;
+    font-weight: 700;
+}
+
+/* Exercise block */
+.wlog-ex {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+.wlog-ex-name {
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.wlog-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    background: rgba(6, 214, 160, 0.18);
+    color: #06d6a0;
+    border-radius: 5px;
+    padding: 2px 6px;
+}
+
+.wlog-set-head,
+.wlog-set {
+    display: grid;
+    grid-template-columns: 36px 1fr 1fr 48px;
+    gap: 8px;
+    align-items: center;
+}
+.wlog-set-head {
+    font-size: 11px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 6px;
+    padding: 0 2px;
+}
+.wlog-set {
+    margin-bottom: 8px;
+}
+.wlog-set.done { opacity: 0.6; }
+.wlog-set-n {
+    text-align: center;
+    font-weight: 700;
+    color: #9fd89f;
+}
+.wlog-set input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+    color: #f8f8f2;
+    padding: 12px 10px;          /* big targets for the gym */
+    font-size: 16px;
+    text-align: center;
+}
+
+.wlog-timed-cell {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+.wlog-stopwatch {
+    flex: none;
+    width: 42px;
+    height: 44px;
+    border-radius: 9px;
+    border: 1px solid rgba(6, 214, 160, 0.6);
+    background: rgba(6, 214, 160, 0.12);
+    color: #06d6a0;
+    font-size: 15px;
+    cursor: pointer;
+}
+.wlog-stopwatch.on {
+    background: #06d6a0;
+    color: #0d160d;
+    animation: wlog-pulse 1s infinite;
+}
+
+.wlog-done {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    background: transparent;
+    color: #06d6a0;
+    font-size: 20px;
+    font-weight: 800;
+    cursor: pointer;
+}
+.wlog-done.on {
+    border-color: #06d6a0;
+    background: rgba(6, 214, 160, 0.15);
+}
+
+.wlog-submit {
+    width: 100%;
+    margin-top: 6px;
+    padding: 15px;
+    background: linear-gradient(90deg, #ffd700, #ffb700);
+    border: none;
+    color: #16213e;
+    font-weight: 800;
+    font-size: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.wlog-submit:disabled { opacity: 0.6; }
+
+.wlog-cancel {
+    width: 100%;
+    margin-top: 10px;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #b8b8b8;
+    border-radius: 12px;
+    cursor: pointer;
+}
+
+/* Sticky rest bar */
+.wlog-restbar {
+    position: fixed;
+    left: 50%;
+    transform: translateX(-50%);
+    bottom: 72px;                /* above the tab bar */
+    width: min(540px, calc(100% - 20px));
+    z-index: 1100;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: rgba(13, 16, 28, 0.97);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 14px;
+    padding: 10px 14px;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+}
+.wlog-restbar.on {
+    border-color: rgba(6, 214, 160, 0.6);
+}
+.wlog-rest-main { display: flex; flex-direction: column; }
+.wlog-rest-time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 26px;
+    font-weight: 800;
+    color: #06d6a0;
+    line-height: 1;
+}
+.wlog-rest-time.over {
+    color: #ff9f43;
+    animation: wlog-pulse 0.8s infinite;
+}
+.wlog-rest-label { font-size: 11px; color: #888; margin-top: 3px; }
+
+.wlog-rest-actions { display: flex; gap: 6px; align-items: center; }
+.wlog-rest-actions button {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #d8d8d8;
+    border-radius: 8px;
+    padding: 8px 10px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.wlog-target-steppers { display: flex; gap: 4px; }
+.wlog-target-steppers button { padding: 8px 8px; font-size: 12px; min-width: 34px; }
+.wlog-rest-start { background: rgba(6, 214, 160, 0.18) !important; color: #06d6a0 !important; border-color: rgba(6, 214, 160, 0.5) !important; }
+.wlog-rest-stop { background: rgba(255, 107, 107, 0.18) !important; color: #ff8787 !important; border-color: rgba(255, 107, 107, 0.5) !important; }
+
+@keyframes wlog-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.45; }
+}

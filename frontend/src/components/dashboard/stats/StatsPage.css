@@ -53,6 +53,143 @@
   margin-top: 50px;
 }
 
+/* --- v1.0.0 overhaul: meaningful numbers only ------------------------------ */
+
+.stats-page {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.stats-title {
+  font-size: 1.6em;
+}
+
+.consistency-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+@media (max-width: 480px) {
+  .consistency-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+.consistency-stat {
+  text-align: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px 6px;
+}
+
+.cs-value {
+  display: block;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.cs-label {
+  display: block;
+  font-size: 11px;
+  color: #888;
+  margin-top: 4px;
+}
+
+.stats-page .stats-card {
+  margin-bottom: 14px;
+  padding: 16px;
+}
+
+.year-heatmap-scroll {
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+
+.year-heatmap-scroll .hm-grid {
+  min-width: 760px;
+  justify-content: flex-start;
+}
+
+.stats-section-title {
+  font-family: 'Orbitron', sans-serif;
+  color: #ffd700;
+  font-size: 15px;
+  letter-spacing: 2px;
+  margin: 18px 0 10px;
+}
+
+.stats-empty {
+  color: #888;
+  font-size: 14px;
+  text-align: center;
+  padding: 14px 8px;
+}
+
+.stats-empty a {
+  color: #ffd700;
+}
+
+.habit-trend-card {
+  border-left: 4px solid var(--bucket-color, rgba(255, 215, 0, 0.5));
+}
+
+.htc-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.htc-name {
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.htc-streaks {
+  color: #ff9f43;
+  font-size: 13px;
+  flex: none;
+}
+
+.htc-best {
+  color: #777;
+}
+
+.htc-numbers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 12px;
+  color: #999;
+  margin-top: 8px;
+}
+
+.htc-chart {
+  margin-top: 12px;
+}
+
+.htc-chart-label {
+  display: block;
+  font-size: 12px;
+  color: #b8b8b8;
+  margin-bottom: 4px;
+}
+
+.attributes-toggle {
+  width: 100%;
+  background: transparent;
+  border: 1px dashed rgba(255, 255, 255, 0.25);
+  color: #999;
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 13px;
+  cursor: pointer;
+  margin: 6px 0 20px;
+}
+
 .error {
   color: #ff6b6b;
 }

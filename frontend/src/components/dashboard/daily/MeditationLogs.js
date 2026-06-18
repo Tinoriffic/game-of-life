@@ -4,6 +4,7 @@ import { baseUrl } from '../../../config/apiConfig';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../../player/UserContext';
 import BackButton from '../../common/BackButton';
+import { useYesterdayLogging, parseApiError } from '../../../hooks/useYesterdayLogging';
 import './MeditationLogs.css';
 
 const meditationExercises = [
@@ -22,6 +23,9 @@ export const MeditationLogs = () => {
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
+    // Use custom hook for yesterday logging functionality
+    const { canLogYesterday, logForYesterday, setLogForYesterday, loading, getLogEntry } = useYesterdayLogging(user.id, 'meditate');
+
     const handleNextExercise = () => {
         setExerciseIndex((prevIndex) => (prevIndex + 1) % meditationExercises.length);
     };
@@ -33,23 +37,32 @@ export const MeditationLogs = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        const logEntry = {
+        const baseEntry = {
             user_id: user.id,
             activity_type: "meditate",
             duration: duration
         };
 
+        // Use helper to add date if logging for yesterday
+        const logEntry = getLogEntry(baseEntry);
+
         try {
             await axiosInstance.post(`${baseUrl}/users/${user.id}/log-activity/`, logEntry);
-            alert('Meditation logged successfully');
+            const dayText = logForYesterday ? 'yesterday' : 'today';
+            alert(`Meditation logged successfully for ${dayText}`);
             setDuration('');
+            setLogForYesterday(false);
             setError('');
             navigate('/dashboard');
         } catch (error) {
             console.error('Error logging meditation: ', error);
-            setError('Failed to log meditation. Please try again.');
+            setError(parseApiError(error, 'Failed to log meditation. Please try again.'));
         }
     };
+
+    if (loading) {
+        return <div className="meditation-logs">Loading...</div>;
+    }
 
     return (
     <div className="meditation-logs">
@@ -60,6 +73,19 @@ export const MeditationLogs = () => {
         placeholder="Duration in minutes"
         className="duration-input"
         />
+        {canLogYesterday && (
+            <div className="yesterday-option">
+                <label>
+                    <input
+                        type="checkbox"
+                        checked={logForYesterday}
+                        onChange={(e) => setLogForYesterday(e.target.checked)}
+                    />
+                    <span>Forgot to log yesterday?</span>
+                </label>
+                {logForYesterday && <span className="date-indicator">Logging for yesterday</span>}
+            </div>
+        )}
         <button onClick={handleSubmit} className="log-meditation-btn">
         Log Meditation
         </button>

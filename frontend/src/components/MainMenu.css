@@ -84,7 +84,7 @@
     color: #4d4949;
   }
 
-  .player-card, .skill-tree {
+  .main-screen .player-card, .main-screen .skill-tree {
     border: 1px solid white;
     margin: 20px 0;
     padding: 20px;
@@ -264,7 +264,7 @@
       margin-right: 8px;
     }
 
-    .player-card, .skill-tree {
+    .main-screen .player-card, .main-screen .skill-tree {
       margin: 15px 0;
       padding: 15px;
       width: 100%;

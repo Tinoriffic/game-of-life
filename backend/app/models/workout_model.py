@@ -75,6 +75,7 @@ class WorkoutSet(Base):
     set_number = Column(Integer)
     performed_weight = Column(Float)
     performed_reps = Column(Integer)
+    performed_duration_seconds = Column(Integer, nullable=True)  # for time-tracked exercises
 
     session_exercise = relationship("SessionExercise", back_populates="sets")
 
@@ -138,6 +139,8 @@ class Exercise(Base):
     exercise_type_id = Column(Integer, ForeignKey('exercise_types.id'), nullable=False)
     user_id = Column(Integer, ForeignKey('users.id'), nullable=True)
     is_global = Column(Boolean, default=True)
+    # 'reps' (weight x reps) | 'time' (hold/carry duration is the logged value)
+    tracking_type = Column(String, nullable=False, default="reps", server_default="reps")
 
 
     # Relationships to new tables with updated names

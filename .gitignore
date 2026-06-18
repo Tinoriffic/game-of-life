@@ -31,3 +31,8 @@ backend/app/ideas.md
 
 # internal
 product-specs/
+CLAUDE.md
+
+# local-only dev/debug helpers
+backend/test_db_connection.py
+backend/legacy_habit_backup.json

@@ -15,6 +15,7 @@ class ExerciseCreate(BaseModel):
     difficulty_level_id: int
     exercise_type_id: int
     is_global: bool = False
+    tracking_type: str = "reps"   # 'reps' | 'time'
 
 class ProgramExerciseCreate(BaseModel):
     exercise_id: int
@@ -39,6 +40,7 @@ class WorkoutSetCreate(BaseModel):
     set_number: int
     weight: float | None = None
     reps: int | None = None
+    duration_seconds: int | None = None   # time-tracked sets
 
 class SessionExerciseCreate(BaseModel):
     program_exercise_id: int
@@ -48,6 +50,7 @@ class WorkoutSessionCreate(BaseModel):
     program_id: int
     session_date: datetime
     exercises: List[SessionExerciseCreate]
+    habit_id: Optional[int] = None  # strength habit this session completes (v1.0.0 daily loop)
 
 # Read schemas
 class Exercise(BaseModel):
@@ -64,6 +67,7 @@ class Exercise(BaseModel):
     exercise_type_id: int
     is_global: bool
     user_id: Optional[int]
+    tracking_type: str = "reps"
     created_at: datetime
     updated_at: datetime
 

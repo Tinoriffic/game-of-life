@@ -193,6 +193,26 @@ const CreateExerciseForm = ({ onSave, onCancel, exerciseLibrary, userId }) => {
         </div>
 
         <div>
+          <label className="block mb-1">Tracking</label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              onClick={() => setFormData(p => ({ ...p, tracking_type: 'reps' }))}
+              className={`px-3 py-2 rounded text-white ${(formData.tracking_type || 'reps') === 'reps' ? 'bg-green-600' : 'bg-gray-700'}`}
+            >
+              Reps × Weight
+            </button>
+            <button
+              type="button"
+              onClick={() => setFormData(p => ({ ...p, tracking_type: 'time' }))}
+              className={`px-3 py-2 rounded text-white ${formData.tracking_type === 'time' ? 'bg-green-600' : 'bg-gray-700'}`}
+            >
+              Time (e.g. plank, carries)
+            </button>
+          </div>
+        </div>
+
+        <div>
           <label className="block mb-1">Description</label>
           <textarea
             name="description"
