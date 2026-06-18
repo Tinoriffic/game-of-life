@@ -23,45 +23,44 @@ const ActiveChallenge = ({ activeChallenge, failedChallenge, allowGracePeriod, o
         onChallengeCompleted();
     };
 
-    // Show failed challenge card if it exists (prioritize showing this first)
+    // Show the grace-period failed-challenge card above everything when present.
     const hasFailedChallenge = failedChallenge !== null && failedChallenge !== undefined;
 
-    if (!activeChallenge && !hasFailedChallenge) {
-        return (
-            <div className="no-active-challenge">
-                <div className="no-challenge-content">
-                    <h2>No Active Challenge</h2>
-                    <p>You don't have any active challenges right now.</p>
-                    <p>Browse available challenges to start your journey!</p>
-                </div>
-            </div>
-        );
-    }
-
-    // If there's a failed challenge, show it first
-    if (hasFailedChallenge) {
-        return (
-            <>
+    // When there's no active challenge, always show the "start one" empty state so the
+    // user is never stranded — even if a failed challenge exists (the failed card sits
+    // above it and self-hides once its grace period ends).
+    return (
+        <>
+            {hasFailedChallenge && (
                 <FailedChallengeCard
                     failedChallenge={failedChallenge}
                     allowGracePeriod={allowGracePeriod}
                     onRestore={handleRestoreChallenge}
                     onDismiss={handleDismissFailedChallenge}
                 />
-                {activeChallenge && (
+            )}
+            {activeChallenge ? (
+                hasFailedChallenge ? (
                     <div style={{ marginTop: '30px' }}>
                         <h3 style={{ textAlign: 'center', color: '#4caf50', marginBottom: '20px', fontFamily: 'Orbitron, sans-serif' }}>
                             Current Active Challenge
                         </h3>
                         {renderActiveChallengeContent()}
                     </div>
-                )}
-            </>
-        );
-    }
-
-    // Main render for active challenge only
-    return renderActiveChallengeContent();
+                ) : (
+                    renderActiveChallengeContent()
+                )
+            ) : (
+                <div className="no-active-challenge">
+                    <div className="no-challenge-content">
+                        <h2>No Active Challenge</h2>
+                        <p>You don't have any active challenges right now.</p>
+                        <p>Browse available challenges to start your journey!</p>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 
     function renderActiveChallengeContent() {
         const { user_challenge, current_day, completed_days, today_completed, can_complete_today } = activeChallenge;

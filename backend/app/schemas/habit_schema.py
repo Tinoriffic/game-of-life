@@ -89,7 +89,7 @@ class HabitOut(BaseModel):
 class HabitLogCreate(BaseModel):
     date: Optional[DateType] = None      # default: today (user tz); backfill within 48h window
     value: Optional[float] = None        # measurement habits
-    duration_minutes: Optional[int] = Field(default=None, ge=0, le=24 * 60)
+    duration_minutes: Optional[float] = Field(default=None, ge=0, le=24 * 60)
     distance: Optional[float] = Field(default=None, ge=0)
     quantity: Optional[int] = Field(default=None, ge=0)
     note: Optional[str] = Field(default=None, max_length=500)
@@ -97,7 +97,7 @@ class HabitLogCreate(BaseModel):
 
 class HabitLogUpdate(BaseModel):
     value: Optional[float] = None
-    duration_minutes: Optional[int] = Field(default=None, ge=0, le=24 * 60)
+    duration_minutes: Optional[float] = Field(default=None, ge=0, le=24 * 60)
     distance: Optional[float] = Field(default=None, ge=0)
     quantity: Optional[int] = Field(default=None, ge=0)
     note: Optional[str] = Field(default=None, max_length=500)
@@ -109,7 +109,7 @@ class HabitLogOut(BaseModel):
     habit_id: int
     date: DateType
     value: Optional[float] = None
-    duration_minutes: Optional[int] = None
+    duration_minutes: Optional[float] = None
     distance: Optional[float] = None
     quantity: Optional[int] = None
     note: Optional[str] = None

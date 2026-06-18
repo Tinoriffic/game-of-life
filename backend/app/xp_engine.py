@@ -78,7 +78,7 @@ def detail_bonus(detail_kind: str, duration_minutes: int = None, distance: float
         bonus = quantity // 5 + duration_minutes // 5       # 1 XP / 5 pages or 5 min
     # 'none' and 'note' earn no detail bonus (binary by nature)
 
-    return max(0, min(bonus, DETAIL_BONUS_CAP))
+    return int(max(0, min(bonus, DETAIL_BONUS_CAP)))
 
 
 def attribute_xp(base_xp: int, detail_kind: str, streak: int, attribute_xp_earned_today: int,

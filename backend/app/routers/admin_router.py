@@ -108,6 +108,20 @@ async def admin_complete_challenge_day(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+@router.post("/users/{user_id}/reset-progress")
+async def reset_user_progress_endpoint(
+    user_id: int,
+    _admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Reset a user's attributes + player level to zero (admin only)."""
+    try:
+        result = admin_crud.reset_user_progress(db, user_id)
+        return {"message": f"Progress reset for user {user_id}", **result}
+    except ValueError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+
+
 @router.get("/stats")
 async def get_admin_stats(
     _admin_user: User = Depends(require_admin_or_moderator),

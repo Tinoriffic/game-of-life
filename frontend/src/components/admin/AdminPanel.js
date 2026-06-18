@@ -87,6 +87,19 @@ const AdminPanel = () => {
         }
     };
 
+    const handleResetUserProgress = async (user) => {
+        if (!window.confirm(
+            `Reset ${user.username}'s attributes and player level to zero?\n\n` +
+            `Habit logs and history are kept — this only zeroes the XP bars and levels.`
+        )) return;
+        try {
+            await adminService.resetUserProgress(user.id);
+            setMessage(`Progress reset for ${user.username}`);
+        } catch (err) {
+            setMessage('Error resetting progress');
+        }
+    };
+
     // Check if user is admin
     if (!user || user.role !== 'admin') {
         return (
@@ -179,11 +192,17 @@ const AdminPanel = () => {
                                                     Make Admin
                                                 </button>
                                             )}
-                                            <button 
+                                            <button
                                                 onClick={() => handleCompleteUserChallengeDay(user.id)}
                                                 className="complete-btn"
                                             >
                                                 Complete Challenge Day
+                                            </button>
+                                            <button
+                                                onClick={() => handleResetUserProgress(user)}
+                                                className="reset-btn"
+                                            >
+                                                Reset Progress
                                             </button>
                                         </div>
                                     </div>

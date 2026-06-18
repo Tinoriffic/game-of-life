@@ -36,3 +36,6 @@ CLAUDE.md
 # local-only dev/debug helpers
 backend/test_db_connection.py
 backend/legacy_habit_backup.json
+
+# generated from package.json at build time (single source of truth for app version)
+frontend/src/appVersion.js

@@ -6,6 +6,8 @@ from typing import List
 
 from ..models.challenge_model import Challenge, UserChallenge
 from ..models.user_model import User, UserRole
+from ..models.skill_model import Skill
+from ..models.habit_model import PlayerXPEvent, DayCompletion
 
 
 def get_all_challenges(db: Session, include_inactive: bool = True) -> List[Challenge]:
@@ -51,6 +53,33 @@ def set_user_role(db: Session, user_id: int, role: UserRole) -> User:
     db.commit()
     db.refresh(user)
     return user
+
+
+def reset_user_progress(db: Session, user_id: int) -> dict:
+    """
+    Zero a user's progression: all 8 attribute skills back to level 1 / 0 XP,
+    and the player-level track (player_xp + its ledger + day-complete accounting)
+    back to zero. Habit logs and history are left intact — this resets the bars,
+    not the record of what was done.
+    """
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise ValueError("User not found")
+
+    skills = db.query(Skill).filter(Skill.user_id == user_id).all()
+    for skill in skills:
+        skill.level = 1
+        skill.xp = 0
+        skill.daily_xp_earned = 0
+
+    user.player_xp = 0
+    # Clear the player-XP ledger and day-complete accounting so the track is truly
+    # zeroed and future logs pay out correctly (no "already paid" half-state).
+    db.query(PlayerXPEvent).filter(PlayerXPEvent.user_id == user_id).delete(synchronize_session=False)
+    db.query(DayCompletion).filter(DayCompletion.user_id == user_id).delete(synchronize_session=False)
+
+    db.commit()
+    return {"skills_reset": len(skills), "player_xp": 0}
 
 
 def get_system_stats(db: Session) -> dict:

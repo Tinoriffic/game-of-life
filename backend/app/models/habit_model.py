@@ -107,7 +107,7 @@ class HabitLog(Base):
 
     # Optional detail (earns bonus XP and feeds analytics)
     value = Column(Float, nullable=True)             # measurement habits: the data point
-    duration_minutes = Column(Integer, nullable=True)
+    duration_minutes = Column(Float, nullable=True)  # may be fractional (cardio logs minutes + seconds)
     distance = Column(Float, nullable=True)          # miles
     quantity = Column(Integer, nullable=True)        # problems, pages, reps...
     note = Column(String, nullable=True)

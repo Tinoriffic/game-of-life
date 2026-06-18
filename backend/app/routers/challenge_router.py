@@ -72,6 +72,10 @@ async def get_active_challenge(
         # If there's a failed challenge, get its progress data
         failed_challenge_data = None
         if failed_challenge:
+            # Touch the challenge relationship so it loads and serializes nested under
+            # user_challenge (the active path relies on the same implicit load — without
+            # this the frontend gets user_challenge with no .challenge and crashes).
+            _ = failed_challenge.challenge
             completed_days = len(failed_challenge.progress_entries)
             failed_challenge_data = {
                 "user_challenge": failed_challenge,

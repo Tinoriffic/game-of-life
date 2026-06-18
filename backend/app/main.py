@@ -40,6 +40,10 @@ def _bootstrap():
         conn.execute(text(
             "ALTER TABLE workout_sets ADD COLUMN IF NOT EXISTS performed_duration_seconds INTEGER"
         ))
+        # Cardio logs minutes + seconds, so duration must hold fractional minutes.
+        conn.execute(text(
+            "ALTER TABLE habit_logs ALTER COLUMN duration_minutes TYPE DOUBLE PRECISION"
+        ))
         conn.commit()
 
     from .seeds.bucket_seed import seed_buckets

@@ -27,6 +27,15 @@ const HabitRow = ({ habit, done, weekly = false, scheduledToday = true,
         ? `🔥${habit.current_streak}${weekly ? 'w' : ''}`
         : null;
 
+    // Skip the sub-line entirely when it would be empty (e.g. an un-logged
+    // measurement habit) so the row doesn't carry a blank second line.
+    const showSubLine =
+        weekly ||
+        !scheduledToday ||
+        (done && isMeasurement && habit.today_log?.value != null) ||
+        (done && !isMeasurement && habit.attribute && habit.today_log) ||
+        (!done && !isMeasurement && habit.attribute);
+
     const handleCircle = () => {
         if (done) {
             onUncheck();
@@ -75,6 +84,7 @@ const HabitRow = ({ habit, done, weekly = false, scheduledToday = true,
                     <span className="habit-name">{habit.name}</span>
                     {streakLabel && <span className="habit-streak">{streakLabel}</span>}
                 </div>
+                {showSubLine && (
                 <div className="habit-sub-line">
                     {weekly && (
                         <span className="week-progress">
@@ -103,6 +113,7 @@ const HabitRow = ({ habit, done, weekly = false, scheduledToday = true,
                         </span>
                     )}
                 </div>
+                )}
             </div>
 
             {!done && isMeasurement && (

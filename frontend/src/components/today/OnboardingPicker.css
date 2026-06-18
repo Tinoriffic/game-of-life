@@ -29,6 +29,9 @@
   position: absolute;
   right: 0;
   top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: transparent;
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: #b8b8b8;
@@ -36,6 +39,8 @@
   height: 32px;
   border-radius: 50%;
   font-size: 18px;
+  line-height: 1;
+  padding: 0;
   cursor: pointer;
 }
 
@@ -116,20 +121,24 @@
 
 .custom-row input {
   flex: 1;
+  min-width: 0;
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
   color: #f8f8f2;
-  padding: 9px 12px;
-  font-size: 14px;
+  padding: 10px 12px;
+  font-size: 15px;
 }
 
 .custom-row button {
+  flex: none;
   background: transparent;
   border: 1px solid rgba(255, 215, 0, 0.5);
   color: #ffd700;
   border-radius: 10px;
-  padding: 0 16px;
+  padding: 8px 12px;
+  font-size: 13px;
+  white-space: nowrap;
   cursor: pointer;
 }
 

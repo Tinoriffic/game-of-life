@@ -11,7 +11,7 @@ const FailedChallengeCard = ({ failedChallenge, allowGracePeriod, onRestore, onD
     const [hoursRemaining, setHoursRemaining] = useState(null);
 
     const { user_challenge, completed_days } = failedChallenge;
-    const challenge = user_challenge.challenge;
+    const challenge = user_challenge?.challenge;
 
     useEffect(() => {
         calculateGracePeriod();
@@ -88,6 +88,8 @@ const FailedChallengeCard = ({ failedChallenge, allowGracePeriod, onRestore, onD
         const date = new Date(user_challenge.failed_date);
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     };
+
+    if (!challenge) return null; // missing challenge data — render nothing rather than crash
 
     if (gracePeriodExpired && allowGracePeriod) {
         return null; // Don't show if grace period expired

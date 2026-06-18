@@ -204,7 +204,7 @@ const OnboardingPicker = ({ onCreated, slots, single = false, onClose }) => {
                         <div className="custom-row">
                             <input
                                 type="text"
-                                placeholder="…or name your own"
+                                placeholder="name your own…"
                                 value={customNames[bucket.id] || ''}
                                 maxLength={60}
                                 onChange={(e) => setCustomNames({ ...customNames, [bucket.id]: e.target.value })}

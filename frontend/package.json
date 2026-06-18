@@ -24,6 +24,10 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
+    "genversion": "node scripts/genVersion.js",
+    "prestart": "node scripts/genVersion.js",
+    "prebuild": "node scripts/genVersion.js",
+    "pretest": "node scripts/genVersion.js",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",

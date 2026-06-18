@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { baseUrl } from '../config/apiConfig';
 import { useUser } from './player/UserContext';
 import { userService } from '../services/userService';
+import { APP_VERSION } from '../appVersion';
 
 function MainMenu() {
   const token = localStorage.getItem('accessToken');
@@ -65,7 +66,7 @@ function MainMenu() {
           <div className="footer-user-info">
             👤 {playerData.display_name || playerData.username}
           </div>
-          <div className="footer-version">v1.0.0</div>
+          <div className="footer-version">v{APP_VERSION}</div>
         </div>
       {/* Add more sections as needed */}
     </div>

@@ -73,7 +73,7 @@ BUCKETS = [
         "name": "Mental Practice",
         "description": "Deliberate practice of cognitive skills — algorithms, languages, chess.",
         "attribute": "Intelligence",
-        "detail_kind": "quantity",
+        "detail_kind": "duration",
         "base_xp": 10,
         "icon": "🧠",
         "color": "#9B5DE5",

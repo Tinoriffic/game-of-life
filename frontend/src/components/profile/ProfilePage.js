@@ -5,6 +5,7 @@ import { habitService } from '../../services/habitService';
 import { useUser } from '../player/UserContext';
 import PlayerCard from '../player/PlayerCard';
 import { useInstallPrompt } from '../pwa/InstallPrompt';
+import { APP_VERSION } from '../../appVersion';
 import './ProfilePage.css';
 
 /**
@@ -108,7 +109,7 @@ const ProfilePage = () => {
                 <button className="profile-link logout" onClick={logout}>↪ Log out</button>
             </div>
 
-            <div className="profile-version">Me v2 · v1.0.0</div>
+            <div className="profile-version">Me v2 · v{APP_VERSION}</div>
         </div>
     );
 };

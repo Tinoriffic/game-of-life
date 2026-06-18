@@ -33,6 +33,11 @@ export const adminService = {
     return response.data;
   },
 
+  async resetUserProgress(userId) {
+    const response = await api.post(`/admin/users/${userId}/reset-progress`);
+    return response.data;
+  },
+
   // System stats
   async getStats() {
     const response = await api.get('/admin/stats');
