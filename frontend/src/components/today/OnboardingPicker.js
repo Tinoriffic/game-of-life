@@ -1,5 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
+import axiosInstance from '../../axios';
 import { habitService } from '../../services/habitService';
+import { useUser } from '../player/UserContext';
 import { useFeedback } from '../feedback/FeedbackContext';
 import ProgramBuilder from '../workout/ProgramBuilder';
 import './OnboardingPicker.css';
@@ -23,6 +25,9 @@ const OnboardingPicker = ({ onCreated, slots, single = false, onClose }) => {
     const [customNames, setCustomNames] = useState({}); // bucketId -> draft text
     const [saving, setSaving] = useState(false);
     const [programBucket, setProgramBucket] = useState(null); // bucket whose program builder is open
+    const [existingBucket, setExistingBucket] = useState(null); // bucket whose "existing program" chooser is open
+    const [existingPrograms, setExistingPrograms] = useState(null); // cached active programs (null = not loaded)
+    const { user } = useUser();
     const { pushToast } = useFeedback();
 
     useEffect(() => {
@@ -107,6 +112,40 @@ const OnboardingPicker = ({ onCreated, slots, single = false, onClose }) => {
         pushToast({ kind: 'daycomplete', text: `Program "${program.name}" created — set its cadence below` });
     };
 
+    // Link a habit to a program the user already built (e.g. one orphaned when an
+    // old workout habit was archived). Avoids the "name already exists" collision
+    // from re-creating the same program. Active programs only.
+    const openExisting = (bucket) => {
+        setExistingBucket(bucket);
+        if (existingPrograms == null) {
+            axiosInstance.get(`/users/${user.id}/workout-programs`)
+                .then((r) => setExistingPrograms(r.data?.programs || []))
+                .catch(() => {
+                    setExistingPrograms([]);
+                    pushToast({ kind: 'partial', text: 'Could not load your programs' });
+                });
+        }
+    };
+
+    const linkExisting = (program) => {
+        const bucket = existingBucket;
+        setExistingBucket(null);
+        if (picks.some((p) => p.programId === program.program_id)) {
+            pushToast({ kind: 'partial', text: 'That program is already in your picks' });
+            return;
+        }
+        addPick({
+            key: `prog${program.program_id}`,
+            bucket,
+            template: null,
+            name: program.name,
+            isMeasurement: false,
+            programId: program.program_id,
+            cadence: { cadence_type: 'weekly', times_per_week: 3, weekdays: [0, 1, 2, 3, 4] },
+        });
+        pushToast({ kind: 'daycomplete', text: `Linked "${program.name}" — set its cadence below` });
+    };
+
     const toggleWeekday = (pick, day) => {
         const current = new Set(pick.cadence.weekdays || []);
         if (current.has(day)) current.delete(day); else current.add(day);
@@ -182,10 +221,16 @@ const OnboardingPicker = ({ onCreated, slots, single = false, onClose }) => {
                             {bucket.attribute && <span className="bucket-attr">{bucket.attribute}</span>}
                         </div>
                         {bucket.key === 'strength_training' && (
-                            <button className="program-cta" onClick={() => setProgramBucket(bucket)}>
-                                ⭐ Create a workout program
-                                <span className="program-cta-sub">build days &amp; exercises, log per-set</span>
-                            </button>
+                            <div className="program-ctas">
+                                <button className="program-cta" onClick={() => setProgramBucket(bucket)}>
+                                    ⭐ Create a workout program
+                                    <span className="program-cta-sub">build days &amp; exercises, log per-set</span>
+                                </button>
+                                <button className="program-cta secondary" onClick={() => openExisting(bucket)}>
+                                    📋 Use an existing program
+                                    <span className="program-cta-sub">link a habit to one you already built</span>
+                                </button>
+                            </div>
                         )}
                         <div className="template-chips">
                             {bucket.templates.map((template) => {
@@ -290,6 +335,28 @@ const OnboardingPicker = ({ onCreated, slots, single = false, onClose }) => {
                     onSaved={onProgramSaved}
                     onClose={() => setProgramBucket(null)}
                 />
+            )}
+
+            {existingBucket && (
+                <div className="existing-overlay" onClick={() => setExistingBucket(null)}>
+                    <div className="existing-sheet" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="existing-title">Your workout programs</h2>
+                        {existingPrograms == null && <p className="existing-hint">Loading…</p>}
+                        {existingPrograms && existingPrograms.length === 0 && (
+                            <p className="existing-hint">No programs yet — use “Create a workout program” above.</p>
+                        )}
+                        {existingPrograms && existingPrograms.map((p) => {
+                            const dayCount = (p.workout_days || []).length;
+                            return (
+                                <button key={p.program_id} className="existing-row" onClick={() => linkExisting(p)}>
+                                    <span className="existing-name">{p.name}</span>
+                                    <span className="existing-meta">{dayCount} day{dayCount === 1 ? '' : 's'}</span>
+                                </button>
+                            );
+                        })}
+                        <button className="existing-close" onClick={() => setExistingBucket(null)}>Close</button>
+                    </div>
+                </div>
             )}
         </div>
     );

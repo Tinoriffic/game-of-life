@@ -66,6 +66,7 @@
     margin-bottom: 8px;
 }
 .pbuild-ex-select { width: 100%; margin-bottom: 8px; }
+.pbuild-ex .exsel { margin-bottom: 8px; }
 
 .pbuild-ex-nums {
     display: grid;

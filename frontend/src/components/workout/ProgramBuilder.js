@@ -3,6 +3,7 @@ import axiosInstance from '../../axios';
 import { useUser } from '../player/UserContext';
 import Modal from '../common/Modal';
 import CreateExerciseForm from '../dashboard/fitness/workouts/CreateExerciseForm';
+import ExerciseSelect from './ExerciseSelect';
 import './ProgramBuilder.css';
 
 const blankExercise = () => ({ exercise_id: '', sets: 3, recommended_reps: 8, recommended_weight: 0 });
@@ -103,13 +104,11 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                         </div>
                         {day.exercises.map((ex, ei) => (
                             <div className="pbuild-ex" key={ei}>
-                                <select className="pbuild-ex-select" value={ex.exercise_id}
-                                    onChange={(e) => setExercise(di, ei, { exercise_id: e.target.value })}>
-                                    <option value="">Select exercise…</option>
-                                    {library.map((x) => (
-                                        <option key={x.exercise_id} value={x.exercise_id}>{x.name}</option>
-                                    ))}
-                                </select>
+                                <ExerciseSelect
+                                    value={ex.exercise_id}
+                                    options={library}
+                                    onChange={(id) => setExercise(di, ei, { exercise_id: id })}
+                                />
                                 <div className="pbuild-ex-nums">
                                     <label>Sets<input type="number" value={ex.sets}
                                         onChange={(e) => setExercise(di, ei, { sets: e.target.value })} /></label>

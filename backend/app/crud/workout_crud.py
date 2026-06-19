@@ -198,7 +198,10 @@ def get_exercises(db: Session, user_id: Optional[int] = None):
                 workout_model.Exercise.user_id == user_id
             )
         )
-    return query.all()
+    # Alphabetical so the picker is scannable (the UNION above is otherwise
+    # unordered). Case-insensitive sort done in Python to avoid DB-specific
+    # collation differences across the union.
+    return sorted(query.all(), key=lambda e: (e.name or '').lower())
 
 def log_workout_session(db: Session, session_data: workout_schema.WorkoutSessionCreate, user_id: int):
     """

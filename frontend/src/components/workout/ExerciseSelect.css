@@ -1,0 +1,72 @@
+.exsel {
+    position: relative;
+    flex: 1;
+    min-width: 0;
+}
+
+.exsel-trigger {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 9px;
+    color: #f8f8f2;
+    padding: 11px 12px;
+    font-size: 15px;
+    cursor: pointer;
+    text-align: left;
+}
+.exsel.open .exsel-trigger {
+    border-color: rgba(255, 215, 0, 0.6);
+}
+.exsel-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.exsel-placeholder { color: #8a8a8a; }
+.exsel-caret { flex: none; color: #9a9a9a; font-size: 12px; }
+
+.exsel-panel {
+    position: absolute;
+    z-index: 50;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    background: #141826;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+}
+
+.exsel-search {
+    width: 100%;
+    box-sizing: border-box;
+    background: rgba(0, 0, 0, 0.4);
+    border: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    color: #f8f8f2;
+    padding: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.exsel-list {
+    max-height: 240px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+}
+.exsel-option {
+    display: block;
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: #e8e8e8;
+    padding: 12px;
+    font-size: 15px;
+    cursor: pointer;
+}
+.exsel-option:hover { background: rgba(255, 255, 255, 0.06); }
+.exsel-option.sel { background: rgba(255, 215, 0, 0.16); color: #ffd700; font-weight: 700; }
+.exsel-empty { padding: 14px 12px; color: #888; font-size: 14px; }

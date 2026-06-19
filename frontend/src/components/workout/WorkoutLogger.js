@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import axiosInstance from '../../axios';
 import { useUser } from '../player/UserContext';
 import { parseApiError } from '../../hooks/useYesterdayLogging';
@@ -6,28 +6,22 @@ import './WorkoutLogger.css';
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
-// Short attention beep + a buzz on mobile when the rest target is reached.
-const alertCue = () => {
-    try {
-        const Ctx = window.AudioContext || window.webkitAudioContext;
-        if (Ctx) {
-            const ctx = new Ctx();
-            const osc = ctx.createOscillator();
-            const gain = ctx.createGain();
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.frequency.value = 880; gain.gain.value = 0.15;
-            osc.start();
-            setTimeout(() => { osc.stop(); ctx.close(); }, 220);
-        }
-    } catch { /* audio not available — fall back to vibration only */ }
-    if (navigator.vibrate) navigator.vibrate(250);
-};
+const CheckIcon = () => (
+    <svg className="wlog-check" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+        <path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor"
+            strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+);
 
 /**
  * Workout Logger — log per-set numbers AND time your rest in one place,
  * so there's no swapping between a tracking app and a stopwatch at the gym.
  * Rest timer: counts up, auto-starts when you finish a set, buzzes at an
  * optional target. Timed exercises (plank, carries) use a tap-to-time stopwatch.
+ *
+ * Timers are timestamp-based (elapsed = now − start), not tick-counters, so
+ * they stay accurate when the PWA is backgrounded and the browser throttles
+ * setInterval. We also recompute on focus/visibility regain.
  */
 const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     const { user } = useUser();
@@ -43,11 +37,49 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     const [restSec, setRestSec] = useState(0);
     const [restTarget, setRestTarget] = useState(90);
     const restRef = useRef(null);
+    const restStartRef = useRef(null);
     const alertedRef = useRef(false);
+    const restTargetRef = useRef(90);
+    useEffect(() => { restTargetRef.current = restTarget; }, [restTarget]);
 
     // Set stopwatch (timed exercises): { key, sec }
     const [setTimer, setSetTimer] = useState(null);
     const setTimerRef = useRef(null);
+    const setTimerStartRef = useRef(null);
+
+    // --- Audio: one shared, gesture-unlocked context ---
+    // A fresh AudioContext created inside a setInterval tick stays "suspended"
+    // (no user gesture) and is silent. We create one context and resume() it on
+    // the user's tap (start rest / mark a set), then reuse it for the cue.
+    const audioCtxRef = useRef(null);
+    const ensureAudio = useCallback(() => {
+        try {
+            if (!audioCtxRef.current) {
+                const Ctx = window.AudioContext || window.webkitAudioContext;
+                if (Ctx) audioCtxRef.current = new Ctx();
+            }
+            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+                audioCtxRef.current.resume();
+            }
+        } catch { /* audio not available — vibration only */ }
+    }, []);
+
+    // Short attention beep + a buzz (Android; iOS web has no Vibration API).
+    const alertCue = useCallback(() => {
+        try {
+            const ctx = audioCtxRef.current;
+            if (ctx) {
+                if (ctx.state === 'suspended') ctx.resume();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain); gain.connect(ctx.destination);
+                osc.frequency.value = 880; gain.gain.value = 0.15;
+                osc.start();
+                osc.stop(ctx.currentTime + 0.22);
+            }
+        } catch { /* fall back to vibration only */ }
+        if (navigator.vibrate) navigator.vibrate(250);
+    }, []);
 
     useEffect(() => {
         Promise.all([
@@ -85,38 +117,71 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
         }).catch((e) => setError(parseApiError(e, 'Could not load this program.')));
     }, [program.program_id]);
 
-    // --- Rest timer control ---
+    // --- Rest timer (timestamp-based) ---
+    const tickRest = useCallback(() => {
+        if (restStartRef.current == null) return;
+        const next = Math.floor((Date.now() - restStartRef.current) / 1000);
+        setRestSec(next);
+        if (restTargetRef.current && next >= restTargetRef.current && !alertedRef.current) {
+            alertedRef.current = true;
+            alertCue();
+        }
+    }, [alertCue]);
+
+    const tickSet = useCallback(() => {
+        if (setTimerStartRef.current == null) return;
+        const sec = Math.floor((Date.now() - setTimerStartRef.current) / 1000);
+        setSetTimer((t) => (t ? { ...t, sec } : t));
+    }, []);
+
+    // Recompute on focus/visibility regain so a backgrounded timer catches up
+    // (and fires a missed target cue) the moment you swap back to the app.
+    useEffect(() => {
+        const onResume = () => {
+            if (document.visibilityState !== 'visible') return;
+            tickRest();
+            tickSet();
+        };
+        document.addEventListener('visibilitychange', onResume);
+        window.addEventListener('focus', onResume);
+        return () => {
+            document.removeEventListener('visibilitychange', onResume);
+            window.removeEventListener('focus', onResume);
+        };
+    }, [tickRest, tickSet]);
+
+    // Cleanup intervals on unmount.
     useEffect(() => () => { clearInterval(restRef.current); clearInterval(setTimerRef.current); }, []);
 
     const startRest = () => {
+        ensureAudio();
         clearInterval(restRef.current);
         alertedRef.current = false;
+        restStartRef.current = Date.now();
         setRestSec(0);
         setRestOn(true);
-        restRef.current = setInterval(() => {
-            setRestSec((s) => {
-                const next = s + 1;
-                if (restTarget && next >= restTarget && !alertedRef.current) {
-                    alertedRef.current = true;
-                    alertCue();
-                }
-                return next;
-            });
-        }, 1000);
+        restRef.current = setInterval(tickRest, 1000);
     };
-    const stopRest = () => { clearInterval(restRef.current); setRestOn(false); };
+    const stopRest = () => {
+        clearInterval(restRef.current);
+        restStartRef.current = null;
+        setRestOn(false);
+    };
 
     // --- Set stopwatch (timed exercises) ---
     const startSetTimer = (key) => {
+        ensureAudio();
         clearInterval(setTimerRef.current);
+        setTimerStartRef.current = Date.now();
         setSetTimer({ key, sec: 0 });
-        setTimerRef.current = setInterval(() => {
-            setSetTimer((t) => (t ? { ...t, sec: t.sec + 1 } : t));
-        }, 1000);
+        setTimerRef.current = setInterval(tickSet, 1000);
     };
     const stopSetTimer = (exId, idx) => {
         clearInterval(setTimerRef.current);
-        const secs = setTimer?.sec || 0;
+        const secs = setTimerStartRef.current != null
+            ? Math.floor((Date.now() - setTimerStartRef.current) / 1000)
+            : (setTimer?.sec || 0);
+        setTimerStartRef.current = null;
         setSetTimer(null);
         updateSet(exId, idx, 'duration', secs);
     };
@@ -189,6 +254,8 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     if (error && !days.length) return <div className="wlog-error">{error}</div>;
     if (!days.length) return <div className="wlog-loading">Loading program…</div>;
 
+    const restOver = restOn && restTarget && restSec >= restTarget;
+
     return (
         <div className="wlog">
             {days.length > 1 && (
@@ -240,8 +307,9 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
                                             onChange={(e) => updateSet(ex.program_exercise_id, idx, 'reps', e.target.value)} />
                                     )}
                                     <button className={`wlog-done ${row.done ? 'on' : ''}`}
+                                        aria-label={row.done ? 'Set done' : 'Mark set done'}
                                         onClick={() => markSetDone(ex.program_exercise_id, idx, ex.sets)}>
-                                        {row.done ? '✓' : '○'}
+                                        {row.done && <CheckIcon />}
                                     </button>
                                 </div>
                             );
@@ -259,7 +327,7 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
             {/* Persistent rest bar */}
             <div className={`wlog-restbar ${restOn ? 'on' : ''}`}>
                 <div className="wlog-rest-main">
-                    <span className={`wlog-rest-time ${restTarget && restSec >= restTarget ? 'over' : ''}`}>
+                    <span className={`wlog-rest-time ${restOver ? 'over' : ''}`}>
                         {fmt(restSec)}
                     </span>
                     <span className="wlog-rest-label">

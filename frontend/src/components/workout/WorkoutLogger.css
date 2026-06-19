@@ -116,6 +116,11 @@
     color: #06d6a0;
     font-size: 15px;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
 }
 .wlog-stopwatch.on {
     background: #06d6a0;
@@ -130,14 +135,22 @@
     border: 2px solid rgba(255, 215, 0, 0.5);
     background: transparent;
     color: #06d6a0;
-    font-size: 20px;
-    font-weight: 800;
     cursor: pointer;
+    /* Center the check glyph reliably across browser + installed PWA. The button
+       border IS the empty circle — no inner "○" glyph (which iOS rendered larger
+       and off-center). justify-self centers the 44px button in its 48px column. */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    justify-self: center;
 }
 .wlog-done.on {
     border-color: #06d6a0;
     background: rgba(6, 214, 160, 0.15);
 }
+.wlog-check { display: block; }
 
 .wlog-submit {
     width: 100%;
@@ -168,7 +181,12 @@
 .wlog-restbar {
     position: fixed;
     left: 50%;
-    transform: translateX(-50%);
+    /* translate3d (not translateX) promotes the bar to its own compositor layer.
+       Without it, iOS Safari leaves a ghost of the opacity-animated timer text
+       below — the "gold flashing over green paused" double-image. */
+    transform: translate3d(-50%, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
     bottom: 72px;                /* above the tab bar */
     width: min(540px, calc(100% - 20px));
     z-index: 1100;
@@ -196,6 +214,10 @@
 .wlog-rest-time.over {
     color: #ff9f43;
     animation: wlog-pulse 0.8s infinite;
+    will-change: opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    transform: translateZ(0);
 }
 .wlog-rest-label { font-size: 11px; color: #888; margin-top: 3px; }
 
