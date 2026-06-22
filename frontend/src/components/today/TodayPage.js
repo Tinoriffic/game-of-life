@@ -128,6 +128,10 @@ const TodayPage = () => {
         try {
             const result = await habitService.logHabit(habit.id, body);
             applyLogResult(habit, result);
+            // Backfill changes a past day, so the current week's count/streak and
+            // day-completion can't be derived from an optimistic +1 (e.g. yesterday
+            // may fall in the previous week). Resync the authoritative Today state.
+            if (isBackfill) load();
         } catch (err) {
             if (err.response) {
                 // The server rejected it — revert and say why.
@@ -140,7 +144,7 @@ const TodayPage = () => {
                 pushToast({ kind: 'partial', text: 'Saved offline — will sync', duration: 2400 });
             }
         }
-    }, [applyLogResult, isBackfill, patchHabit, pushToast, targetDate]);
+    }, [applyLogResult, isBackfill, load, patchHabit, pushToast, targetDate]);
 
     const undoLog = useCallback(async (habit) => {
         if (!window.confirm(`Undo "${habit.name}" for ${isBackfill ? 'yesterday' : 'today'}?`)) return;

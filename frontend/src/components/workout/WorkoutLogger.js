@@ -49,37 +49,57 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
 
     // --- Audio: one shared, gesture-unlocked context ---
     // A fresh AudioContext created inside a setInterval tick stays "suspended"
-    // (no user gesture) and is silent. We create one context and resume() it on
-    // the user's tap (start rest / mark a set), then reuse it for the cue.
+    // (no user gesture) and is silent. Unlock ONE shared context on the
+    // user's first tap and, specifically for iOS, play a silent buffer inside
+    // that gesture (iOS won't allow later programmatic sound otherwise) — then
+    // reuse the context for the cue.
     const audioCtxRef = useRef(null);
-    const ensureAudio = useCallback(() => {
+    const unlockAudio = useCallback(() => {
         try {
             if (!audioCtxRef.current) {
                 const Ctx = window.AudioContext || window.webkitAudioContext;
                 if (Ctx) audioCtxRef.current = new Ctx();
             }
-            if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-                audioCtxRef.current.resume();
-            }
+            const ctx = audioCtxRef.current;
+            if (!ctx) return;
+            if (ctx.state === 'suspended') ctx.resume();
+            const buf = ctx.createBuffer(1, 1, 22050);   // silent 1-frame blip = iOS unlock
+            const src = ctx.createBufferSource();
+            src.buffer = buf;
+            src.connect(ctx.destination);
+            src.start(0);
         } catch { /* audio not available — vibration only */ }
     }, []);
 
-    // Short attention beep + a buzz (Android; iOS web has no Vibration API).
+    const beep = useCallback((freq, startT, dur) => {
+        const ctx = audioCtxRef.current;
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.value = freq;
+        osc.connect(gain); gain.connect(ctx.destination);
+        // Attack/release envelope: clearly audible, but click-free.
+        gain.gain.setValueAtTime(0.0001, startT);
+        gain.gain.exponentialRampToValueAtTime(0.4, startT + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.0001, startT + dur);
+        osc.start(startT);
+        osc.stop(startT + dur + 0.02);
+    }, []);
+
+    // Distinct two-tone chime + a buzz (Android; iOS web has no Vibration API).
     const alertCue = useCallback(() => {
         try {
             const ctx = audioCtxRef.current;
             if (ctx) {
                 if (ctx.state === 'suspended') ctx.resume();
-                const osc = ctx.createOscillator();
-                const gain = ctx.createGain();
-                osc.connect(gain); gain.connect(ctx.destination);
-                osc.frequency.value = 880; gain.gain.value = 0.15;
-                osc.start();
-                osc.stop(ctx.currentTime + 0.22);
+                const t = ctx.currentTime;
+                beep(880, t, 0.18);
+                beep(1175, t + 0.2, 0.22);
             }
         } catch { /* fall back to vibration only */ }
-        if (navigator.vibrate) navigator.vibrate(250);
-    }, []);
+        if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
+    }, [beep]);
 
     useEffect(() => {
         Promise.all([
@@ -154,7 +174,7 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     useEffect(() => () => { clearInterval(restRef.current); clearInterval(setTimerRef.current); }, []);
 
     const startRest = () => {
-        ensureAudio();
+        unlockAudio();
         clearInterval(restRef.current);
         alertedRef.current = false;
         restStartRef.current = Date.now();
@@ -170,7 +190,7 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
 
     // --- Set stopwatch (timed exercises) ---
     const startSetTimer = (key) => {
-        ensureAudio();
+        unlockAudio();
         clearInterval(setTimerRef.current);
         setTimerStartRef.current = Date.now();
         setSetTimer({ key, sec: 0 });
@@ -335,6 +355,9 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
                     </span>
                 </div>
                 <div className="wlog-rest-actions">
+                    <button className="wlog-rest-test" title="Test sound &amp; vibration"
+                        aria-label="Test sound and vibration"
+                        onClick={() => { unlockAudio(); alertCue(); }}>🔔</button>
                     <div className="wlog-target-steppers">
                         <button onClick={() => setRestTarget((t) => Math.max(0, t - 5))}>−5</button>
                         <button onClick={() => setRestTarget((t) => Math.max(0, t - 1))}>−1</button>
