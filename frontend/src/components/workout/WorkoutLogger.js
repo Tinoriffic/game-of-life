@@ -420,9 +420,6 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
                     </span>
                 </div>
                 <div className="wlog-rest-actions">
-                    <button className="wlog-rest-test" title="Test sound &amp; vibration"
-                        aria-label="Test sound and vibration"
-                        onClick={() => { unlockAudio(); alertCue(); }}>🔔</button>
                     <div className="wlog-target-steppers">
                         <button onClick={() => setRestTarget((t) => Math.max(0, t - 5))}>−5</button>
                         <button onClick={() => setRestTarget((t) => Math.max(0, t - 1))}>−1</button>
