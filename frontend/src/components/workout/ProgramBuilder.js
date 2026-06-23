@@ -4,6 +4,7 @@ import { useUser } from '../player/UserContext';
 import Modal from '../common/Modal';
 import CreateExerciseForm from '../dashboard/fitness/workouts/CreateExerciseForm';
 import ExerciseSelect from './ExerciseSelect';
+import { parseApiError } from '../../hooks/useYesterdayLogging';
 import './ProgramBuilder.css';
 
 const blankExercise = () => ({ exercise_id: '', sets: 3, recommended_reps: 8, recommended_weight: 0 });
@@ -74,7 +75,9 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                 : await axiosInstance.post(`/users/${user.id}/workout-programs`, payload);
             onSaved?.(res.data || { program_id: programId, name: payload.name });
         } catch (e) {
-            setError(e.response?.data?.detail || 'Could not save the program.');
+            // parseApiError flattens 422 validation arrays to a string - never
+            // store the raw object/array (rendering it crashes ReactS).
+            setError(parseApiError(e, 'Could not save the program.'));
             setSaving(false);
         }
     };

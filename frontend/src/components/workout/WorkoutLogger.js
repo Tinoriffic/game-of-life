@@ -32,6 +32,12 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
+    // Last session's sets per program_exercise_id, for ghost-placeholder reference.
+    const [lastPerf, setLastPerf] = useState({});
+    // Fields the user has already focused — so we auto-fill last value only ONCE
+    // (first Tab/tap), then never clobber what they type afterward.
+    const touchedRef = useRef(new Set());
+
     // Rest timer
     const [restOn, setRestOn] = useState(false);
     const [restSec, setRestSec] = useState(0);
@@ -101,6 +107,23 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
         if (navigator.vibrate) navigator.vibrate([200, 80, 200]);
     }, [beep]);
 
+    // Rest's-over alarm: cue for ~10s (or until the timer is stopped)
+    const ALARM_MS = 10000;
+    const alarmRef = useRef(null);
+    const alarmEndRef = useRef(null);
+    const stopAlarm = useCallback(() => {
+        clearInterval(alarmRef.current);
+        clearTimeout(alarmEndRef.current);
+        alarmRef.current = null;
+        alarmEndRef.current = null;
+    }, []);
+    const startAlarm = useCallback(() => {
+        stopAlarm();
+        alertCue();
+        alarmRef.current = setInterval(alertCue, 900);
+        alarmEndRef.current = setTimeout(stopAlarm, ALARM_MS);
+    }, [alertCue, stopAlarm]);
+
     useEffect(() => {
         Promise.all([
             axiosInstance.get(`/workout-programs/${program.program_id}/program-details`),
@@ -137,6 +160,14 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
         }).catch((e) => setError(parseApiError(e, 'Could not load this program.')));
     }, [program.program_id]);
 
+    // Last-session reference is non-critical: fetch separately so a miss (new
+    // program, endpoint unavailable) never blocks the logger from loading.
+    useEffect(() => {
+        axiosInstance.get(`/users/${user.id}/workout-programs/${program.program_id}/last-performance`)
+            .then((r) => setLastPerf(r.data || {}))
+            .catch(() => setLastPerf({}));
+    }, [program.program_id, user.id]);
+
     // --- Rest timer (timestamp-based) ---
     const tickRest = useCallback(() => {
         if (restStartRef.current == null) return;
@@ -144,9 +175,9 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
         setRestSec(next);
         if (restTargetRef.current && next >= restTargetRef.current && !alertedRef.current) {
             alertedRef.current = true;
-            alertCue();
+            startAlarm();
         }
-    }, [alertCue]);
+    }, [startAlarm]);
 
     const tickSet = useCallback(() => {
         if (setTimerStartRef.current == null) return;
@@ -171,10 +202,16 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     }, [tickRest, tickSet]);
 
     // Cleanup intervals on unmount.
-    useEffect(() => () => { clearInterval(restRef.current); clearInterval(setTimerRef.current); }, []);
+    useEffect(() => () => {
+        clearInterval(restRef.current);
+        clearInterval(setTimerRef.current);
+        clearInterval(alarmRef.current);
+        clearTimeout(alarmEndRef.current);
+    }, []);
 
     const startRest = () => {
         unlockAudio();
+        stopAlarm();                 // a new rest cancels any still-ringing alarm
         clearInterval(restRef.current);
         alertedRef.current = false;
         restStartRef.current = Date.now();
@@ -184,6 +221,7 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
     };
     const stopRest = () => {
         clearInterval(restRef.current);
+        stopAlarm();
         restStartRef.current = null;
         setRestOn(false);
     };
@@ -218,6 +256,27 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
             rows[idx] = { ...rows[idx], [field]: value };
             return { ...cur, [exId]: rows };
         });
+    };
+
+    // Last session's value for a field (null if none, or it was 0/blank).
+    const ghostVal = (exId, idx, field) => {
+        const row = lastPerf[exId]?.[idx];
+        if (!row) return null;
+        const v = field === 'reps' ? row.reps : field === 'duration' ? row.duration_seconds : row.weight;
+        return v == null || v === 0 ? null : v;
+    };
+
+    // Accept last value on first focus (desktop Tab lands here; mobile tap too).
+    // Once focused, the field is "touched" and never auto-fills again, so typing
+    // a different number is never overwritten.
+    const fillFromLast = (exId, idx, field) => {
+        const key = `${exId}:${idx}:${field}`;
+        if (touchedRef.current.has(key)) return;
+        touchedRef.current.add(key);
+        const cur = setData[exId]?.[idx]?.[field];
+        if (cur !== '' && cur != null) return;   // don't clobber an existing value
+        const g = ghostVal(exId, idx, field);
+        if (g != null) updateSet(exId, idx, field, String(g));
     };
 
     const markSetDone = (exId, idx, count) => {
@@ -308,13 +367,17 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
                             return (
                                 <div className={`wlog-set ${row.done ? 'done' : ''}`} key={idx}>
                                     <span className="wlog-set-n">{idx + 1}</span>
-                                    <input type="number" inputMode="decimal" placeholder="–"
+                                    <input type="number" inputMode="decimal"
+                                        placeholder={ghostVal(ex.program_exercise_id, idx, 'weight') ?? '–'}
                                         value={row.weight}
+                                        onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'weight')}
                                         onChange={(e) => updateSet(ex.program_exercise_id, idx, 'weight', e.target.value)} />
                                     {isTime ? (
                                         <div className="wlog-timed-cell">
-                                            <input type="number" inputMode="numeric" placeholder="sec"
+                                            <input type="number" inputMode="numeric"
+                                                placeholder={ghostVal(ex.program_exercise_id, idx, 'duration') ?? 'sec'}
                                                 value={timing ? setTimer.sec : row.duration}
+                                                onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'duration')}
                                                 onChange={(e) => updateSet(ex.program_exercise_id, idx, 'duration', e.target.value)} />
                                             <button className={`wlog-stopwatch ${timing ? 'on' : ''}`}
                                                 onClick={() => (timing ? stopSetTimer(ex.program_exercise_id, idx) : startSetTimer(timerKey))}>
@@ -322,8 +385,10 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <input type="number" inputMode="numeric" placeholder="–"
+                                        <input type="number" inputMode="numeric"
+                                            placeholder={ghostVal(ex.program_exercise_id, idx, 'reps') ?? '–'}
                                             value={row.reps}
+                                            onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'reps')}
                                             onChange={(e) => updateSet(ex.program_exercise_id, idx, 'reps', e.target.value)} />
                                     )}
                                     <button className={`wlog-done ${row.done ? 'on' : ''}`}

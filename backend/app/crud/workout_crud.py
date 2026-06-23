@@ -541,6 +541,56 @@ def update_workout_program(db: Session, program_id: int, program_update: workout
     db.refresh(db_program)
     return db_program
 
+def get_last_performance(db: Session, user_id: int, program_id: int) -> dict:
+    """
+    Most recent performed sets per program-exercise, for in-logger reference
+    ('what did I lift last time?'). Matched by exercise_id, so it carries across
+    program edits and days that share an exercise. Returns
+    { program_exercise_id: [ {set_number, weight, reps, duration_seconds}, ... ] }.
+    """
+    program_exercises = (
+        db.query(workout_model.ProgramExercise)
+        .join(workout_model.WorkoutDay,
+              workout_model.ProgramExercise.day_id == workout_model.WorkoutDay.day_id)
+        .filter(workout_model.WorkoutDay.program_id == program_id)
+        .all()
+    )
+
+    result = {}
+    for pe in program_exercises:
+        latest = (
+            db.query(workout_model.SessionExercise)
+            .join(workout_model.WorkoutSession,
+                  workout_model.SessionExercise.session_id == workout_model.WorkoutSession.session_id)
+            .filter(
+                workout_model.WorkoutSession.user_id == user_id,
+                workout_model.SessionExercise.exercise_id == pe.exercise_id,
+            )
+            .order_by(workout_model.WorkoutSession.session_date.desc())
+            .first()
+        )
+        if not latest:
+            continue
+        sets = (
+            db.query(workout_model.WorkoutSet)
+            .filter(workout_model.WorkoutSet.session_exercise_id == latest.session_exercise_id)
+            .order_by(workout_model.WorkoutSet.set_number)
+            .all()
+        )
+        if not sets:
+            continue
+        result[pe.program_exercise_id] = [
+            {
+                "set_number": s.set_number,
+                "weight": s.performed_weight,
+                "reps": s.performed_reps,
+                "duration_seconds": s.performed_duration_seconds,
+            }
+            for s in sets
+        ]
+    return result
+
+
 def get_running_progress(db: Session, user_id: int):
     running_logs = db.query(activity_model.UserActivities).filter(
         activity_model.UserActivities.user_id == user_id,

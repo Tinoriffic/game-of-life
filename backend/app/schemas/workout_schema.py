@@ -149,9 +149,9 @@ class ExerciseUpdate(BaseModel):
     exercise_type_id: Optional[int]
 
 class WorkoutProgramUpdate(BaseModel):
-    name: Optional[str]
-    status: Optional[str]
-    workout_days: Optional[List[WorkoutDayCreate]]
+    name: Optional[str] = None
+    status: Optional[str] = None
+    workout_days: Optional[List[WorkoutDayCreate]] = None
 
 # List schemas
 class ExerciseList(BaseModel):
