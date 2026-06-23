@@ -13,7 +13,7 @@ const DETAILABLE = new Set(['duration', 'distance_duration', 'volume', 'quantity
  * [+] opens the detail sheet. Measurement habits take their value inline.
  * Program-backed Strength habits open the full-screen per-set logger instead.
  */
-const HabitRow = ({ habit, done, weekly = false, scheduledToday = true,
+const HabitRow = ({ habit, done, weekly = false, scheduledToday = true, backfillDate = null,
                     onCheck, onUncheck, onDetail, onMeasurement }) => {
     const [measureValue, setMeasureValue] = useState('');
     const navigate = useNavigate();
@@ -21,7 +21,9 @@ const HabitRow = ({ habit, done, weekly = false, scheduledToday = true,
     const isProgram = Boolean(habit.program_id);
     const canDetail = !isMeasurement && !isProgram && DETAILABLE.has(habit.detail_kind);
 
-    const goLog = () => navigate(`/workout/log/${habit.id}`);
+    // Carry the "Yesterday" backfill date into the full-screen logger so the
+    // session (and its habit log) is dated correctly, not always today.
+    const goLog = () => navigate(`/workout/log/${habit.id}${backfillDate ? `?date=${backfillDate}` : ''}`);
 
     const streakLabel = habit.current_streak > 0
         ? `🔥${habit.current_streak}${weekly ? 'w' : ''}`

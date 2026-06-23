@@ -41,6 +41,17 @@
     cursor: pointer;
 }
 
+.wl-backfill-note {
+    margin: -4px 0 12px;
+    padding: 9px 12px;
+    background: rgba(255, 159, 67, 0.14);
+    border: 1px solid rgba(255, 159, 67, 0.45);
+    border-radius: 10px;
+    color: #ffb073;
+    font-size: 13px;
+    text-align: center;
+}
+
 .wl-loading,
 .wl-error {
     text-align: center;

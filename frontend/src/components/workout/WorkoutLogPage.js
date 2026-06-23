@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { habitService } from '../../services/habitService';
 import { useFeedback } from '../feedback/FeedbackContext';
 import WorkoutLogger from './WorkoutLogger';
@@ -13,6 +13,8 @@ import './WorkoutLogPage.css';
  */
 const WorkoutLogPage = () => {
     const { habitId } = useParams();
+    const [searchParams] = useSearchParams();
+    const sessionDate = searchParams.get('date');   // YYYY-MM-DD when logging for a past day
     const navigate = useNavigate();
     const { celebrateLogResult, pushToast } = useFeedback();
     const [habit, setHabit] = useState(null);
@@ -62,10 +64,19 @@ const WorkoutLogPage = () => {
                 <div className="wl-title">{habit.icon} {habit.name}</div>
                 <button className="wl-edit" onClick={() => setEditing(true)}>Edit program</button>
             </header>
+            {sessionDate && (
+                <div className="wl-backfill-note">
+                    Logging for{' '}
+                    {new Date(`${sessionDate}T12:00:00`).toLocaleDateString(undefined, {
+                        weekday: 'long', month: 'short', day: 'numeric'
+                    })}
+                </div>
+            )}
             <WorkoutLogger
                 key={reloadKey}
                 program={{ program_id: habit.program_id, name: habit.name }}
                 habitId={habit.id}
+                sessionDate={sessionDate}
                 onLogged={onLogged}
                 onClose={close}
             />

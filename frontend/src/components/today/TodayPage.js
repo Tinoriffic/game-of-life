@@ -276,6 +276,7 @@ const TodayPage = () => {
                         habit={habit}
                         done={isDone(habit)}
                         scheduledToday={habit.cadence_type !== 'weekdays' || habit.weekdays?.includes(today.weekday)}
+                        backfillDate={isBackfill ? targetDate : null}
                         onCheck={() => logHabit(habit)}
                         onUncheck={() => undoLog(habit)}
                         onDetail={() => openDetail(habit)}
@@ -295,6 +296,7 @@ const TodayPage = () => {
                             done={isDone(habit)}
                             weekly
                             scheduledToday
+                            backfillDate={isBackfill ? targetDate : null}
                             onCheck={() => logHabit(habit)}
                             onUncheck={() => undoLog(habit)}
                             onDetail={() => openDetail(habit)}

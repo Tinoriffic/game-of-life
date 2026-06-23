@@ -23,7 +23,7 @@ const CheckIcon = () => (
  * they stay accurate when the PWA is backgrounded and the browser throttles
  * setInterval. We also recompute on focus/visibility regain.
  */
-const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
+const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose }) => {
     const { user } = useUser();
     const [days, setDays] = useState([]);
     const [selectedDay, setSelectedDay] = useState(null);
@@ -314,7 +314,11 @@ const WorkoutLogger = ({ program, habitId, onLogged, onClose }) => {
         try {
             const res = await axiosInstance.post(`/users/${user.id}/workout-sessions`, {
                 program_id: program.program_id,
-                session_date: new Date().toISOString(),
+                // Backfill: anchor at local noon of the chosen day so the backend's
+                // UTC→local-day conversion lands on that calendar day, not a neighbour.
+                session_date: sessionDate
+                    ? new Date(`${sessionDate}T12:00:00`).toISOString()
+                    : new Date().toISOString(),
                 exercises,
                 habit_id: habitId,
             });
