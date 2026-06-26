@@ -6,6 +6,16 @@ import './WorkoutLogger.css';
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
+// Whole-calendar-day gap between a session's date and now, in local time.
+const relativeDay = (iso) => {
+    if (!iso) return '';
+    const startOfDay = (d) => new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    const days = Math.round((startOfDay(new Date()) - startOfDay(new Date(iso))) / 86400000);
+    if (days <= 0) return 'today';
+    if (days === 1) return 'yesterday';
+    return `${days} days ago`;
+};
+
 const CheckIcon = () => (
     <svg className="wlog-check" viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
         <path d="M5 12.5l4.5 4.5L19 7" fill="none" stroke="currentColor"
@@ -32,11 +42,16 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     const [error, setError] = useState(null);
     const [submitting, setSubmitting] = useState(false);
 
+    // Open context: which day to land on next + last session summary.
+    const [suggestedDayId, setSuggestedDayId] = useState(null);
+    const [lastSession, setLastSession] = useState(null);
+    const [contextLoaded, setContextLoaded] = useState(false);
+    const userPickedDayRef = useRef(false);   // don't auto-override a manual day pick
+
     // Last session's sets per program_exercise_id, for ghost-placeholder reference.
     const [lastPerf, setLastPerf] = useState({});
-    // Fields the user has already focused — so we auto-fill last value only ONCE
-    // (first Tab/tap), then never clobber what they type afterward.
-    const touchedRef = useRef(new Set());
+    // Per-field last-tap timestamp, for double-tap-to-fill detection.
+    const lastTapRef = useRef({});
 
     // Rest timer
     const [restOn, setRestOn] = useState(false);
@@ -140,7 +155,8 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
             }, {});
             const dayList = Object.values(grouped);
             setDays(dayList);
-            setSelectedDay(dayList[0]?.day_name || null);
+            // selectedDay is set by the auto-select effect once open-context resolves,
+            // so the logger lands on the suggested next day rather than always day 1.
 
             // Pre-build the full set array per exercise so typing never collapses rows.
             const initSets = {};
@@ -168,6 +184,26 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
             .catch(() => setLastPerf({}));
     }, [program.program_id, user.id]);
 
+    // Open context: suggested next day + last session. Non-blocking, like above;
+    // contextLoaded flips either way so the auto-select effect never stalls.
+    useEffect(() => {
+        axiosInstance.get(`/users/${user.id}/workout-programs/${program.program_id}/session-context`)
+            .then((r) => {
+                setSuggestedDayId(r.data?.suggested_day_id ?? null);
+                setLastSession(r.data?.last_session ?? null);
+            })
+            .catch(() => { setSuggestedDayId(null); setLastSession(null); })
+            .finally(() => setContextLoaded(true));
+    }, [program.program_id, user.id]);
+
+    // Land on the suggested day once both days and context are ready. Waiting for
+    // context avoids a flash of day 1; a manual pick (userPickedDayRef) wins.
+    useEffect(() => {
+        if (!days.length || !contextLoaded || userPickedDayRef.current || selectedDay) return;
+        const suggested = days.find((d) => d.day_id === suggestedDayId);
+        setSelectedDay(suggested?.day_name || days[0].day_name);
+    }, [days, contextLoaded, suggestedDayId, selectedDay]);
+
     // --- Rest timer (timestamp-based) ---
     const tickRest = useCallback(() => {
         if (restStartRef.current == null) return;
@@ -190,6 +226,10 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     useEffect(() => {
         const onResume = () => {
             if (document.visibilityState !== 'visible') return;
+            // Audio gets suspended when backgrounded or when another app (music)
+            // takes audio focus; resume it so the cue still fires after swapping back.
+            const ctx = audioCtxRef.current;
+            if (ctx && ctx.state === 'suspended') ctx.resume().catch(() => {});
             tickRest();
             tickSet();
         };
@@ -266,17 +306,21 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         return v == null || v === 0 ? null : v;
     };
 
-    // Accept last value on first focus (desktop Tab lands here; mobile tap too).
-    // Once focused, the field is "touched" and never auto-fills again, so typing
-    // a different number is never overwritten.
     const fillFromLast = (exId, idx, field) => {
-        const key = `${exId}:${idx}:${field}`;
-        if (touchedRef.current.has(key)) return;
-        touchedRef.current.add(key);
         const cur = setData[exId]?.[idx]?.[field];
-        if (cur !== '' && cur != null) return;   // don't clobber an existing value
+        if (cur !== '' && cur != null) return;   // don't clobber a typed value
         const g = ghostVal(exId, idx, field);
         if (g != null) updateSet(exId, idx, field, String(g));
+    };
+
+    // Double-tap fills from last session; single tap leaves it empty to type fresh.
+    // Timing-based, not dblclick, which is unreliable on touch.
+    const onFieldTap = (exId, idx, field) => {
+        const key = `${exId}:${idx}:${field}`;
+        const now = Date.now();
+        const prev = lastTapRef.current[key] || 0;
+        lastTapRef.current[key] = now;
+        if (now - prev < 350) fillFromLast(exId, idx, field);
     };
 
     const markSetDone = (exId, idx, count) => {
@@ -314,6 +358,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         try {
             const res = await axiosInstance.post(`/users/${user.id}/workout-sessions`, {
                 program_id: program.program_id,
+                day_id: day.day_id,
                 // Backfill: anchor at local noon of the chosen day so the backend's
                 // UTC→local-day conversion lands on that calendar day, not a neighbour.
                 session_date: sessionDate
@@ -341,12 +386,20 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
 
     return (
         <div className="wlog">
+            {lastSession && (
+                <div className="wlog-lastbar">
+                    {lastSession.day_name ? `Last: ${lastSession.day_name}` : 'Last workout'}
+                    <span className="wlog-lastbar-sep">·</span>
+                    {relativeDay(lastSession.session_date)}
+                </div>
+            )}
+
             {days.length > 1 && (
                 <div className={`wlog-days ${days.length > 5 ? 'grid' : 'row'}`}>
                     {days.map((d) => (
                         <button key={d.day_id}
-                            className={`wlog-day ${d.day_name === selectedDay ? 'active' : ''}`}
-                            onClick={() => setSelectedDay(d.day_name)}>
+                            className={`wlog-day ${d.day_name === selectedDay ? 'active' : ''} ${d.day_id === suggestedDayId ? 'is-next' : ''}`}
+                            onClick={() => { userPickedDayRef.current = true; setSelectedDay(d.day_name); }}>
                             {d.day_name}
                         </button>
                     ))}
@@ -374,14 +427,14 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
                                     <input type="number" inputMode="decimal"
                                         placeholder={ghostVal(ex.program_exercise_id, idx, 'weight') ?? '–'}
                                         value={row.weight}
-                                        onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'weight')}
+                                        onClick={() => onFieldTap(ex.program_exercise_id, idx, 'weight')}
                                         onChange={(e) => updateSet(ex.program_exercise_id, idx, 'weight', e.target.value)} />
                                     {isTime ? (
                                         <div className="wlog-timed-cell">
                                             <input type="number" inputMode="numeric"
                                                 placeholder={ghostVal(ex.program_exercise_id, idx, 'duration') ?? 'sec'}
                                                 value={timing ? setTimer.sec : row.duration}
-                                                onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'duration')}
+                                                onClick={() => onFieldTap(ex.program_exercise_id, idx, 'duration')}
                                                 onChange={(e) => updateSet(ex.program_exercise_id, idx, 'duration', e.target.value)} />
                                             <button className={`wlog-stopwatch ${timing ? 'on' : ''}`}
                                                 onClick={() => (timing ? stopSetTimer(ex.program_exercise_id, idx) : startSetTimer(timerKey))}>
@@ -392,7 +445,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
                                         <input type="number" inputMode="numeric"
                                             placeholder={ghostVal(ex.program_exercise_id, idx, 'reps') ?? '–'}
                                             value={row.reps}
-                                            onFocus={() => fillFromLast(ex.program_exercise_id, idx, 'reps')}
+                                            onClick={() => onFieldTap(ex.program_exercise_id, idx, 'reps')}
                                             onChange={(e) => updateSet(ex.program_exercise_id, idx, 'reps', e.target.value)} />
                                     )}
                                     <button className={`wlog-done ${row.done ? 'on' : ''}`}
