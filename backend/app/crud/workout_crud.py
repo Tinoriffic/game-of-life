@@ -219,6 +219,7 @@ def log_workout_session(db: Session, session_data: workout_schema.WorkoutSession
     new_session = workout_model.WorkoutSession(
         user_id=user_id,
         program_id=session_data.program_id,
+        day_id=session_data.day_id,
         session_date=session_data.session_date
     )
     db.add(new_session)
@@ -589,6 +590,116 @@ def get_last_performance(db: Session, user_id: int, program_id: int) -> dict:
             for s in sets
         ]
     return result
+
+
+def get_session_context(db: Session, user_id: int, program_id: int) -> dict:
+    """
+    Context for opening the logger: which day to land on next, plus a summary of
+    the last session. The logger cycles through the program's days in day_id order
+    (the same order the program-details view and the UI grouping use), so the
+    suggested day is the one *after* the last day performed, wrapping around.
+
+    Returns { suggested_day_id, last_session | None }. last_session carries day_id,
+    day_name, session_date and a per-exercise set summary.
+    """
+    days = (
+        db.query(workout_model.WorkoutDay)
+        .filter(workout_model.WorkoutDay.program_id == program_id)
+        .order_by(workout_model.WorkoutDay.day_id)
+        .all()
+    )
+    if not days:
+        return {"suggested_day_id": None, "last_session": None}
+
+    ordered_day_ids = [d.day_id for d in days]
+    day_name_by_id = {d.day_id: d.day_name for d in days}
+
+    last = (
+        db.query(workout_model.WorkoutSession)
+        .filter(
+            workout_model.WorkoutSession.user_id == user_id,
+            workout_model.WorkoutSession.program_id == program_id,
+        )
+        .options(
+            joinedload(workout_model.WorkoutSession.exercises)
+            .joinedload(workout_model.SessionExercise.exercise),
+            joinedload(workout_model.WorkoutSession.exercises)
+            .joinedload(workout_model.SessionExercise.sets),
+        )
+        .order_by(
+            workout_model.WorkoutSession.session_date.desc(),
+            workout_model.WorkoutSession.session_id.desc(),
+        )
+        .first()
+    )
+
+    if not last:
+        return {"suggested_day_id": ordered_day_ids[0], "last_session": None}
+
+    # Which day did the last session perform? Prefer the stored day_id; fall back
+    # to inferring it from the logged exercises for legacy sessions (logged before
+    # day_id was persisted) so the first suggestion is still correct.
+    last_day_id = last.day_id if last.day_id in day_name_by_id else None
+    if last_day_id is None:
+        last_day_id = _infer_session_day(db, program_id, last, ordered_day_ids)
+
+    if last_day_id in ordered_day_ids:
+        idx = ordered_day_ids.index(last_day_id)
+        suggested_day_id = ordered_day_ids[(idx + 1) % len(ordered_day_ids)]
+    else:
+        suggested_day_id = ordered_day_ids[0]
+
+    last_session = {
+        "session_id": last.session_id,
+        "day_id": last_day_id,
+        "day_name": day_name_by_id.get(last_day_id),
+        "session_date": last.session_date,
+        "exercises": [
+            {
+                "name": se.exercise.name,
+                "sets": [
+                    {
+                        "set_number": s.set_number,
+                        "weight": s.performed_weight,
+                        "reps": s.performed_reps,
+                        "duration_seconds": s.performed_duration_seconds,
+                    }
+                    for s in sorted(se.sets, key=lambda x: x.set_number or 0)
+                ],
+            }
+            for se in last.exercises
+        ],
+    }
+
+    return {"suggested_day_id": suggested_day_id, "last_session": last_session}
+
+
+def _infer_session_day(db: Session, program_id: int, session, ordered_day_ids: List[int]):
+    """
+    Best-effort: pick the program day whose exercises overlap the session's
+    exercises the most (ties broken by earliest day in the cycle). Returns a
+    day_id or None. Used only for sessions logged before day_id was tracked.
+    """
+    session_exercise_ids = {se.exercise_id for se in session.exercises}
+    if not session_exercise_ids:
+        return None
+
+    rows = (
+        db.query(workout_model.ProgramExercise.exercise_id, workout_model.WorkoutDay.day_id)
+        .join(workout_model.WorkoutDay,
+              workout_model.ProgramExercise.day_id == workout_model.WorkoutDay.day_id)
+        .filter(workout_model.WorkoutDay.program_id == program_id)
+        .all()
+    )
+    overlap = {}
+    for exercise_id, day_id in rows:
+        if exercise_id in session_exercise_ids:
+            overlap[day_id] = overlap.get(day_id, 0) + 1
+
+    if not overlap:
+        return None
+    # Max overlap; tie -> earliest day in program order.
+    return min(overlap, key=lambda d: (-overlap[d], ordered_day_ids.index(d)))
 
 
 def get_running_progress(db: Session, user_id: int):

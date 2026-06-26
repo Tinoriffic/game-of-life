@@ -117,6 +117,11 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
 def read_last_performance(user_id: int, program_id: int, db: Session = Depends(get_db)):
     return workout_crud.get_last_performance(db, user_id, program_id)
 
+# Logger open context: suggested next day in the cycle + last session summary
+@router.get("/users/{user_id}/workout-programs/{program_id}/session-context")
+def read_session_context(user_id: int, program_id: int, db: Session = Depends(get_db)):
+    return workout_crud.get_session_context(db, user_id, program_id)
+
 # Log a workout session entry
 @router.post("/users/{user_id}/workout-sessions", response_model=workout_schema.WorkoutSession)
 def log_workout_session(user_id: int, session_data: workout_schema.WorkoutSessionCreate, db: Session = Depends(get_db)):

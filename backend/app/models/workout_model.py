@@ -44,6 +44,7 @@ class WorkoutSession(Base):
     session_id = Column(Integer, primary_key=True, index=True)
     program_id = Column(Integer, ForeignKey('workout_programs.program_id'))
     user_id = Column(Integer, ForeignKey('users.id', ondelete='CASCADE'))
+    day_id = Column(Integer, ForeignKey('workout_days.day_id'), nullable=True)
     session_date = Column(DateTime, default=utc_now)
 
     # Audit fields for historical logging
@@ -54,6 +55,7 @@ class WorkoutSession(Base):
     user = relationship('User', foreign_keys=[user_id])
     admin_user = relationship('User', foreign_keys=[admin_user_id])
     workout_program = relationship('WorkoutProgram', back_populates='workout_sessions')
+    workout_day = relationship('WorkoutDay')
     exercises = relationship('SessionExercise', back_populates='session')
 
 class SessionExercise(Base):

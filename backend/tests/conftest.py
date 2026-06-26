@@ -1,9 +1,30 @@
 import pytest
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from app.database import Base
+import app.models  # noqa: F401 - registers every model on Base.metadata for create_all
 from app.models import User, Skill, ActivityStreak
 from datetime import date, timedelta
 
 load_dotenv()
+
+
+@pytest.fixture
+def db():
+    """A fresh in-memory SQLite database session per test.
+
+    The CRUD under test is query-heavy (joins, ordering, streak math), so we run
+    against real tables rather than a mocked Session.
+    """
+    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    Base.metadata.create_all(bind=engine)
+    session = sessionmaker(bind=engine)()
+    try:
+        yield session
+    finally:
+        session.close()
+        Base.metadata.drop_all(bind=engine)
 
 @pytest.fixture(scope="module")
 def mock_user():

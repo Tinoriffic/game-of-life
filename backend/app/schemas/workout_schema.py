@@ -48,6 +48,7 @@ class SessionExerciseCreate(BaseModel):
 
 class WorkoutSessionCreate(BaseModel):
     program_id: int
+    day_id: Optional[int] = None  # which program day was performed (drives next-day suggestion)
     session_date: datetime
     exercises: List[SessionExerciseCreate]
     habit_id: Optional[int] = None  # strength habit this session completes (v1.0.0 daily loop)
