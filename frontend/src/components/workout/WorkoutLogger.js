@@ -179,10 +179,11 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     // Last-session reference is non-critical: fetch separately so a miss (new
     // program, endpoint unavailable) never blocks the logger from loading.
     useEffect(() => {
+        if (!user?.id) return;   // user hydrates async; effects wait for the id
         axiosInstance.get(`/users/${user.id}/workout-programs/${program.program_id}/last-performance`)
             .then((r) => setLastPerf(r.data || {}))
             .catch(() => setLastPerf({}));
-    }, [program.program_id, user.id]);
+    }, [program.program_id, user?.id]);
 
     // Open context: suggested next day + last session. Non-blocking, like above;
     // contextLoaded flips either way so the auto-select effect never stalls.
