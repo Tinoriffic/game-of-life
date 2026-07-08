@@ -188,6 +188,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     // Open context: suggested next day + last session. Non-blocking, like above;
     // contextLoaded flips either way so the auto-select effect never stalls.
     useEffect(() => {
+        if (!user?.id) return;
         axiosInstance.get(`/users/${user.id}/workout-programs/${program.program_id}/session-context`)
             .then((r) => {
                 setSuggestedDayId(r.data?.suggested_day_id ?? null);
@@ -195,7 +196,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
             })
             .catch(() => { setSuggestedDayId(null); setLastSession(null); })
             .finally(() => setContextLoaded(true));
-    }, [program.program_id, user.id]);
+    }, [program.program_id, user?.id]);
 
     // Land on the suggested day once both days and context are ready. Waiting for
     // context avoids a flash of day 1; a manual pick (userPickedDayRef) wins.
@@ -337,6 +338,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     };
 
     const submit = async () => {
+        if (!user?.id) return;
         const day = days.find((d) => d.day_name === selectedDay);
         if (!day) return;
         const exercises = day.exercises.map((ex) => {
@@ -381,7 +383,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     );
 
     if (error && !days.length) return <div className="wlog-error">{error}</div>;
-    if (!days.length) return <div className="wlog-loading">Loading program…</div>;
+    if (!days.length || !user?.id) return <div className="wlog-loading">Loading program…</div>;
 
     const restOver = restOn && restTarget && restSec >= restTarget;
 

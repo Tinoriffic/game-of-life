@@ -17,7 +17,8 @@ def create_views():
         {
             'name': 'user_workout_program_details',
             'sql': '''
-                CREATE OR REPLACE VIEW user_workout_program_details AS
+                CREATE OR REPLACE VIEW user_workout_program_details
+                WITH (security_invoker = true) AS
                 SELECT 
                     wp.program_id,
                     wp.user_id,
@@ -43,7 +44,8 @@ def create_views():
         {
             'name': 'workout_progress_view',
             'sql': '''
-                CREATE OR REPLACE VIEW workout_progress_view AS
+                CREATE OR REPLACE VIEW workout_progress_view
+                WITH (security_invoker = true) AS
                 SELECT 
                     ws.user_id,
                     ws.session_id,

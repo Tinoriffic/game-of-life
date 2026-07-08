@@ -7,6 +7,7 @@ from alembic import context
 
 from app.config import Config
 from app.database import Base
+from app.rls import enable_rls_on_all_public_tables
 # Import all models to ensure they're registered with Base.metadata for autogenerate
 import app.models
 
@@ -77,6 +78,9 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
+            # Enforce RLS on any table added by this run (Supabase has no
+            # superuser for an event trigger, so we sweep here instead).
+            enable_rls_on_all_public_tables(connection)
 
 
 if context.is_offline_mode():
