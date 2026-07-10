@@ -1,11 +1,14 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { habitService } from '../../services/habitService';
+import { hasClickTracking } from '../../services/focusService';
+import { useUser } from '../player/UserContext';
 import { useFeedback } from '../feedback/FeedbackContext';
 import HabitRow from './HabitRow';
 import DetailSheet from './DetailSheet';
 import OnboardingPicker from './OnboardingPicker';
 import MiniHeatmap from './MiniHeatmap';
+import FocusStrip from '../focus/FocusStrip';
 import './TodayPage.css';
 
 /**
@@ -19,8 +22,11 @@ const TodayPage = () => {
     const [logDate, setLogDate] = useState('today');   // 'today' | 'yesterday' (48h backfill)
     const [sheetHabit, setSheetHabit] = useState(null);
     const [pendingSync, setPendingSync] = useState(habitService.pendingCount());
+    const [focusState, setFocusState] = useState(null);
     const { celebrateLogResult, pushToast } = useFeedback();
+    const { user } = useUser();
     const navigate = useNavigate();
+    const clicksEnabled = hasClickTracking(user);
 
     const isBackfill = logDate === 'yesterday';
 
@@ -268,6 +274,9 @@ const TodayPage = () => {
                 )}
             </header>
 
+            {/* Clicks strip (flag-gated, deliberately quiet) */}
+            {clicksEnabled && <FocusStrip onState={setFocusState} />}
+
             {/* Daily habits */}
             <section className="habit-section">
                 {today.habits_today.map((habit) => (
@@ -332,6 +341,9 @@ const TodayPage = () => {
                 <DetailSheet
                     habit={sheetHabit}
                     existingLog={isBackfill ? null : sheetHabit.today_log}
+                    focusCategory={!isBackfill ? focusState?.categories?.find(
+                        (c) => c.linked_habit_id === sheetHabit.id && c.today_minutes > 0
+                    ) : null}
                     onSubmit={(payload) => submitDetail(sheetHabit, payload)}
                     onClose={() => setSheetHabit(null)}
                 />

@@ -1,0 +1,727 @@
+/* Focus tool + shared clicks UI. Mobile-first, matches the Today theme. */
+
+.focus-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 14px 96px;
+  color: #f8f8f2;
+}
+
+.focus-skeleton, .focus-error {
+  text-align: center;
+  padding: 60px 20px;
+  color: #b8b8b8;
+}
+
+.focus-error button {
+  margin-top: 12px;
+  background: transparent;
+  color: #ffd700;
+  border: 1px solid #ffd700;
+  border-radius: 18px;
+  padding: 8px 22px;
+  cursor: pointer;
+}
+
+/* --- Header ---------------------------------------------------------------- */
+
+.focus-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.focus-back {
+  background: transparent;
+  border: none;
+  color: #b8b8b8;
+  font-size: 26px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+}
+
+.focus-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: #ffd700;
+  margin: 0;
+  flex: 1;
+}
+
+.focus-today-chip {
+  font-size: 12px;
+  color: #b8b8b8;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 14px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+/* --- Category picker --------------------------------------------------------- */
+
+.picker-label {
+  color: #b8b8b8;
+  font-size: 14px;
+  margin: 18px 2px 10px;
+}
+
+.category-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.category-tile {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 3px solid var(--cat-color);
+  border-radius: 12px;
+  color: #f8f8f2;
+  padding: 16px 12px;
+  text-align: left;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.category-tile:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: var(--cat-color);
+}
+
+.cat-icon { font-size: 20px; }
+.cat-name { font-weight: 600; font-size: 14px; }
+.cat-today { font-size: 11px; color: var(--cat-color); }
+
+.focus-empty {
+  text-align: center;
+  padding: 40px 16px;
+  color: #b8b8b8;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.focus-empty .btn-gold { margin-top: 16px; }
+
+.picker-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 18px;
+}
+
+/* --- Active session ------------------------------------------------------------ */
+
+.focus-active {
+  text-align: center;
+  padding-top: 26px;
+}
+
+.focus-suspect {
+  background: rgba(247, 37, 133, 0.12);
+  border: 1px solid rgba(247, 37, 133, 0.5);
+  color: #ff8fab;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  margin-bottom: 18px;
+}
+
+.focus-cat-label {
+  display: inline-block;
+  font-size: 14px;
+  color: var(--cat-color);
+  border: 1px solid var(--cat-color);
+  border-radius: 16px;
+  padding: 5px 14px;
+  margin-bottom: 18px;
+}
+
+.focus-timer {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 64px;
+  letter-spacing: 2px;
+  color: #ffd700;
+  text-shadow: 0 0 24px rgba(255, 215, 0, 0.35);
+  font-variant-numeric: tabular-nums;
+}
+
+.focus-timer-sub {
+  color: #777;
+  font-size: 12px;
+  margin: 6px 0 26px;
+}
+
+.btn-stop {
+  background: rgba(247, 37, 133, 0.15);
+  border: 1px solid #f72585;
+  color: #ff8fab;
+  border-radius: 24px;
+  padding: 12px 34px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+/* --- Capture pad ------------------------------------------------------------------ */
+
+.capture-pad {
+  margin-top: 34px;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.capture-label {
+  color: #b8b8b8;
+  font-size: 12px;
+  margin: 0 0 10px;
+}
+
+.capture-form {
+  display: flex;
+  gap: 8px;
+}
+
+.capture-form input {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #f8f8f2;
+  padding: 9px 12px;
+  font-size: 14px;
+}
+
+.capture-form button {
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  color: #ffd700;
+  border-radius: 8px;
+  width: 40px;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+.capture-form button:disabled { opacity: 0.35; cursor: default; }
+
+.capture-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+}
+
+.capture-list li {
+  font-size: 13px;
+  color: #ddd;
+  padding: 5px 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.capture-replay {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  padding: 10px 12px;
+  margin: 6px 0 4px;
+  font-size: 12px;
+  color: #b8b8b8;
+}
+
+.capture-replay ul {
+  margin: 6px 0 0;
+  padding-left: 18px;
+  color: #ddd;
+  font-size: 13px;
+}
+
+/* --- Overlay sheets ------------------------------------------------------------------ */
+
+.focus-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 60;
+}
+
+.focus-sheet {
+  width: 100%;
+  max-width: 480px;
+  max-height: 86vh;
+  overflow-y: auto;
+  background: #16161d;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: none;
+  border-radius: 18px 18px 0 0;
+  padding: 20px 18px 26px;
+}
+
+.sheet-heading {
+  font-family: 'Orbitron', sans-serif;
+  color: #ffd700;
+  font-size: 16px;
+  letter-spacing: 1px;
+  margin: 0 0 4px;
+}
+
+.sheet-sub {
+  color: #b8b8b8;
+  font-size: 13px;
+  margin: 0 0 14px;
+}
+
+.ritual-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.ritual-list li {
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.ritual-list label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 2px;
+  font-size: 14px;
+  color: #ddd;
+  cursor: pointer;
+}
+
+.ritual-list input[type="checkbox"] { accent-color: #ffd700; }
+
+.ritual-list input:checked + span {
+  color: #777;
+  text-decoration: line-through;
+}
+
+.ritual-textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #f8f8f2;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+/* Scoped under .focus-sheet: TodayPage.css owns the global versions of these
+   class names and the DetailSheet must keep its exact styling. */
+.focus-sheet .sheet-field {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.focus-sheet .sheet-field > span {
+  display: block;
+  color: #b8b8b8;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+.focus-sheet .sheet-field input, .focus-sheet .sheet-field select {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #f8f8f2;
+  padding: 10px 12px;
+  font-size: 15px;
+  box-sizing: border-box;
+}
+
+.focus-sheet .chip-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.focus-sheet .chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #ddd;
+  border-radius: 14px;
+  padding: 6px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.focus-sheet .chip.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+}
+
+.focus-sheet .sheet-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.btn-gold {
+  background: rgba(255, 215, 0, 0.14);
+  border: 1px solid #ffd700;
+  color: #ffd700;
+  border-radius: 18px;
+  padding: 9px 20px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #ccc;
+  border-radius: 18px;
+  padding: 9px 18px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-danger {
+  background: transparent;
+  border: 1px solid rgba(247, 37, 133, 0.6);
+  color: #ff8fab;
+  border-radius: 18px;
+  padding: 9px 16px;
+  font-size: 14px;
+  cursor: pointer;
+  margin-right: auto;
+}
+
+.btn-link {
+  background: transparent;
+  border: none;
+  color: #b8b8b8;
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* --- Category manager ----------------------------------------------------------------- */
+
+.manager-sheet { min-height: 40vh; }
+
+.manager-error {
+  background: rgba(247, 37, 133, 0.12);
+  border: 1px solid rgba(247, 37, 133, 0.5);
+  color: #ff8fab;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  margin-bottom: 12px;
+}
+
+.manager-list {
+  list-style: none;
+  margin: 0 0 16px;
+  padding: 0;
+}
+
+.manager-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 2px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.manager-row.archived { opacity: 0.5; }
+
+.manager-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+
+.manager-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.manager-name { font-size: 14px; font-weight: 600; }
+
+.manager-link {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #ddd;
+  padding: 6px 8px;
+  font-size: 12px;
+  max-width: 260px;
+}
+
+.manager-warn { font-size: 11px; color: #ff9e00; }
+
+.manager-add {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 14px;
+}
+
+.manager-add input, .manager-add select {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #f8f8f2;
+  padding: 9px 12px;
+  font-size: 14px;
+}
+
+.manager-add .btn-gold { align-self: flex-end; }
+
+/* --- Today strip ------------------------------------------------------------------------ */
+
+.focus-strip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 8px 12px;
+  margin-bottom: 14px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button.focus-strip { cursor: pointer; color: #f8f8f2; }
+
+.strip-progress {
+  background: transparent;
+  border: none;
+  color: #f8f8f2;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 2px;
+  flex: 1;
+  text-align: left;
+}
+
+.strip-progress b { color: #ffd700; }
+
+.strip-start {
+  background: rgba(255, 215, 0, 0.12);
+  border: 1px solid rgba(255, 215, 0, 0.55);
+  color: #ffd700;
+  border-radius: 14px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.focus-strip.live { border-color: rgba(6, 214, 160, 0.6); }
+
+.strip-live-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #06d6a0;
+  animation: strip-pulse 1.6s ease infinite;
+  flex-shrink: 0;
+}
+
+@keyframes strip-pulse {
+  50% { opacity: 0.35; }
+}
+
+.strip-timer {
+  font-family: 'Orbitron', sans-serif;
+  color: #06d6a0;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.strip-cat {
+  flex: 1;
+  text-align: left;
+  font-size: 13px;
+  color: #ddd;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.strip-hint { font-size: 11px; color: #777; }
+
+/* --- Stats landing card -------------------------------------------------------------------- */
+
+.clicks-card {
+  display: block;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  margin: 0 0 16px;
+  cursor: pointer;
+  color: #f8f8f2;
+  box-sizing: border-box;
+}
+
+.clicks-card-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.clicks-card-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  color: #ffd700;
+}
+
+.clicks-card-total { font-size: 12px; color: #b8b8b8; }
+
+.clicks-card-bars {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.ccb-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.ccb-track {
+  position: relative;
+  width: 100%;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.ccb-target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.35);
+}
+
+.ccb-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(255, 215, 0, 0.65);
+  border-radius: 3px 3px 0 0;
+}
+
+.ccb-fill.hit { background: #06d6a0; }
+
+.ccb-label { font-size: 10px; color: #777; }
+.ccb-label.today { color: #ffd700; font-weight: 700; }
+
+/* --- First-run explainer ---------------------------------------------------------- */
+
+.focus-empty .empty-def { font-size: 15px; color: #f8f8f2; }
+.focus-empty b { color: #ffd700; font-weight: 700; }
+
+.focus-empty .empty-steps {
+  text-align: left;
+  margin: 14px auto 8px;
+  padding-left: 20px;
+  max-width: 400px;
+  color: #b8b8b8;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.focus-empty .empty-steps li { margin-bottom: 8px; }
+
+.ritual-edit { display: block; margin: -6px 0 10px; }
+
+/* Desktop: sheets center as dialogs instead of docking to the bottom edge. */
+@media (min-width: 768px) {
+  .focus-overlay { align-items: center; padding: 24px; }
+  .focus-sheet {
+    border-radius: 18px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    max-height: 80vh;
+  }
+}
+
+/* --- Pause + keyboard hints ---------------------------------------------------- */
+
+.active-controls {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.btn-pause {
+  background: transparent;
+  border: 2px solid rgba(255, 215, 0, 0.55);
+  color: #ffd700;
+  border-radius: 24px;
+  padding: 13px 26px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.focus-timer.timer-paused {
+  color: #888;
+  text-shadow: none;
+}
+
+.strip-live-dot.paused {
+  background: #ffb84d;
+  animation: none;
+}
+
+/* Shortcut hints: desktop + pointer only; touch layouts never see them. */
+.key-hints { display: none; }
+
+@media (min-width: 768px) and (hover: hover) {
+  .key-hints {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 14px;
+    font-size: 11px;
+    color: #777;
+  }
+
+  .key-hints kbd {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    border-bottom-width: 2px;
+    border-radius: 4px;
+    padding: 1px 6px;
+    font-family: inherit;
+    font-size: 10px;
+    color: #ddd;
+  }
+}

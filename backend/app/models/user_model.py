@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Enum
+from sqlalchemy import Column, Integer, String, Enum, Float, JSON
 from sqlalchemy.orm import relationship
 import enum
 
@@ -25,6 +25,12 @@ class User(Base):
     # Player XP (overall level) is a separate track from attribute XP:
     # earned through day-completes, measurements, milestones, challenges.
     player_xp = Column(Integer, default=0, nullable=False)
+    # Per-user feature gates ({"click_tracking": true}); generic so a future
+    # paywall/tier decision needs no schema rework.
+    feature_flags = Column(JSON, nullable=False, default=dict, server_default='{}')
+    # Click tracking settings (only meaningful when the flag is on).
+    click_daily_target = Column(Float, nullable=False, default=2.0, server_default='2.0')
+    focus_ritual = Column(JSON, nullable=True)  # list[str]; null = default checklist
 
     skills = relationship("Skill", back_populates="user")
     habits = relationship("Habit", back_populates="user")

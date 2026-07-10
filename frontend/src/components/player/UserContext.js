@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import axiosInstance from '../../axios';
 
 const UserContext = createContext();
@@ -21,10 +21,13 @@ export const UserProvider = ({ children }) => {
   };
 
   // The OAuth flow only stores tokens, so a logged-in session can start with no
-  // cached user. Hydrate from /users/me once so legacy `/users/{user.id}/…`
-  // pages (workout logger, stats) have an id instead of crashing on null.
+  // cached user. Refresh from /users/me once per app load: legacy pages need
+  // an id, and server-side changes (feature_flags, role) must not be stuck
+  // behind a stale localStorage copy. Cached user still renders instantly.
+  const hydratedRef = useRef(false);
   useEffect(() => {
-    if (user || !localStorage.getItem('accessToken')) return;
+    if (hydratedRef.current || !localStorage.getItem('accessToken')) return;
+    hydratedRef.current = true;
     axiosInstance.get('/users/me')
       .then((res) => updateUser(res.data))
       .catch(() => { /* 401 is handled by the axios interceptor */ });

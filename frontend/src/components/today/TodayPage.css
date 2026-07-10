@@ -513,6 +513,18 @@
   color: #ffd700;
 }
 
+/* Soft double-count warning when focus time already exists for this habit */
+.sheet-focus-warning {
+  background: rgba(255, 158, 0, 0.1);
+  border: 1px solid rgba(255, 158, 0, 0.45);
+  color: #ffb84d;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 12px;
+  line-height: 1.45;
+  margin-bottom: 14px;
+}
+
 .sheet-field {
   display: block;
   margin-bottom: 14px;

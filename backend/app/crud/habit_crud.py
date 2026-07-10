@@ -429,14 +429,19 @@ def _auto_progress_challenge(db: Session, user: User, habit: Habit, log_date: da
         return None
 
 
-def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.HabitLogCreate) -> dict:
+def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.HabitLogCreate,
+              allow_archived: bool = False) -> dict:
     """
     The core action of the app. Creates the day's log, pays both XP tracks,
     updates streaks/day-state/challenge, and returns everything the feedback
     layer needs to celebrate it.
+
+    allow_archived: the focus-session bridge still pays XP on an archived
+    linked habit; archived habits aren't scheduled, so Today/day-complete
+    stay unaffected.
     """
     habit = get_user_habit(db, user.id, habit_id)
-    if not habit or habit.status != "active":
+    if not habit or (habit.status != "active" and not allow_archived):
         raise ValueError("Habit not found")
 
     user_today = get_user_today(db, user.id)

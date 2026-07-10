@@ -32,6 +32,7 @@ class User(BaseModel):
     occupation: str
     avatar_url: Optional[str] = None
     role: UserRole = UserRole.USER
+    feature_flags: dict = {}
 
     class ConfigDict:
         from_attributes = True
@@ -47,6 +48,7 @@ class UserWithSkills(BaseModel):
     skills: List[Skill]
     avatar_url: Optional[str] = None
     role: UserRole = UserRole.USER
+    feature_flags: dict = {}
 
     class ConfigDict:
         from_attributes = True

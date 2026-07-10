@@ -38,6 +38,11 @@ export const adminService = {
     return response.data;
   },
 
+  async toggleUserFeature(userId, key, enabled) {
+    const response = await api.patch(`/admin/users/${userId}/features`, { key, enabled });
+    return response.data;
+  },
+
   // System stats
   async getStats() {
     const response = await api.get('/admin/stats');

@@ -11,6 +11,7 @@ from ..models.user_model import User
 from ..models.challenge_model import UserChallenge
 from ..schemas.user_schema import User as UserSchema
 from ..schemas.challenge_schema import Challenge as ChallengeSchema
+from ..schemas.focus_schema import FeatureToggle
 from ..crud import admin_crud
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -52,6 +53,28 @@ async def revoke_admin_role_endpoint(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {"message": f"Admin role revoked from user {user.username}"}
+
+
+@router.patch("/users/{user_id}/features")
+async def toggle_user_feature(
+    user_id: int,
+    payload: FeatureToggle,
+    _admin_user: User = Depends(require_admin),
+    db: Session = Depends(get_db)
+):
+    """Toggle a per-user feature flag, e.g. click_tracking (admin only)."""
+    user = db.query(User).filter(User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    flags = dict(user.feature_flags or {})
+    if payload.enabled:
+        flags[payload.key] = True
+    else:
+        flags.pop(payload.key, None)
+    user.feature_flags = flags
+    db.commit()
+    return {"message": f"Feature '{payload.key}' {'enabled' if payload.enabled else 'disabled'} "
+                       f"for user {user.username}", "feature_flags": flags}
 
 
 @router.get("/challenges", response_model=List[ChallengeSchema])

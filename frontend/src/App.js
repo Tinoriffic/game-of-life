@@ -8,6 +8,8 @@ import StatsPage from './components/dashboard/stats/StatsPage';
 import ChallengesPage from './components/dashboard/challenges/ChallengesPage';
 import ProfilePage from './components/profile/ProfilePage';
 import ManageHabitsPage from './components/habits/ManageHabitsPage';
+import FocusPage from './components/focus/FocusPage';
+import ClicksPage from './components/focus/ClicksPage';
 import TabBar from './components/common/TabBar';
 import InstallBanner from './components/pwa/InstallPrompt';
 
@@ -43,6 +45,10 @@ function App() {
           <Route path="/challenges" element={<ChallengesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/habits" element={<ManageHabitsPage />} />
+
+          {/* Click tracking (feature-flagged; routes 403 server-side when off) */}
+          <Route path="/focus" element={<FocusPage />} />
+          <Route path="/clicks" element={<ClicksPage />} />
 
           {/* Depth + legacy routes */}
           <Route path="/workout/log/:habitId" element={<WorkoutLogPage />} />

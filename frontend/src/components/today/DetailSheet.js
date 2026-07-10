@@ -15,10 +15,10 @@ const minutesToHMS = (totalMin) => {
 };
 
 /**
- * The bottom sheet for optional detail. Checkmark first — detail is a bonus
+ * The bottom sheet for optional detail. Checkmark first - detail is a bonus
  * for people who want richer stats (and bonus XP).
  */
-const DetailSheet = ({ habit, existingLog, onSubmit, onClose }) => {
+const DetailSheet = ({ habit, existingLog, focusCategory, onSubmit, onClose }) => {
     const navigate = useNavigate();
     const kind = habit.detail_kind;
     const editing = Boolean(existingLog);
@@ -66,6 +66,14 @@ const DetailSheet = ({ habit, existingLog, onSubmit, onClose }) => {
                     {habit.icon} {habit.name}
                     <span className="sheet-subtitle">{editing ? 'Edit details' : 'Log with detail (+bonus XP)'}</span>
                 </h3>
+
+                {focusCategory && (
+                    <div className="sheet-focus-warning">
+                        ⚡ You already have {Math.round(focusCategory.today_minutes)} min of focus
+                        logged for {focusCategory.name} today - durations add together, so only
+                        enter time that isn't already counted.
+                    </div>
+                )}
 
                 <form onSubmit={submit}>
                     {kind === 'volume' && (

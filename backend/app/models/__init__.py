@@ -5,3 +5,4 @@ from .workout_model import *
 from .challenge_model import *
 from .system_settings_model import *
 from .habit_model import *
+from .focus_model import *

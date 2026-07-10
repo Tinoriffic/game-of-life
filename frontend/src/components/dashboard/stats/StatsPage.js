@@ -4,6 +4,8 @@ import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 import { useUser } from '../../player/UserContext';
 import axiosInstance from '../../../axios';
 import { habitService } from '../../../services/habitService';
+import { hasClickTracking } from '../../../services/focusService';
+import ClicksCard from '../../focus/ClicksCard';
 import MiniHeatmap from '../../today/MiniHeatmap';
 import WeightProgress from './components/WeightProgress';
 import StrengthProgress from './components/StrengthProgress';
@@ -66,6 +68,9 @@ const StatsPage = () => {
           label="complete rate (30d)"
         />
       </div>
+
+      {/* Clicks: compact this-week card (flag-gated) → the Clicks page */}
+      {hasClickTracking(user) && <ClicksCard />}
 
       {/* Streak heatmap, front and center — the ripples replacement */}
       <section className="stats-card">

@@ -87,6 +87,17 @@ const AdminPanel = () => {
         }
     };
 
+    const handleToggleClickTracking = async (targetUser) => {
+        const enabled = Boolean(targetUser.feature_flags?.click_tracking);
+        try {
+            await adminService.toggleUserFeature(targetUser.id, 'click_tracking', !enabled);
+            setMessage(`Click tracking ${enabled ? 'disabled' : 'enabled'} for ${targetUser.username}`);
+            loadUsers(); // Refresh
+        } catch (err) {
+            setMessage('Error toggling click tracking');
+        }
+    };
+
     const handleResetUserProgress = async (user) => {
         if (!window.confirm(
             `Reset ${user.username}'s attributes and player level to zero?\n\n` +
@@ -192,6 +203,13 @@ const AdminPanel = () => {
                                                     Make Admin
                                                 </button>
                                             )}
+                                            <button
+                                                onClick={() => handleToggleClickTracking(user)}
+                                                className="admin-btn"
+                                            >
+                                                {user.feature_flags?.click_tracking
+                                                    ? 'Disable Clicks' : 'Enable Clicks'}
+                                            </button>
                                             <button
                                                 onClick={() => handleCompleteUserChallengeDay(user.id)}
                                                 className="complete-btn"

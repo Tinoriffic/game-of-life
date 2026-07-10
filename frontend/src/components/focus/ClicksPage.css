@@ -1,0 +1,325 @@
+/* The Clicks page - private productivity stats. Mobile-first. */
+
+.clicks-page {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 12px 14px 96px;
+  color: #f8f8f2;
+}
+
+.clicks-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.clicks-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  letter-spacing: 3px;
+  color: #ffd700;
+  margin: 0;
+}
+
+.clicks-start { padding: 7px 16px; }
+
+.clicks-definition {
+  color: #777;
+  font-size: 12px;
+  margin: 4px 2px 16px;
+}
+
+/* --- Hero: today + week pace ------------------------------------------------- */
+
+.clicks-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px 14px;
+  margin-bottom: 16px;
+}
+
+.hero-today {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 86px;
+}
+
+.hero-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 34px;
+  color: #ffd700;
+}
+
+.hero-sub {
+  font-size: 11px;
+  color: #b8b8b8;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.target-chip {
+  background: transparent;
+  border: none;
+  border-bottom: 1px dashed rgba(255, 215, 0, 0.6);
+  color: #ffd700;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0 1px;
+}
+
+.target-input {
+  width: 46px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid #ffd700;
+  border-radius: 6px;
+  color: #ffd700;
+  font-size: 11px;
+  padding: 2px 4px;
+}
+
+.hero-week { flex: 1; }
+
+.hero-week-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #b8b8b8;
+  margin-bottom: 6px;
+}
+
+.week-bar {
+  height: 10px;
+  background: rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.week-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.6), #ffd700);
+  border-radius: 6px;
+  transition: width 0.4s ease;
+}
+
+/* --- Section cards ------------------------------------------------------------- */
+
+.clicks-card-block {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+}
+
+.clicks-page .section-label {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #b8b8b8;
+  margin: 0 0 12px;
+}
+
+/* --- This week columns ------------------------------------------------------------ */
+
+.week-columns {
+  display: flex;
+  gap: 8px;
+}
+
+.wc-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.wc-track {
+  position: relative;
+  width: 100%;
+  height: 90px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.wc-target {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed rgba(255, 255, 255, 0.4);
+  z-index: 1;
+}
+
+/* Full-height overlay on the track: segment percentage heights need a
+   resolved ancestor height, or they collapse to zero. */
+.wc-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column-reverse;
+}
+
+.wc-segment { width: 100%; margin-top: 2px; }
+.wc-segment:first-child { margin-top: 0; }
+
+.wc-value {
+  font-size: 10px;
+  color: #ffd700;
+  min-height: 13px;
+  font-variant-numeric: tabular-nums;
+}
+
+.wc-day { font-size: 10px; color: #777; }
+
+.cat-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #b8b8b8;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+/* --- Weekly totals --------------------------------------------------------------------- */
+
+.week-row {
+  padding: 9px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.week-row:first-of-type { border-top: none; }
+
+.week-row-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  margin-bottom: 6px;
+}
+
+.week-row-label { color: #ddd; }
+.week-row-total { color: #ffd700; }
+.week-row-avg { color: #777; font-size: 11px; }
+
+.week-row-bar {
+  display: flex;
+  height: 8px;
+  border-radius: 5px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Recent days ------------------------------------------------------------------------- */
+
+.day-row {
+  padding: 6px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.days-toggle { display: block; margin: 8px auto 0; }
+
+.day-row:first-of-type { border-top: none; }
+
+.day-row-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.day-row-date {
+  font-size: 12px;
+  color: #ddd;
+  width: 92px;
+  flex-shrink: 0;
+}
+
+.day-row-cats {
+  flex: 1;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.day-cat {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #b8b8b8;
+}
+
+.day-row-total {
+  font-size: 13px;
+  color: #ffd700;
+  font-variant-numeric: tabular-nums;
+}
+
+.day-row-total.zero { color: #555; }
+
+.day-add {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #b8b8b8;
+  border-radius: 8px;
+  width: 26px;
+  height: 26px;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.day-note {
+  display: block;
+  background: transparent;
+  border: none;
+  color: #999;
+  font-size: 11px;
+  font-style: italic;
+  text-align: left;
+  padding: 3px 0 0 92px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.day-note-hint { color: #555; font-style: normal; }
+
+.day-note-input {
+  width: calc(100% - 92px);
+  margin-left: 92px;
+  margin-top: 3px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  color: #f8f8f2;
+  font-size: 12px;
+  padding: 5px 8px;
+  box-sizing: border-box;
+}
+
+.clicks-footer {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 4px;
+}

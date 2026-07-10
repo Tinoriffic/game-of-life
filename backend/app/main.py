@@ -5,7 +5,7 @@ load_dotenv()
 
 from .oauth2_config import OAuth2Config
 from .cors import setup_cors
-from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router, habit_router
+from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router, habit_router, focus_router
 from . import models
 from .database import engine, SessionLocal
 
@@ -44,6 +44,24 @@ def _bootstrap():
         conn.execute(text(
             "ALTER TABLE habit_logs ALTER COLUMN duration_minutes TYPE DOUBLE PRECISION"
         ))
+        # Click tracking: per-user feature gates + focus settings.
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS feature_flags JSON NOT NULL DEFAULT '{}'"
+        ))
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS click_daily_target DOUBLE PRECISION NOT NULL DEFAULT 2.0"
+        ))
+        conn.execute(text(
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS focus_ritual JSON"
+        ))
+        # Focus session pause support.
+        conn.execute(text(
+            "ALTER TABLE focus_sessions ADD COLUMN IF NOT EXISTS paused_seconds "
+            "DOUBLE PRECISION NOT NULL DEFAULT 0"
+        ))
+        conn.execute(text(
+            "ALTER TABLE focus_sessions ADD COLUMN IF NOT EXISTS pause_started_at TIMESTAMP"
+        ))
         conn.commit()
 
     from .seeds.bucket_seed import seed_buckets
@@ -72,6 +90,7 @@ app.include_router(workout_router.router)
 app.include_router(challenge_router.router)
 app.include_router(admin_router.router)
 app.include_router(habit_router.router)
+app.include_router(focus_router.router)
 
 
 # Example Routes
