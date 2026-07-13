@@ -93,13 +93,13 @@ const LoginPage = () => {
     return (
         <div className="login-page">
             <div className="login-hero">
-                <div className="login-logo">ME <span className="login-logo-v">v2</span></div>
+                <div className="login-logo">Me<span className="login-logo-v">v2</span></div>
                 <p className="login-tagline">Become the second version of yourself.</p>
 
                 <ul className="login-points">
-                    <li><span>⚡</span> Habits that pay out like a game: XP, streaks, levels</li>
+                    <li><span>⚡</span> Create habits that pay out like a game: XP, streaks, levels</li>
                     <li><span>🏋️</span> A workout logger with the rest timer built in</li>
-                    <li><span>📈</span> Progress you can see: strength, weight, consistency</li>
+                    <li><span>📈</span> Progress you can see overtime: strength, weight, consistency</li>
                 </ul>
 
                 {loginUrl && (
@@ -114,20 +114,20 @@ const LoginPage = () => {
                 )}
                 {!loginUrl && !failed && <div className="login-loading">Connecting…</div>}
 
-                <div className="login-divider"><span>or use email</span></div>
+                <div className="login-divider"><span>or</span></div>
 
                 <div className="login-mode-tabs">
                     <button
                         className={`login-mode-tab ${mode === 'signin' ? 'active' : ''}`}
                         onClick={() => switchMode(mode === 'signin' ? null : 'signin')}
                     >
-                        Sign in
+                        Sign In
                     </button>
                     <button
                         className={`login-mode-tab ${mode === 'register' ? 'active' : ''}`}
                         onClick={() => switchMode(mode === 'register' ? null : 'register')}
                     >
-                        Create account
+                        Create Account
                     </button>
                 </div>
 

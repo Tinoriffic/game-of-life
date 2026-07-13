@@ -80,11 +80,11 @@ const ChallengesPage = () => {
                 topic="challenges"
                 icon="⚔"
                 title="Challenges"
-                lead="Time-boxed commitments layered on top of your habits - finish one for a big player-XP payout."
+                lead="Time-boxed commitments layered on top of your habits - Earn badges & big player-XP payouts."
                 steps={[
                     'Run one challenge at a time; it appears on your Today view while active.',
-                    'Matching habit logs progress it automatically - no double logging.',
-                    'Miss a day? Some challenges give a 24h grace window to recover.',
+                    'Matching habits logged in your Today view progress it automatically - no double logging.',
+                    'Forget to log a day? Some challenges give a 24h grace window to recover.',
                 ]}
             />
             {/* <BackButton /> */}

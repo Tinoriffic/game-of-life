@@ -97,7 +97,7 @@ const UserSetupPage = () => {
     return (
       <div className="setup-page">
         <div className="setup-card">
-          <div className="setup-logo">ME <span className="setup-logo-v">v2</span></div>
+          <div className="setup-logo">Me<span className="setup-logo-v">v2</span></div>
           <h1>Session expired</h1>
           <p className="setup-sub">
             This page only works right after signing up. Head back and start again.
