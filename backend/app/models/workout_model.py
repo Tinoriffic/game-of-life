@@ -33,8 +33,8 @@ class ProgramExercise(Base):
     day_id = Column(Integer, ForeignKey('workout_days.day_id'))
     exercise_id = Column(Integer, ForeignKey('exercises.exercise_id'))
     sets = Column(Integer, nullable=False)
-    recommended_reps = Column(Integer, default=3)
-    recommended_weight = Column(Float, default=0)
+    recommended_reps = Column(Integer, default=3)  # tracking_type='reps'
+    recommended_duration_seconds = Column(Integer, nullable=True)  # tracking_type='time' (plank, carries)
 
     workout_day = relationship('WorkoutDay', back_populates='exercises')
     exercise = relationship('Exercise')

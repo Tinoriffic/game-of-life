@@ -106,7 +106,7 @@ def create_workout_program(db: Session, user_id: int, program: workout_schema.Wo
                 exercise_id=exercise.exercise_id,
                 sets=exercise.sets,
                 recommended_reps=exercise.recommended_reps,
-                recommended_weight=exercise.recommended_weight
+                recommended_duration_seconds=exercise.recommended_duration_seconds
             )
             db.add(new_program_exercise)
             
@@ -533,7 +533,7 @@ def update_workout_program(db: Session, program_id: int, program_update: workout
                     exercise_id=exercise_data['exercise_id'],
                     sets=exercise_data['sets'],
                     recommended_reps=exercise_data.get('recommended_reps'),
-                    recommended_weight=exercise_data.get('recommended_weight')
+                    recommended_duration_seconds=exercise_data.get('recommended_duration_seconds')
                 )
                 db.add(new_program_exercise)
 

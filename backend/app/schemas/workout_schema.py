@@ -21,7 +21,7 @@ class ProgramExerciseCreate(BaseModel):
     exercise_id: int
     sets: int
     recommended_reps: Optional[int] = None
-    recommended_weight: Optional[float] = None
+    recommended_duration_seconds: Optional[int] = None
 
 class WorkoutDay(BaseModel):
     day_id: int
@@ -88,7 +88,7 @@ class ProgramExercise(BaseModel):
     exercise_id: int
     sets: int
     recommended_reps: Optional[int]
-    recommended_weight: Optional[float]
+    recommended_duration_seconds: Optional[int]
 
     class Config:
         from_attributes = True

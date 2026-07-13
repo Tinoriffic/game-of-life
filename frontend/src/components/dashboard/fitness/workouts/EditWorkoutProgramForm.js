@@ -14,10 +14,10 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
   const [exerciseLibrary, setExerciseLibrary] = useState([]);
   const [error, setError] = useState('');
   const [showCreateExercise, setShowCreateExercise] = useState(false);
-  const [selectedDayIndex, setSelectedDayIndex] = useState(null);
 
   useEffect(() => {
     fetchExerciseLibrary();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -33,9 +33,10 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
             return {
               exercise_id: exercise.exercise_id,
               name: libraryExercise?.name || 'Exercise Not Found',
+              tracking_type: libraryExercise?.tracking_type || 'reps',
               sets: exercise.sets,
               recommended_reps: exercise.recommended_reps,
-              recommended_weight: exercise.recommended_weight
+              recommended_duration_seconds: exercise.recommended_duration_seconds
             }
           })
         }))
@@ -94,11 +95,6 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
     setEditedProgram(updatedProgram);
   };
 
-  const addExercise = (dayIndex) => {
-    setSelectedDayIndex(dayIndex);
-    setShowCreateExercise(true);
-  };
-
   const deleteExercise = (dayIndex, exerciseIndex) => {
     const updatedProgram = { ...editedProgram };
     updatedProgram.workout_days[dayIndex].exercises.splice(exerciseIndex, 1);
@@ -113,9 +109,10 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
     updatedProgram.workout_days[dayIndex].exercises.push({
       exercise_id: selectedOption.value,
       name: selectedOption.label,
+      tracking_type: selectedOption.tracking_type || 'reps',
       sets: 3,
       recommended_reps: 12,
-      recommended_weight: 0
+      recommended_duration_seconds: 30
     });
     setEditedProgram(updatedProgram);
   };
@@ -152,8 +149,8 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
           exercises: day.exercises.map(exercise => ({
             exercise_id: exercise.exercise_id,
             sets: Number(exercise.sets),
-            recommended_reps: Number(exercise.recommended_reps),
-            recommended_weight: Number(exercise.recommended_weight)
+            recommended_reps: exercise.tracking_type === 'time' ? null : Number(exercise.recommended_reps),
+            recommended_duration_seconds: exercise.tracking_type === 'time' ? Number(exercise.recommended_duration_seconds) : null
           }))
         }))
       };
@@ -178,8 +175,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
 
   const handleCreateExercise = async (exerciseData) => {
     try {
-      console.log('Creating exercise with data:', exerciseData);
-      const response = await axiosInstance.post('/exercises', exerciseData, {
+      await axiosInstance.post('/exercises', exerciseData, {
         params: { user_id: user.id }
       });
       await fetchExerciseLibrary(); // Refresh the library
@@ -196,6 +192,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
     ? exerciseLibrary.map(exercise => ({
         value: exercise.exercise_id,
         label: exercise.name,
+        tracking_type: exercise.tracking_type,
         category: exercise.category,
         muscleGroup: exercise.muscle_group,
         equipment: exercise.equipment
@@ -314,26 +311,29 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
                         className="form-input"
                       />
                     </div>
-                    <div className="input-group">
-                      <label>Target Reps</label>
-                      <input
-                        type="number"
-                        name="recommended_reps"
-                        value={exercise.recommended_reps}
-                        onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="input-group">
-                      <label>Target Weight (lbs)</label>
-                      <input
-                        type="number"
-                        name="recommended_weight"
-                        value={exercise.recommended_weight}
-                        onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
-                        className="form-input"
-                      />
-                    </div>
+                    {exercise.tracking_type === 'time' ? (
+                      <div className="input-group">
+                        <label>Target Time (sec)</label>
+                        <input
+                          type="number"
+                          name="recommended_duration_seconds"
+                          value={exercise.recommended_duration_seconds ?? ''}
+                          onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
+                          className="form-input"
+                        />
+                      </div>
+                    ) : (
+                      <div className="input-group">
+                        <label>Target Reps</label>
+                        <input
+                          type="number"
+                          name="recommended_reps"
+                          value={exercise.recommended_reps ?? ''}
+                          onChange={(e) => handleInputChange(e, dayIndex, exerciseIndex)}
+                          className="form-input"
+                        />
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}

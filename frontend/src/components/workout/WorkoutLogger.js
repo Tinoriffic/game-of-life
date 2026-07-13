@@ -394,10 +394,10 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
                 topic="workout-logger"
                 icon="🏋️"
                 title="Log sets, rest smart"
-                lead="Ghost numbers in each field are your last session - that's the target to beat."
+                lead="Ghost numbers in each field are from your last session - that's the target to match or beat."
                 steps={[
-                    'Double-tap a field to autofill last time’s number; type over it to beat it.',
-                    'Checking a set done auto-starts the rest timer - it buzzes at your target.',
+                    'Double-tap a field to autofill last session’s number; or type over it to set it manually.',
+                    'Checking a set done auto-starts the rest timer - it alerts you at your target.',
                     'Timed exercises (planks, carries) use the ▶ stopwatch instead of reps.',
                 ]}
                 tips={[

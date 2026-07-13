@@ -30,8 +30,8 @@ def create_views():
                     e.name AS exercise_name,
                     pe.sets,
                     pe.recommended_reps,
-                    pe.recommended_weight
-                FROM 
+                    pe.recommended_duration_seconds
+                FROM
                     workout_programs wp
                 JOIN 
                     workout_days wd ON wp.program_id = wd.program_id

@@ -21,25 +21,20 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
   const [exercisesLibrary, setExercisesLibrary] = useState([]);
   const { user } = useUser();
   const [showCreateExerciseForm, setShowCreateExerciseForm] = useState(false);
-  const [newExercise, setNewExercise] = useState({
-    name: '',
-    description: '',
-  });
+  const userId = user?.id;
 
   useEffect(() => {
-    if (user && user.id) {
-      // Fetches exercises from the global library
-      const fetchExercises = async () => {
-        try {
-          const response = await axiosInstance.get(`/exercises?user_id=${user.id}`);
-          setExercisesLibrary(response.data);
-        } catch (error) {
-          console.error('Failed to fetch exercises', error);
-        }
-      };
-      fetchExercises();
-    }
-  }, [user.id]);
+    if (!userId) return;
+    const fetchExercises = async () => {
+      try {
+        const { data } = await axiosInstance.get(`/exercises?user_id=${userId}`);
+        setExercisesLibrary(data);
+      } catch (error) {
+        console.error('Failed to fetch exercises', error);
+      }
+    };
+    fetchExercises();
+  }, [userId]);
 
   const handleInputChange = (e, dayIndex, exerciseIndex = null) => {
     const { name, value } = e.target;
@@ -71,9 +66,10 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
     updatedProgram.workout_days[dayIndex].exercises.push({
       exercise_id: null,
       name: '',
+      tracking_type: 'reps',
       sets: 3,
       recommended_reps: 0,
-      recommended_weight: 0,
+      recommended_duration_seconds: 30,
       selectedOption: null,
     });
     setProgram(updatedProgram);
@@ -95,8 +91,22 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
     e.preventDefault();
     setError('');
 
+    // tracking_type: reps exercises carry no duration, timed exercises no reps).
+    const payload = {
+      ...program,
+      workout_days: program.workout_days.map((day) => ({
+        day_name: day.day_name,
+        exercises: day.exercises.map((ex) => ({
+          exercise_id: ex.exercise_id,
+          sets: Number(ex.sets),
+          recommended_reps: ex.tracking_type === 'time' ? null : Number(ex.recommended_reps) || 0,
+          recommended_duration_seconds: ex.tracking_type === 'time' ? Number(ex.recommended_duration_seconds) || 0 : null,
+        })),
+      })),
+    };
+
     try {
-      await onSave(program);
+      await onSave(payload);
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to create workout program');
     }
@@ -116,6 +126,7 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
     if (selectedOption) {
       exercise.exercise_id = selectedOption.value;
       exercise.name = selectedOption.label;
+      exercise.tracking_type = selectedOption.exercise?.tracking_type || 'reps';
       exercise.selectedOption = selectedOption;
     } else {
       // Handle clearing the selection
@@ -256,28 +267,31 @@ const CreateWorkoutProgramForm = ({ onSave, onClose }) => {
                       }
                     />
                   </label>
-                  <label>
-                    Target Reps
-                    <input
-                      type="number"
-                      name="recommended_reps"
-                      value={exercise.recommended_reps}
-                      onChange={(e) =>
-                        handleInputChange(e, dayIndex, exerciseIndex)
-                      }
-                    />
-                  </label>
-                  <label>
-                    Target Weight
-                    <input
-                      type="number"
-                      name="recommended_weight"
-                      value={exercise.recommended_weight || ''}
-                      onChange={(e) =>
-                        handleInputChange(e, dayIndex, exerciseIndex)
-                      }
-                    />
-                  </label>
+                  {exercise.tracking_type === 'time' ? (
+                    <label>
+                      Target Time (sec)
+                      <input
+                        type="number"
+                        name="recommended_duration_seconds"
+                        value={exercise.recommended_duration_seconds ?? ''}
+                        onChange={(e) =>
+                          handleInputChange(e, dayIndex, exerciseIndex)
+                        }
+                      />
+                    </label>
+                  ) : (
+                    <label>
+                      Target Reps
+                      <input
+                        type="number"
+                        name="recommended_reps"
+                        value={exercise.recommended_reps ?? ''}
+                        onChange={(e) =>
+                          handleInputChange(e, dayIndex, exerciseIndex)
+                        }
+                      />
+                    </label>
+                  )}
                   <button
                     type="button"
                     onClick={() => deleteExercise(dayIndex, exerciseIndex)}

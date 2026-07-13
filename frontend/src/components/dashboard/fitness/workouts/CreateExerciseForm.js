@@ -1,280 +1,269 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Select from 'react-select';
 import axiosInstance from '../../../../axios';
+import './CreateExerciseForm.css';
 
-const CreateExerciseForm = ({ onSave, onCancel, exerciseLibrary, userId }) => {
-    const [formData, setFormData] = useState({/* ... */});
-    const [lookupData, setLookupData] = useState({
-      categories: [],
-      muscleGroups: [],
-      equipment: [],
-      difficultyLevels: [],
-      exerciseTypes: []
-    });
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [isSubmitting, setIsSubmitting] = useState(false);
+// Themed react-select styling (dark navy + gold, matches the app).
+const selectStyles = {
+  control: (b, s) => ({
+    ...b, background: 'rgba(0,0,0,0.4)', minHeight: 44,
+    borderColor: s.isFocused ? 'rgba(255,215,0,0.6)' : 'rgba(255,255,255,0.18)',
+    borderRadius: 10, boxShadow: 'none', ':hover': { borderColor: 'rgba(255,215,0,0.4)' },
+  }),
+  menu: (b) => ({ ...b, background: '#1a1a2e', border: '1px solid rgba(255,255,255,0.12)', zIndex: 30 }),
+  menuList: (b) => ({ ...b, background: '#1a1a2e' }),
+  option: (b, s) => ({
+    ...b, cursor: 'pointer', color: '#f8f8f2',
+    background: s.isSelected ? 'rgba(255,215,0,0.25)' : s.isFocused ? 'rgba(255,255,255,0.08)' : 'transparent',
+  }),
+  singleValue: (b) => ({ ...b, color: '#f8f8f2' }),
+  multiValue: (b) => ({ ...b, background: 'rgba(255,215,0,0.18)' }),
+  multiValueLabel: (b) => ({ ...b, color: '#ffd700' }),
+  multiValueRemove: (b) => ({ ...b, color: '#ffd700', ':hover': { background: 'rgba(255,215,0,0.35)', color: '#fff' } }),
+  input: (b) => ({ ...b, color: '#f8f8f2' }),
+  placeholder: (b) => ({ ...b, color: '#8a8a8a' }),
+  indicatorSeparator: (b) => ({ ...b, background: 'rgba(255,255,255,0.15)' }),
+  dropdownIndicator: (b) => ({ ...b, color: '#9a9a9a' }),
+};
+
+const byName = (opts, name) => opts.find((o) => o.label === name);
+
+/**
+ * Create a new exercise. Minimal by default - just a name + how it's tracked - so
+ * a user can add "Reverse Flys, reps" and go. Everything else (equipment, difficulty,
+ * muscles worked...) lives under "More details" and is optional, pre-filled with
+ * sensible defaults so the minimal path always saves.
+ */
+const CreateExerciseForm = ({ onSave, onCancel }) => {
+  const [lookup, setLookup] = useState({
+    categories: [], muscleGroups: [], equipment: [], difficultyLevels: [], exerciseTypes: [],
+  });
+  const [form, setForm] = useState({
+    name: '',
+    tracking_type: 'reps',
+    muscle_group_id: null,
+    category_id: null,
+    equipment_id: null,
+    difficulty_level_id: null,
+    exercise_type_id: null,
+    primary_muscles: [],
+    secondary_muscles: [],
+    description: '',
+    instructions: '',
+  });
+  const [showMore, setShowMore] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
-    const fetchLookupData = async () => {
-        try {
-          const response = await axiosInstance.get('/exercises/lookup-data');
-          setLookupData({
-            categories: response.data.categories.map(cat => ({
-              value: cat.id,
-              label: cat.name
-            })),
-            muscleGroups: response.data.muscleGroups.map(mg => ({
-              value: mg.id,
-              label: mg.name
-            })),
-            equipment: response.data.equipment.map(eq => ({
-              value: eq.id,
-              label: eq.name
-            })),
-            difficultyLevels: response.data.difficultyLevels.map(dl => ({
-              value: dl.id,
-              label: dl.level
-            })),
-            exerciseTypes: response.data.exerciseTypes.map(et => ({
-              value: et.id,
-              label: et.type
-            }))
-          });
-        } catch (error) {
-          console.error('Failed to fetch lookup data:', error);
-        }
-      };
-  
-      fetchLookupData();
-    }, []);
+    axiosInstance.get('/exercises/lookup-data').then(({ data }) => {
+      const categories = data.categories.map((c) => ({ value: c.id, label: c.name }));
+      const muscleGroups = data.muscleGroups.map((m) => ({ value: m.id, label: m.name }));
+      const equipment = data.equipment.map((e) => ({ value: e.id, label: e.name }));
+      const difficultyLevels = data.difficultyLevels.map((d) => ({ value: d.id, label: d.level }));
+      const exerciseTypes = data.exerciseTypes.map((t) => ({ value: t.id, label: t.type }));
+      setLookup({ categories, muscleGroups, equipment, difficultyLevels, exerciseTypes });
+      // Preselect neutral/sensible defaults so name + tracking alone can save.
+      setForm((f) => ({
+        ...f,
+        muscle_group_id: (byName(muscleGroups, 'Other') || muscleGroups[0])?.value ?? null,
+        category_id: categories[0]?.value ?? null,
+        equipment_id: (byName(equipment, 'Other') || equipment[0])?.value ?? null,
+        difficulty_level_id: (byName(difficultyLevels, 'Beginner') || difficultyLevels[0])?.value ?? null,
+        exercise_type_id: exerciseTypes[0]?.value ?? null,
+      }));
+    }).catch(() => setError('Could not load exercise options. Try again.'));
+  }, []);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
+  const ready = lookup.muscleGroups.length > 0;
+  const muscleOptions = useMemo(
+    () => lookup.muscleGroups.filter((m) => m.label !== 'Other'),
+    [lookup.muscleGroups]
+  );
 
-  const handleSelectChange = (selectedOption, field) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: selectedOption ? selectedOption.value : null
-    }));
-  };
+  const set = (field, value) => setForm((f) => ({ ...f, [field]: value }));
+  const selected = (opts, id) => opts.find((o) => o.value === id) || null;
 
   const handleSubmit = async () => {
     setError('');
-    setSuccess('');
-    setIsSubmitting(true);
-    
+    if (!form.name.trim()) { setError('Give the exercise a name.'); return; }
+    if (!ready) { setError('Still loading options - one sec.'); return; }
+    setSubmitting(true);
     try {
-        await onSave(formData);
-        setSuccess('Exercise created successfully!');
-        // Wait a brief moment to show success message before closing
-        setTimeout(() => {
-          onCancel();
-        }, 1500);
-      } catch (err) {
-        setError(err.response?.data?.detail || 'Failed to create exercise. Please try again.');
-      } finally {
-        setIsSubmitting(false);
-      }
-    };
-
-  const customStyles = {
-    control: (provided) => ({
-      ...provided,
-      backgroundColor: '#333',
-      borderColor: '#555',
-      color: '#f8f8f2',
-      marginBottom: '10px'
-    }),
-    menu: (provided) => ({
-      ...provided,
-      backgroundColor: '#1d1f20',
-      color: '#f8f8f2'
-    }),
-    option: (provided, state) => ({
-      ...provided,
-      backgroundColor: state.isSelected ? '#4caf50' : state.isFocused ? '#333' : '#1d1f20',
-      color: '#f8f8f2',
-      cursor: 'pointer'
-    }),
-    singleValue: (provided) => ({
-      ...provided,
-      color: '#f8f8f2'
-    }),
-    input: (provided) => ({
-      ...provided,
-      color: '#f8f8f2'
-    })
+      await onSave({
+        name: form.name.trim(),
+        tracking_type: form.tracking_type,
+        muscle_group_id: form.muscle_group_id,
+        category_id: form.category_id,
+        equipment_id: form.equipment_id,
+        difficulty_level_id: form.difficulty_level_id,
+        exercise_type_id: form.exercise_type_id,
+        primary_muscles: form.primary_muscles.map((o) => o.label).join(', ') || null,
+        secondary_muscles: form.secondary_muscles.map((o) => o.label).join(', ') || null,
+        description: form.description.trim() || null,
+        instructions: form.instructions.trim() || null,
+      });
+      setSuccess('Exercise created ✓');
+      setTimeout(onCancel, 900);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Failed to create exercise. Please try again.');
+      setSubmitting(false);
+    }
   };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg">
-      <h2 className="text-xl font-bold mb-4">Create New Exercise</h2>
-      
-      {/* Show error message if exists */}
-      {error && (
-        <div className="mb-4 p-3 bg-red-500 bg-opacity-20 border border-red-500 rounded text-red-500">
-          {error}
-        </div>
-      )}
+    <div className="cxf">
+      <h2 className="cxf-title">New Exercise</h2>
 
-      {/* Show success message if exists */}
-      {success && (
-        <div className="mb-4 p-3 bg-green-500 bg-opacity-20 border border-green-500 rounded text-green-500">
-          {success}
-        </div>
-      )}
+      {error && <div className="cxf-banner cxf-error">{error}</div>}
+      {success && <div className="cxf-banner cxf-success">{success}</div>}
 
-      <div className="space-y-4">
-        <div>
-          <label className="block mb-1">Name</label>
-          <input
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={handleInputChange}
-            className="w-full bg-gray-700 text-white rounded px-3 py-2"
-          />
-        </div>
-
-        <div>
-          <label className="block mb-1">Category</label>
-          <Select
-          options={lookupData.categories}
-          onChange={(option) => handleSelectChange(option, 'category_id')}
-          styles={customStyles}
-          placeholder="Select category..."
+      {/* Core: name + how it's tracked + muscle group. That's all it takes. */}
+      <label className="cxf-field">
+        <span className="cxf-label">Name</span>
+        <input
+          className="cxf-input"
+          type="text"
+          value={form.name}
+          onChange={(e) => set('name', e.target.value)}
+          placeholder="e.g. Reverse Flys"
+          autoFocus
         />
-        </div>
+      </label>
 
-        <div>
-          <label className="block mb-1">Muscle Group</label>
-          <Select
-          options={lookupData.muscleGroups}
-          onChange={(option) => handleSelectChange(option, 'muscle_group_id')}
-          styles={customStyles}
-          placeholder="Select muscle group..."
+      <div className="cxf-field">
+        <span className="cxf-label">Tracking</span>
+        <div className="cxf-toggle">
+          <button
+            type="button"
+            className={form.tracking_type === 'reps' ? 'active' : ''}
+            onClick={() => set('tracking_type', 'reps')}
+          >
+            Reps × Weight
+          </button>
+          <button
+            type="button"
+            className={form.tracking_type === 'time' ? 'active' : ''}
+            onClick={() => set('tracking_type', 'time')}
+          >
+            Time (plank, carries)
+          </button>
+        </div>
+      </div>
+
+      <label className="cxf-field">
+        <span className="cxf-label">Muscle group</span>
+        <Select
+          options={lookup.muscleGroups}
+          value={selected(lookup.muscleGroups, form.muscle_group_id)}
+          onChange={(o) => set('muscle_group_id', o?.value ?? null)}
+          styles={selectStyles}
+          placeholder="Select..."
+          isSearchable={false}
         />
-        </div>
+      </label>
 
-        <div>
-          <label className="block mb-1">Equipment</label>
-          <Select
-          options={lookupData.equipment}
-          onChange={(option) => handleSelectChange(option, 'equipment_id')}
-          styles={customStyles}
-          placeholder="Select equipment..."
-        />
-        </div>
+      <button type="button" className="cxf-more" onClick={() => setShowMore((v) => !v)}>
+        {showMore ? '▾ Hide details' : '▸ More details (optional)'}
+      </button>
 
-        <div>
-          <label className="block mb-1">Difficulty Level</label>
-          <Select
-          options={lookupData.difficultyLevels}
-          onChange={(option) => handleSelectChange(option, 'difficulty_level_id')}
-          styles={customStyles}
-          placeholder="Select difficulty level..."
-        />
-        </div>
+      {showMore && (
+        <div className="cxf-more-panel">
+          <label className="cxf-field">
+            <span className="cxf-label">Primary muscles <em>optional</em></span>
+            <Select
+              isMulti
+              options={muscleOptions}
+              value={form.primary_muscles}
+              onChange={(v) => set('primary_muscles', v || [])}
+              styles={selectStyles}
+              placeholder="Add muscles..."
+            />
+          </label>
 
-        <div>
-          <label className="block mb-1">Exercise Type</label>
-          <Select
-          options={lookupData.exerciseTypes}
-          onChange={(option) => handleSelectChange(option, 'exercise_type_id')}
-          styles={customStyles}
-          placeholder="Select exercise type..."
-        />
-        </div>
+          <label className="cxf-field">
+            <span className="cxf-label">Secondary muscles <em>optional</em></span>
+            <Select
+              isMulti
+              options={muscleOptions}
+              value={form.secondary_muscles}
+              onChange={(v) => set('secondary_muscles', v || [])}
+              styles={selectStyles}
+              placeholder="Add muscles..."
+            />
+          </label>
 
-        <div>
-          <label className="block mb-1">Tracking</label>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={() => setFormData(p => ({ ...p, tracking_type: 'reps' }))}
-              className={`px-3 py-2 rounded text-white ${(formData.tracking_type || 'reps') === 'reps' ? 'bg-green-600' : 'bg-gray-700'}`}
-            >
-              Reps × Weight
-            </button>
-            <button
-              type="button"
-              onClick={() => setFormData(p => ({ ...p, tracking_type: 'time' }))}
-              className={`px-3 py-2 rounded text-white ${formData.tracking_type === 'time' ? 'bg-green-600' : 'bg-gray-700'}`}
-            >
-              Time (e.g. plank, carries)
-            </button>
+          <div className="cxf-row">
+            <label className="cxf-field">
+              <span className="cxf-label">Equipment <em>optional</em></span>
+              <Select
+                options={lookup.equipment}
+                value={selected(lookup.equipment, form.equipment_id)}
+                onChange={(o) => set('equipment_id', o?.value ?? null)}
+                styles={selectStyles} isSearchable={false}
+              />
+            </label>
+            <label className="cxf-field">
+              <span className="cxf-label">Difficulty <em>optional</em></span>
+              <Select
+                options={lookup.difficultyLevels}
+                value={selected(lookup.difficultyLevels, form.difficulty_level_id)}
+                onChange={(o) => set('difficulty_level_id', o?.value ?? null)}
+                styles={selectStyles} isSearchable={false}
+              />
+            </label>
           </div>
-        </div>
 
-        <div>
-          <label className="block mb-1">Description</label>
-          <textarea
-            name="description"
-            value={formData.description}
-            onChange={handleInputChange}
-            className="w-full bg-gray-700 text-white rounded px-3 py-2 h-24"
-          />
-        </div>
+          <div className="cxf-row">
+            <label className="cxf-field">
+              <span className="cxf-label">Category <em>optional</em></span>
+              <Select
+                options={lookup.categories}
+                value={selected(lookup.categories, form.category_id)}
+                onChange={(o) => set('category_id', o?.value ?? null)}
+                styles={selectStyles} isSearchable={false}
+              />
+            </label>
+            <label className="cxf-field">
+              <span className="cxf-label">Type <em>optional</em></span>
+              <Select
+                options={lookup.exerciseTypes}
+                value={selected(lookup.exerciseTypes, form.exercise_type_id)}
+                onChange={(o) => set('exercise_type_id', o?.value ?? null)}
+                styles={selectStyles} isSearchable={false}
+              />
+            </label>
+          </div>
 
-        <div>
-          <label className="block mb-1">Instructions</label>
-          <textarea
-            name="instructions"
-            value={formData.instructions}
-            onChange={handleInputChange}
-            className="w-full bg-gray-700 text-white rounded px-3 py-2 h-24"
-            placeholder="Step-by-step instructions for performing the exercise..."
-          />
-        </div>
+          <label className="cxf-field">
+            <span className="cxf-label">Description <em>optional</em></span>
+            <textarea
+              className="cxf-input cxf-textarea"
+              value={form.description}
+              onChange={(e) => set('description', e.target.value)}
+            />
+          </label>
 
-        <div>
-          <label className="block mb-1">Primary Muscles</label>
-          <input
-            type="text"
-            name="primary_muscles"
-            value={formData.primary_muscles}
-            onChange={handleInputChange}
-            className="w-full bg-gray-700 text-white rounded px-3 py-2"
-            placeholder="e.g., Biceps Brachii"
-          />
+          <label className="cxf-field">
+            <span className="cxf-label">Instructions <em>optional</em></span>
+            <textarea
+              className="cxf-input cxf-textarea"
+              value={form.instructions}
+              onChange={(e) => set('instructions', e.target.value)}
+              placeholder="How to perform it..."
+            />
+          </label>
         </div>
+      )}
 
-        <div>
-          <label className="block mb-1">Secondary Muscles</label>
-          <input
-            type="text"
-            name="secondary_muscles"
-            value={formData.secondary_muscles}
-            onChange={handleInputChange}
-            className="w-full bg-gray-700 text-white rounded px-3 py-2"
-            placeholder="e.g., Forearms, Brachialis"
-          />
-        </div>
-
-        <div className="flex justify-end gap-2 mt-6">
-          <button
-            type="button"
-            onClick={onCancel}
-            className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-500"
-            disabled={isSubmitting}
-          >
-            Cancel
-          </button>
-          <button
-            type="button"
-            onClick={handleSubmit}
-            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-500"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? 'Creating...' : 'Save Exercise'}
-          </button>
-        </div>
+      <div className="cxf-actions">
+        <button type="button" className="cxf-cancel" onClick={onCancel} disabled={submitting}>
+          Cancel
+        </button>
+        <button type="button" className="cxf-save" onClick={handleSubmit} disabled={submitting || !ready}>
+          {submitting ? 'Saving…' : 'Save exercise'}
+        </button>
       </div>
     </div>
   );

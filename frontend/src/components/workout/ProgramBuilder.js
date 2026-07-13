@@ -7,12 +7,13 @@ import ExerciseSelect from './ExerciseSelect';
 import { parseApiError } from '../../hooks/useYesterdayLogging';
 import './ProgramBuilder.css';
 
-const blankExercise = () => ({ exercise_id: '', sets: 3, recommended_reps: 8, recommended_weight: 0 });
+const blankExercise = () => ({ exercise_id: '', sets: 3, recommended_reps: 8, recommended_duration_seconds: 30 });
 const blankDay = () => ({ day_name: '', exercises: [] });
 
 /**
  * Themed program builder/editor (create + edit). Both use the same nested shape:
- * { name, workout_days: [{ day_name, exercises: [{exercise_id, sets, recommended_reps, recommended_weight}] }] }.
+ * { name, workout_days: [{ day_name, exercises: [{exercise_id, sets, recommended_reps, recommended_duration_seconds}] }] }.
+ * The prescription field follows the exercise's tracking_type: reps or hold-time.
  */
 const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose }) => {
     const { user } = useUser();
@@ -35,7 +36,7 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                         exercise_id: e.exercise_id,
                         sets: e.sets,
                         recommended_reps: e.recommended_reps || 0,
-                        recommended_weight: e.recommended_weight || 0,
+                        recommended_duration_seconds: e.recommended_duration_seconds || 0,
                     })),
                 })) || [blankDay()]);
             }).catch(() => setError('Could not load this program.'));
@@ -51,6 +52,9 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
     const removeExercise = (di, ei) => setDays((ds) => ds.map((d, i) =>
         (i === di ? { ...d, exercises: d.exercises.filter((_, j) => j !== ei) } : d)));
 
+    // A time-tracked exercise (plank, carry) is prescribed a hold-time, not reps.
+    const isTimed = (exId) => library.find((e) => e.exercise_id === Number(exId))?.tracking_type === 'time';
+
     const save = async () => {
         setError('');
         if (!name.trim()) { setError('Give your program a name.'); return; }
@@ -61,8 +65,8 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                 exercises: d.exercises.filter((e) => e.exercise_id).map((e) => ({
                     exercise_id: Number(e.exercise_id),
                     sets: Number(e.sets) || 1,
-                    recommended_reps: Number(e.recommended_reps) || 0,
-                    recommended_weight: Number(e.recommended_weight) || 0,
+                    recommended_reps: isTimed(e.exercise_id) ? null : (Number(e.recommended_reps) || 0),
+                    recommended_duration_seconds: isTimed(e.exercise_id) ? (Number(e.recommended_duration_seconds) || 0) : null,
                 })),
             }));
         if (!payloadDays.length) { setError('Add at least one day with a name.'); return; }
@@ -115,10 +119,13 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                                 <div className="pbuild-ex-nums">
                                     <label>Sets<input type="number" value={ex.sets}
                                         onChange={(e) => setExercise(di, ei, { sets: e.target.value })} /></label>
-                                    <label>Reps<input type="number" value={ex.recommended_reps}
-                                        onChange={(e) => setExercise(di, ei, { recommended_reps: e.target.value })} /></label>
-                                    <label>Weight<input type="number" value={ex.recommended_weight}
-                                        onChange={(e) => setExercise(di, ei, { recommended_weight: e.target.value })} /></label>
+                                    {isTimed(ex.exercise_id) ? (
+                                        <label>Time (sec)<input type="number" value={ex.recommended_duration_seconds}
+                                            onChange={(e) => setExercise(di, ei, { recommended_duration_seconds: e.target.value })} /></label>
+                                    ) : (
+                                        <label>Reps<input type="number" value={ex.recommended_reps}
+                                            onChange={(e) => setExercise(di, ei, { recommended_reps: e.target.value })} /></label>
+                                    )}
                                     <button className="pbuild-x" onClick={() => removeExercise(di, ei)}>✕</button>
                                 </div>
                             </div>

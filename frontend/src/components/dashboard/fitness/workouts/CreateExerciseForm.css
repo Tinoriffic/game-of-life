@@ -1,0 +1,148 @@
+.cxf {
+    background: linear-gradient(160deg, #1a1a2e, #131a2c);
+    border: 1px solid rgba(255, 215, 0, 0.28);
+    border-radius: 16px;
+    padding: 18px;
+    color: #f8f8f2;
+    max-width: 520px;
+    width: 100%;
+}
+
+.cxf-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    color: #ffd700;
+    margin: 0 0 16px;
+}
+
+.cxf-banner {
+    padding: 9px 12px;
+    border-radius: 9px;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+.cxf-error { background: rgba(255, 107, 107, 0.12); border: 1px solid rgba(255, 107, 107, 0.4); color: #ff8787; }
+.cxf-success { background: rgba(80, 220, 120, 0.14); border: 1px solid rgba(80, 220, 120, 0.4); color: #7ee2a0; }
+
+.cxf-field {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.cxf-label {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: #b8b8c8;
+    text-transform: uppercase;
+}
+.cxf-label em {
+    font-style: normal;
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+    color: #6f7080;
+    margin-left: 6px;
+}
+
+.cxf-input {
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    color: #f8f8f2;
+    padding: 11px 12px;
+    font-size: 15px;
+    width: 100%;
+}
+.cxf-input:focus {
+    outline: none;
+    border-color: rgba(255, 215, 0, 0.6);
+}
+.cxf-textarea {
+    min-height: 70px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.cxf-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+.cxf-toggle button {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    color: #b8b8b8;
+    border-radius: 10px;
+    padding: 11px 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+.cxf-toggle button.active {
+    background: rgba(255, 215, 0, 0.16);
+    border-color: rgba(255, 215, 0, 0.55);
+    color: #ffd700;
+}
+
+.cxf-more {
+    background: none;
+    border: none;
+    color: #9a9aff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 0;
+    margin: 2px 0 10px;
+}
+
+.cxf-more-panel {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding-top: 14px;
+    animation: cxf-fade 0.18s ease;
+}
+@keyframes cxf-fade {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.cxf-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.cxf-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+.cxf-cancel {
+    flex: 1;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #b8b8b8;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+    cursor: pointer;
+}
+.cxf-save {
+    flex: 2;
+    background: linear-gradient(90deg, #ffd700, #ffb700);
+    border: none;
+    color: #16213e;
+    font-weight: 800;
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 15px;
+    cursor: pointer;
+}
+.cxf-save:disabled { opacity: 0.55; cursor: default; }
+
+@media (max-width: 440px) {
+    .cxf-row { grid-template-columns: 1fr; }
+}

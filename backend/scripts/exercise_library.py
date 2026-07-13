@@ -13,6 +13,7 @@ exercise_muscle_groups = [
     {'name': 'Legs'},
     {'name': 'Core'},
     {'name': 'Full Body'},
+    {'name': 'Other'},
 ]
 
 # Data for ExerciseEquipment
@@ -23,6 +24,7 @@ exercise_equipments = [
     {'name': 'Cables'},
     {'name': 'Resistance Bands'},
     {'name': 'Other'},
+    {'name': 'Smith Machine'},
 ]
 
 # Data for ExerciseDifficultyLevel

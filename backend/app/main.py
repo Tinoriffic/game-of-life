@@ -62,6 +62,16 @@ def _bootstrap():
         conn.execute(text(
             "ALTER TABLE focus_sessions ADD COLUMN IF NOT EXISTS pause_started_at TIMESTAMP"
         ))
+        # Neutral muscle group so an exercise can be created with just name + tracking
+        # (mirrors the existing "Other" equipment). Preselected by the create form.
+        conn.execute(text(
+            "INSERT INTO exercise_muscle_groups (name) SELECT 'Other' "
+            "WHERE NOT EXISTS (SELECT 1 FROM exercise_muscle_groups WHERE name = 'Other')"
+        ))
+        conn.execute(text(
+            "INSERT INTO exercise_equipment (name) SELECT 'Smith Machine' "
+            "WHERE NOT EXISTS (SELECT 1 FROM exercise_equipment WHERE name = 'Smith Machine')"
+        ))
         conn.commit()
 
     from .seeds.bucket_seed import seed_buckets
