@@ -129,3 +129,5 @@
   font-weight: bold;
   text-transform: uppercase;
 }
+/* Change in the goal's direction reads as progress. */
+.highlight-value.on-track { color: #06d6a0; }

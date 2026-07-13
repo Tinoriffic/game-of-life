@@ -2,7 +2,7 @@
 #
 # Real-DB tests (the `db` fixture lives in conftest.py). These exercise the
 # actual logging + streak/XP side effects rather than a mocked Session.
-from datetime import date, timedelta
+from datetime import timedelta
 
 from app.crud.activity_crud import (
     get_user_activity_streaks,
@@ -13,6 +13,9 @@ from app.crud.activity_crud import (
 )
 from app.models import user_model, skill_model, activity_model
 from app.schemas import activity_schema
+# The test user's timezone is UTC, so "today" must be UTC too - local
+# date.today() drifts a day ahead in the evening and flakes.
+from app.utils.time import utc_today
 
 
 def _make_user(db, uid=1):
@@ -62,7 +65,7 @@ def test_log_activity_creates_record_starts_streak_and_awards_xp(db):
 
     streak = _streak(db, user.id, "meditate")
     assert streak.current_streak == 1
-    assert streak.last_activity_date == date.today()
+    assert streak.last_activity_date == utc_today()
 
 
 # --- logging a weight entry ------------------------------------------------
@@ -73,7 +76,7 @@ def test_log_weight_entry_creates_entry_and_starts_streak(db):
 
     entry = log_weight_entry(
         db, user.id,
-        activity_schema.WeightEntry(weight=170, date=date.today(), weight_goal=180),
+        activity_schema.WeightEntry(weight=170, date=utc_today(), weight_goal=180),
     )
 
     assert entry.user_id == user.id
@@ -83,21 +86,21 @@ def test_log_weight_entry_creates_entry_and_starts_streak(db):
 
     streak = _streak(db, user.id, "weight_tracking")
     assert streak.current_streak == 1
-    assert streak.last_activity_date == date.today()
+    assert streak.last_activity_date == utc_today()
 
 
 # --- streak math -----------------------------------------------------------
 
 def test_update_activity_streak_starts_new(db):
     user = _make_user(db)
-    update_activity_streak(db, user.id, "meditate", date.today())
+    update_activity_streak(db, user.id, "meditate", utc_today())
     db.commit()
     assert _streak(db, user.id, "meditate").current_streak == 1
 
 
 def test_update_activity_streak_increments_on_consecutive_day(db):
     user = _make_user(db)
-    today = date.today()
+    today = utc_today()
     db.add(activity_model.ActivityStreak(
         user_id=user.id, activity_type="meditate",
         current_streak=3, last_activity_date=today - timedelta(days=1),
@@ -114,7 +117,7 @@ def test_update_activity_streak_increments_on_consecutive_day(db):
 
 def test_update_activity_streak_resets_after_gap(db):
     user = _make_user(db)
-    today = date.today()
+    today = utc_today()
     db.add(activity_model.ActivityStreak(
         user_id=user.id, activity_type="meditate",
         current_streak=5, last_activity_date=today - timedelta(days=3),
@@ -129,7 +132,7 @@ def test_update_activity_streak_resets_after_gap(db):
 
 def test_update_activity_streak_same_day_is_noop(db):
     user = _make_user(db)
-    today = date.today()
+    today = utc_today()
     db.add(activity_model.ActivityStreak(
         user_id=user.id, activity_type="meditate",
         current_streak=3, last_activity_date=today,
@@ -148,7 +151,7 @@ def test_get_user_activity_streaks(db):
     user = _make_user(db)
     db.add(activity_model.ActivityStreak(
         user_id=user.id, activity_type="meditate",
-        current_streak=2, last_activity_date=date.today(),
+        current_streak=2, last_activity_date=utc_today(),
     ))
     db.commit()
 

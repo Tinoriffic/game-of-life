@@ -3,12 +3,11 @@ import ChallengeLibrary from './ChallengeLibrary';
 import ActiveChallenge from './ActiveChallenge';
 import ChallengeHistory from './ChallengeHistory';
 import { challengeService } from '../../../services/challengeService';
-import { useUser } from '../../player/UserContext';
 import BackButton from '../../common/BackButton';
+import IntroCoach from '../../common/IntroCoach';
 import './ChallengesPage.css';
 
 const ChallengesPage = () => {
-    const { user } = useUser();
     const [activeTab, setActiveTab] = useState('active');
     const [activeChallenge, setActiveChallenge] = useState(null);
     const [failedChallenge, setFailedChallenge] = useState(null);
@@ -77,6 +76,17 @@ const ChallengesPage = () => {
 
     return (
         <div className="challenges-page">
+            <IntroCoach
+                topic="challenges"
+                icon="⚔"
+                title="Challenges"
+                lead="Time-boxed commitments layered on top of your habits - finish one for a big player-XP payout."
+                steps={[
+                    'Run one challenge at a time; it appears on your Today view while active.',
+                    'Matching habit logs progress it automatically - no double logging.',
+                    'Miss a day? Some challenges give a 24h grace window to recover.',
+                ]}
+            />
             {/* <BackButton /> */}
             <div className="challenges-header">
                 <h1>Challenges</h1>

@@ -1,0 +1,82 @@
+.coach-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 80;
+}
+
+.coach-card {
+  background: #16161d;
+  border: 1px solid rgba(255, 215, 0, 0.45);
+  border-radius: 18px;
+  padding: 22px 20px;
+  max-width: 420px;
+  width: 100%;
+  max-height: 84vh;
+  overflow-y: auto;
+  color: #f8f8f2;
+  text-align: center;
+  animation: coach-in 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes coach-in {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+.coach-icon { font-size: 34px; }
+
+.coach-title {
+  font-family: 'Orbitron', sans-serif;
+  color: #ffd700;
+  font-size: 17px;
+  letter-spacing: 1px;
+  margin: 8px 0 6px;
+}
+
+.coach-lead {
+  color: #d8d8d8;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 12px;
+}
+
+.coach-steps {
+  text-align: left;
+  margin: 0 0 10px;
+  padding-left: 22px;
+  color: #b8b8b8;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.coach-steps li { margin-bottom: 7px; }
+.coach-steps li::marker { color: #ffd700; font-weight: 700; }
+
+.coach-tip {
+  text-align: left;
+  background: rgba(255, 215, 0, 0.07);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  border-radius: 10px;
+  padding: 8px 10px;
+  color: #d8c98a;
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 0 0 8px;
+}
+
+.coach-cta {
+  margin-top: 8px;
+  background: linear-gradient(90deg, #ffd700, #ffb700);
+  border: none;
+  color: #16213e;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 12px 34px;
+  font-size: 15px;
+  cursor: pointer;
+}

@@ -14,9 +14,9 @@ const WeightProgress = ({ data }) => {
     return [...byDay.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
   }, [data]);
 
-  const { minWeight, maxWeight, weeklyChange, progressMessage } = useMemo(() => {
+  const { minWeight, maxWeight, weeklyChange, progressMessage, onTrack } = useMemo(() => {
     if (!data || weightHistory.length === 0) {
-      return { minWeight: 0, maxWeight: 0, weeklyChange: null, progressMessage: '' };
+      return { minWeight: 0, maxWeight: 0, weeklyChange: null, progressMessage: '', onTrack: false };
     }
 
     const minWeight = Math.min(...weightHistory.map(entry => entry.weight));
@@ -50,7 +50,11 @@ const WeightProgress = ({ data }) => {
       progressMessage = `${progressPercentage.toFixed(1)}% TO GOAL`;
     }
 
-    return { minWeight, maxWeight, weeklyChange, progressMessage };
+    // Lost vs gained is only "progress" relative to the goal's direction.
+    const onTrack = goalWeight != null && data.change !== 0
+      && Math.sign(data.change) === Math.sign(goalWeight - startWeight);
+
+    return { minWeight, maxWeight, weeklyChange, progressMessage, onTrack };
   }, [data, weightHistory]);
 
   const yAxisMin = Math.floor(minWeight - 5);
@@ -86,9 +90,17 @@ const WeightProgress = ({ data }) => {
       </div>
       <div className="arcade-highlight">
         <div className="highlight-item">
-          <span className="highlight-label">TOTAL CHANGE</span>
-          <span className="highlight-value">{data.change > 0 ? '+' : ''}{data.change.toFixed(1)} LBS</span>
+          <span className="highlight-label">TOTAL {data.change <= 0 ? 'LOST' : 'GAINED'}</span>
+          <span className={`highlight-value ${onTrack ? 'on-track' : ''}`}>
+            {Math.abs(data.change).toFixed(1)} LBS
+          </span>
         </div>
+        {data.goal != null && (
+          <div className="highlight-item">
+            <span className="highlight-label">TO GOAL</span>
+            <span className="highlight-value">{Math.abs(data.current - data.goal).toFixed(1)} LBS</span>
+          </div>
+        )}
         {weeklyChange !== null && (
           <div className="highlight-item">
             <span className="highlight-label">WEEKLY CHANGE</span>

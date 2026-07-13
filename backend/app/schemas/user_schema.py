@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional, List
 from .skill_schema import Skill
 from ..models.user_model import UserRole
@@ -12,6 +12,17 @@ class UserCreate(BaseModel):
     city: str
     occupation: str
     avatar_url: Optional[str] = None
+
+class EmailStartRequest(BaseModel):
+    """First step of email/password registration - mirrors the Google callback:
+    validates identity, then hands off to the same staged setup flow."""
+    email: EmailStr
+    password: str = Field(min_length=8, max_length=128)
+    first_name: Optional[str] = Field(default=None, max_length=60)
+
+class EmailLoginRequest(BaseModel):
+    identifier: str = Field(min_length=1, max_length=254)  # email or username
+    password: str = Field(min_length=1, max_length=128)
 
 class SetUsernameRequest(BaseModel):
     username: str
@@ -59,3 +70,6 @@ class UserInDB(User):
 
 class RefreshTokenRequest(BaseModel):
     refresh_token: str
+
+class AvatarUpdate(BaseModel):
+    avatar_url: str

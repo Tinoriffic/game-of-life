@@ -6,6 +6,7 @@ import { useFeedback } from '../feedback/FeedbackContext';
 import CategoryManager from './CategoryManager';
 import ManualLogModal from './ManualLogModal';
 import RitualEditor from './RitualEditor';
+import IntroCoach from '../common/IntroCoach';
 import './Focus.css';
 
 const pad2 = (n) => String(n).padStart(2, '0');
@@ -397,6 +398,26 @@ const FocusPage = () => {
 
             {manageOpen && (
                 <CategoryManager onClose={() => { setManageOpen(false); load(); }} />
+            )}
+
+            {/* First live session ever: explain the tool at the moment it matters. */}
+            {active && (
+                <IntroCoach
+                    topic="focus-session"
+                    icon="🎯"
+                    title="You're locked in"
+                    lead="The timer is running - your only job now is the work."
+                    steps={[
+                        'Pop-up thought? Type it into the capture pad and stay in the task - it will be waiting when you finish.',
+                        'Interrupted? Pause stops the clock; paused time never counts.',
+                        'Done? End session, trim any unfocused minutes, and the time books itself.',
+                    ]}
+                    tips={[
+                        'A chime marks each full hour - that is a click earned.',
+                        'On desktop: Space pauses, Esc ends, and typing anywhere lands in the capture pad.',
+                    ]}
+                    cta="Lock in"
+                />
             )}
 
             {targetOpen && (

@@ -788,6 +788,107 @@ def get_weight_progress(db: Session, user_id: int):
     #     "totalWeightChange": total_weight_change
     # }
 
+def get_strength_progression(db: Session, user_id: int) -> dict:
+    """
+    Gym progression over time, per exercise: top-set weight and estimated 1RM
+    (Epley, rep factor capped at 12 where the estimate stays honest) for each
+    session, plus deltas vs the previous session and all-time bests.
+    """
+    sessions = (
+        db.query(workout_model.WorkoutSession)
+        .filter(workout_model.WorkoutSession.user_id == user_id)
+        .options(
+            joinedload(workout_model.WorkoutSession.workout_program),
+            joinedload(workout_model.WorkoutSession.workout_day),
+            joinedload(workout_model.WorkoutSession.exercises)
+            .joinedload(workout_model.SessionExercise.exercise),
+            joinedload(workout_model.WorkoutSession.exercises)
+            .joinedload(workout_model.SessionExercise.sets),
+        )
+        .order_by(workout_model.WorkoutSession.session_date,
+                  workout_model.WorkoutSession.session_id)
+        .all()
+    )
+
+    def e1rm(weight, reps):
+        return weight * (1 + min(reps, 12) / 30)
+
+    by_exercise = {}
+    session_log = []
+    for session in sessions:
+        log_entry = {
+            "date": session.session_date.date().isoformat(),
+            "program": session.workout_program.name if session.workout_program else None,
+            "day": session.workout_day.day_name if session.workout_day else None,
+            "exercises": [],
+        }
+        for se in session.exercises:
+            name = se.exercise.name if se.exercise else "Unknown"
+            all_sets = sorted(se.sets, key=lambda s: s.set_number or 0)
+            log_entry["exercises"].append({
+                "name": name,
+                "sets": [
+                    {
+                        "weight": s.performed_weight,
+                        "reps": s.performed_reps,
+                        "duration_seconds": s.performed_duration_seconds,
+                    }
+                    for s in all_sets
+                ],
+            })
+
+            rep_sets = [
+                (s.performed_weight or 0, s.performed_reps or 0)
+                for s in all_sets
+                if (s.performed_reps or 0) > 0 and (s.performed_weight or 0) > 0
+            ]
+            if not rep_sets:
+                continue
+            top_weight, top_reps = max(rep_sets, key=lambda t: (t[0], t[1]))
+            point = {
+                "date": log_entry["date"],
+                "top_weight": top_weight,
+                "top_set": f"{top_weight:g}x{top_reps}",
+                "e1rm": round(max(e1rm(w, r) for w, r in rep_sets), 1),
+                "volume": round(sum(w * r for w, r in rep_sets)),
+            }
+            ex = by_exercise.setdefault(name, {"name": name, "sessions": []})
+            # Two sessions on one date keep the better numbers for that day.
+            if ex["sessions"] and ex["sessions"][-1]["date"] == point["date"]:
+                prev = ex["sessions"][-1]
+                if point["e1rm"] >= prev["e1rm"]:
+                    prev.update(point)
+                prev["volume"] = prev["volume"] + point["volume"]
+            else:
+                ex["sessions"].append(point)
+
+        if log_entry["exercises"]:
+            session_log.append(log_entry)
+
+    exercises = []
+    for ex in by_exercise.values():
+        points = ex["sessions"]
+        latest = points[-1]
+        previous = points[-2] if len(points) > 1 else None
+        exercises.append({
+            **ex,
+            "best_weight": max(p["top_weight"] for p in points),
+            "best_e1rm": max(p["e1rm"] for p in points),
+            "latest": latest,
+            "delta_weight": round(latest["top_weight"] - previous["top_weight"], 1) if previous else None,
+            "delta_e1rm": round(latest["e1rm"] - previous["e1rm"], 1) if previous else None,
+            "sessions_count": len(points),
+            "last_date": latest["date"],
+        })
+    # Most recently trained first, most established next.
+    exercises.sort(key=lambda e: (e["last_date"], e["sessions_count"]), reverse=True)
+
+    return {
+        "exercises": exercises,
+        "recent_sessions": list(reversed(session_log))[:5],
+    }
+
+
 def get_workout_progress(db: Session, user_id: int):
     sessions = db.query(workout_model.WorkoutSession).filter(
         workout_model.WorkoutSession.user_id == user_id

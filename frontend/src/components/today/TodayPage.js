@@ -9,6 +9,7 @@ import DetailSheet from './DetailSheet';
 import OnboardingPicker from './OnboardingPicker';
 import MiniHeatmap from './MiniHeatmap';
 import FocusStrip from '../focus/FocusStrip';
+import IntroCoach from '../common/IntroCoach';
 import './TodayPage.css';
 
 /**
@@ -336,6 +337,22 @@ const TodayPage = () => {
                     {player.slots.used}/{player.slots.total} slots used
                 </span>
             </div>
+
+            <IntroCoach
+                topic="today"
+                icon="☀"
+                title="Your day, one screen"
+                lead="Everything scheduled for today lives here. One tap logs a habit - that's the whole loop."
+                steps={[
+                    'Tap the circle to log a habit. XP pays out instantly.',
+                    'Tap a habit name for optional detail (duration, distance, sets) and bonus XP.',
+                    'Complete everything scheduled to finish the day and grow your day streak.',
+                ]}
+                tips={[
+                    'Missed yesterday? The Today / Yesterday toggle backfills honestly and restores streaks.',
+                    'Habit slots are limited on purpose - archive what you are not working on and rotate focus.',
+                ]}
+            />
 
             {sheetHabit && (
                 <DetailSheet

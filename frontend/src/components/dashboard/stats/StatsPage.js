@@ -8,7 +8,7 @@ import { hasClickTracking } from '../../../services/focusService';
 import ClicksCard from '../../focus/ClicksCard';
 import MiniHeatmap from '../../today/MiniHeatmap';
 import WeightProgress from './components/WeightProgress';
-import StrengthProgress from './components/StrengthProgress';
+import StrengthProgression from './components/StrengthProgression';
 import SkillsProgress from './components/SkillsProgress';
 import './StatsPage.css';
 
@@ -95,8 +95,8 @@ const StatsPage = () => {
       {/* Weight trend vs goal (kept — one of the best parts of the old app) */}
       {legacyStats?.weight && <WeightProgress data={legacyStats.weight} />}
 
-      {/* Per-exercise strength curves from the detail logger */}
-      {legacyStats?.strength?.sessions?.length > 0 && <StrengthProgress data={legacyStats.strength} />}
+      {/* Per-exercise progression (top set + est. 1RM) from the detail logger */}
+      <StrengthProgression />
 
       {/* Demoted: attribute levels live on the profile; XP-over-time is vanity */}
       <button className="attributes-toggle" onClick={() => setShowAttributes(!showAttributes)}>

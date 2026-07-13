@@ -78,8 +78,6 @@ def run_migrations_online() -> None:
 
         with context.begin_transaction():
             context.run_migrations()
-            # Enforce RLS on any table added by this run (Supabase has no
-            # superuser for an event trigger, so we sweep here instead).
             enable_rls_on_all_public_tables(connection)
 
 

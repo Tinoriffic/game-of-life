@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axiosInstance from '../../axios';
 import { useUser } from '../player/UserContext';
 import { parseApiError } from '../../hooks/useYesterdayLogging';
+import IntroCoach from '../common/IntroCoach';
 import './WorkoutLogger.css';
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
@@ -389,6 +390,20 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
 
     return (
         <div className="wlog">
+            <IntroCoach
+                topic="workout-logger"
+                icon="🏋️"
+                title="Log sets, rest smart"
+                lead="Ghost numbers in each field are your last session - that's the target to beat."
+                steps={[
+                    'Double-tap a field to autofill last time’s number; type over it to beat it.',
+                    'Checking a set done auto-starts the rest timer - it buzzes at your target.',
+                    'Timed exercises (planks, carries) use the ▶ stopwatch instead of reps.',
+                ]}
+                tips={[
+                    'The highlighted day tab is the next one in your rotation - swap freely if you trained out of order.',
+                ]}
+            />
             {lastSession && (
                 <div className="wlog-lastbar">
                     {lastSession.day_name ? `Last: ${lastSession.day_name}` : 'Last workout'}

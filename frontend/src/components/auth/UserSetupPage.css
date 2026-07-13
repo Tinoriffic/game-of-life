@@ -1,193 +1,136 @@
-.user-setup-page {
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #1D1F20;
-    padding: 20px;
-  }
+.setup-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  background:
+    radial-gradient(ellipse at 20% 10%, rgba(255, 215, 0, 0.08), transparent 45%),
+    radial-gradient(ellipse at 80% 90%, rgba(76, 201, 240, 0.06), transparent 45%),
+    linear-gradient(160deg, #16161d, #1a1a2e 60%, #16213e);
+}
 
-  .user-setup-container {
-    background-color: #282c34; /* Dark background for the arcade game vibe */
-    color: #F8F8F2; /* Bright text color */
-    width: 50%; /* Adjust as needed */
-    margin: auto; /* Center the container */
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5); /* Add some depth */
-  }
+.setup-card {
+  width: 100%;
+  max-width: 420px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+  padding: 32px 28px;
+  color: #f8f8f2;
+  text-align: center;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.45);
+}
 
-  .info-form-container {
-    text-align: center;
-  }
+.setup-logo {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 34px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  color: #ffd700;
+  text-shadow: 0 0 22px rgba(255, 215, 0, 0.4);
+  margin-bottom: 14px;
+}
 
-  .image-container {
-    text-align: center;
-    margin-bottom: 20px; /* Space between image and form */
-  }
+.setup-logo-v {
+  font-size: 17px;
+  vertical-align: super;
+  color: #4cc9f0;
+  text-shadow: 0 0 14px rgba(76, 201, 240, 0.5);
+}
 
-  .image-container img {
-    width: 100px; /* Smaller icon size */
-    height: auto;
-  }
+.setup-card h1 {
+  font-size: 22px;
+  margin: 0 0 6px;
+}
 
-  /* Scoped to .user-setup-page: these were bare element selectors that leaked
-     globally (the `form` rule forced every form, incl. the Today measurement
-     row, into a vertical column). */
-  .user-setup-page form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-  }
+.setup-sub {
+  color: #b8b8b8;
+  font-size: 14px;
+  margin: 0 0 24px;
+}
 
-  .user-setup-page input[type="text"] {
-    width: 80%; /* Adjust the width as needed */
-    margin: 10px 0;
-    padding: 10px;
-    border-radius: 5px;
-    border: 1px solid #ccc;
-    background-color: #333; /* Darker input fields */
-    color: white; /* Bright text color */
-  }
+.setup-card form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  text-align: left;
+}
 
-  .user-setup-page button {
-    background-color: #4caf50; /* Green button */
-    color: white;
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    margin-top: 10px;
-  }
+.setup-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
 
-  .user-setup-page button:hover {
-    background-color: #45a049;
-  }
+.setup-label {
+  font-size: 11px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #999;
+  font-weight: 700;
+}
 
-  .error-message {
-    color: #ff6b6b; /* Bright red for visibility */
-    margin-top: 10px;
-  }
+.setup-field input {
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  color: #f8f8f2;
+  padding: 13px 14px;
+  font-size: 15px;
+}
 
-  .user-setup-container .avatar-preview {
-    width: 100%;
-    max-width: 200px;
-    max-height: 200px;
-    margin-top: 10px;
-    border: 1px solid #ccc; /* Optional: add border around the avatar preview */
-    border-radius: 4px; /* Optional: round the corners of the avatar preview */
-  }
+.setup-field input:focus {
+  outline: none;
+  border-color: rgba(255, 215, 0, 0.6);
+}
 
-  .user-setup-container .checking-username {
-    font-size: 0.9em;
-    color: #777;
-    margin-bottom: 10px;
-  }
+.setup-field input.valid { border-color: rgba(6, 214, 160, 0.65); }
+.setup-field input.invalid { border-color: rgba(255, 107, 107, 0.65); }
 
-  .user-setup-container .file-input {
-    margin-bottom: 10px;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    width: calc(100% - 22px); /* Adjust width to compensate for padding and border */
-  }
+.setup-hint { font-size: 12px; }
+.setup-hint.muted { color: #888; }
+.setup-hint.ok { color: #06d6a0; }
+.setup-hint.bad { color: #ff8787; }
 
-  .user-setup-container .avatar-upload-container {
-    margin-bottom: 20px;
-  }
+.setup-error {
+  background: rgba(255, 107, 107, 0.12);
+  border: 1px solid rgba(255, 107, 107, 0.5);
+  color: #ff8787;
+  border-radius: 10px;
+  padding: 9px 12px;
+  font-size: 13px;
+}
 
-  .user-setup-container .form-label {
-    margin-top: 10px;
-    margin-bottom: 10px;
-    display: block;
-    font-weight: bold;
-  }
+.setup-submit {
+  background: linear-gradient(90deg, #ffd700, #ffb700);
+  border: none;
+  color: #16213e;
+  font-weight: 800;
+  border-radius: 12px;
+  padding: 14px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+}
 
-/* Mobile responsive */
-@media (max-width: 768px) {
-  .user-setup-page {
-    padding: 30px 20px;
-    align-items: center;
-    min-height: 100vh;
-  }
+.setup-submit:hover:not(:disabled) { transform: translateY(-1px); }
+.setup-submit:disabled { opacity: 0.45; cursor: default; }
 
-  .user-setup-container {
-    width: calc(100% - 40px);
-    max-width: 100%;
-    padding: 40px 30px;
-    min-height: auto;
-    border-radius: 15px;
-    border: 2px solid rgba(255, 215, 0, 0.3);
-    margin: 0 auto;
-  }
+.setup-submit-link {
+  display: block;
+  text-decoration: none;
+  margin-top: 8px;
+}
 
-  .user-setup-page input[type="text"] {
-    width: 100%;
-    padding: 14px;
-    box-sizing: border-box;
-  }
-
-  .user-setup-container .avatar-preview {
-    max-width: 150px;
-    max-height: 150px;
-  }
-
-  .image-container {
-    margin-bottom: 30px;
-    margin-top: 20px;
-  }
-
-  .image-container img {
-    width: 80px;
-  }
-
-  .user-setup-page button {
-    padding: 14px 20px;
-    width: 100%;
-    max-width: 100%;
-    margin-top: 15px;
-  }
-
-  .user-setup-page form {
-    width: 100%;
-  }
+.setup-fineprint {
+  color: #777;
+  font-size: 11px;
+  margin: 18px 0 0;
+  line-height: 1.5;
 }
 
 @media (max-width: 480px) {
-  .user-setup-page {
-    padding: 25px 15px;
-  }
-
-  .user-setup-container {
-    width: calc(100% - 30px);
-    padding: 35px 25px;
-  }
-
-  .user-setup-page input[type="text"] {
-    padding: 12px;
-  }
-
-  .user-setup-container .avatar-preview {
-    max-width: 120px;
-    max-height: 120px;
-  }
-
-  .image-container {
-    margin-bottom: 25px;
-  }
-
-  .image-container img {
-    width: 60px;
-  }
-
-  .user-setup-page button {
-    padding: 12px 16px;
-    font-size: 14px;
-  }
-
-  .user-setup-container .file-input {
-    width: 100%;
-    font-size: 14px;
-    box-sizing: border-box;
-  }
+  .setup-page { padding: 16px; }
+  .setup-card { padding: 26px 20px; }
 }

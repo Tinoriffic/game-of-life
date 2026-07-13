@@ -1,0 +1,154 @@
+/* Strength progression card: matches the new stats theme, not the arcade one. */
+
+.strength-progression { color: #f8f8f2; }
+
+.sp-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 12px;
+}
+
+.sp-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  color: #ffd700;
+}
+
+.sp-subtitle { font-size: 11px; color: #888; }
+
+.sp-chips {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding-bottom: 6px;
+  margin-bottom: 12px;
+  scrollbar-width: none;
+}
+
+.sp-chips::-webkit-scrollbar { display: none; }
+
+.sp-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #ddd;
+  border-radius: 14px;
+  padding: 6px 12px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.sp-chip.active {
+  background: rgba(255, 215, 0, 0.15);
+  border-color: #ffd700;
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.sp-summary {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.sp-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 10px 6px;
+}
+
+.sp-stat-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 16px;
+  color: #ffd700;
+  font-variant-numeric: tabular-nums;
+}
+
+.sp-stat-label {
+  font-size: 10px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: #888;
+}
+
+.sp-delta { font-size: 11px; font-variant-numeric: tabular-nums; }
+.sp-delta.up { color: #06d6a0; }
+.sp-delta.down { color: #ff8787; }
+.sp-delta.flat { color: #777; }
+
+.sp-legend {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  font-size: 11px;
+  color: #b8b8b8;
+  margin-top: 4px;
+}
+
+.sp-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 4px;
+}
+
+.sp-hint {
+  color: #888;
+  font-size: 12px;
+  text-align: center;
+  padding: 12px 0;
+}
+
+.sp-log { margin-top: 14px; }
+
+.sp-log-title {
+  display: block;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+.sp-session {
+  padding: 8px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.sp-session-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: #ddd;
+  margin-bottom: 4px;
+}
+
+.sp-session-day { color: #888; font-size: 11px; }
+
+.sp-session-ex {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 12px;
+  padding: 2px 0;
+}
+
+.sp-session-ex-name { color: #b8b8b8; flex-shrink: 0; }
+
+.sp-session-sets {
+  color: #f8f8f2;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

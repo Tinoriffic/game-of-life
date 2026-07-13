@@ -112,6 +112,11 @@ def read_workout_program_details(program_id: int, db: Session = Depends(get_db))
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Workout program not found")
     return program_details
 
+# Per-exercise top-set weight + estimated 1RM over time, and recent sessions
+@router.get("/users/{user_id}/strength-progression")
+def read_strength_progression(user_id: int, db: Session = Depends(get_db)):
+    return workout_crud.get_strength_progression(db, user_id)
+
 # Last performed sets per program-exercise (in-logger "what did I lift last time?")
 @router.get("/users/{user_id}/workout-programs/{program_id}/last-performance")
 def read_last_performance(user_id: int, program_id: int, db: Session = Depends(get_db)):

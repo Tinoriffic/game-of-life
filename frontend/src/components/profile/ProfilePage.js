@@ -4,6 +4,7 @@ import axiosInstance from '../../axios';
 import { habitService } from '../../services/habitService';
 import { useUser } from '../player/UserContext';
 import PlayerCard from '../player/PlayerCard';
+import AvatarPicker from '../player/AvatarPicker';
 import { useInstallPrompt } from '../pwa/InstallPrompt';
 import { APP_VERSION } from '../../appVersion';
 import './ProfilePage.css';
@@ -17,6 +18,7 @@ const ProfilePage = () => {
     const { user, setUser } = useUser();
     const [playerData, setPlayerData] = useState(null);
     const [overview, setOverview] = useState(null);
+    const [avatarOpen, setAvatarOpen] = useState(false);
     const navigate = useNavigate();
     const { canInstall, promptInstall, isIOS } = useInstallPrompt();
 
@@ -97,6 +99,9 @@ const ProfilePage = () => {
             <PlayerCard playerData={playerData} />
 
             <div className="profile-links">
+                <button className="profile-link" onClick={() => setAvatarOpen(true)}>
+                    🖼 Change avatar
+                </button>
                 <Link to="/habits" className="profile-link">⚙ Manage habits</Link>
                 {(canInstall || isIOS) && (
                     <button className="profile-link" onClick={promptInstall}>
@@ -110,6 +115,18 @@ const ProfilePage = () => {
             </div>
 
             <div className="profile-version">Me v2 · v{APP_VERSION}</div>
+
+            {avatarOpen && (
+                <AvatarPicker
+                    current={playerData.avatar_url}
+                    onSaved={(avatarUrl) => {
+                        setAvatarOpen(false);
+                        setPlayerData((cur) => ({ ...cur, avatar_url: avatarUrl }));
+                        setUser({ ...user, avatar_url: avatarUrl });
+                    }}
+                    onClose={() => setAvatarOpen(false)}
+                />
+            )}
         </div>
     );
 };
