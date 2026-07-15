@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MeditationTimer from './MeditationTimer';
 
 const DURATION_CHIPS = [10, 15, 20, 30, 45, 60];
 
@@ -18,7 +19,7 @@ const minutesToHMS = (totalMin) => {
  * The bottom sheet for optional detail. Checkmark first - detail is a bonus
  * for people who want richer stats (and bonus XP).
  */
-const DetailSheet = ({ habit, existingLog, focusCategory, onSubmit, onClose }) => {
+const DetailSheet = ({ habit, existingLog, focusCategory, startWithTimer = false, onSubmit, onClose }) => {
     const navigate = useNavigate();
     const kind = habit.detail_kind;
     const editing = Boolean(existingLog);
@@ -28,6 +29,9 @@ const DetailSheet = ({ habit, existingLog, focusCategory, onSubmit, onClose }) =
     const [quantity, setQuantity] = useState(existingLog?.quantity ?? '');
     const [note, setNote] = useState(existingLog?.note ?? '');
     const [volume, setVolume] = useState(existingLog?.value ?? '');
+    const [showTimer, setShowTimer] = useState(Boolean(startWithTimer));
+    const [timerRunning, setTimerRunning] = useState(false);
+    const [timerUsed, setTimerUsed] = useState(false);
 
     // Cardio time is entered as hours / minutes / seconds (mileage matters to the second).
     const initHMS = minutesToHMS(existingLog?.duration_minutes);
@@ -59,7 +63,7 @@ const DetailSheet = ({ habit, existingLog, focusCategory, onSubmit, onClose }) =
     const quantityLabel = kind === 'pages' ? 'Pages' : 'Count (problems, reps, items…)';
 
     return (
-        <div className="sheet-backdrop" onClick={onClose}>
+        <div className="sheet-backdrop" onClick={() => { if (!timerRunning) onClose(); }}>
             <div className="detail-sheet" onClick={(e) => e.stopPropagation()}>
                 <div className="sheet-handle" />
                 <h3 className="sheet-title">
@@ -94,20 +98,42 @@ const DetailSheet = ({ habit, existingLog, focusCategory, onSubmit, onClose }) =
                     )}
 
                     {(kind === 'duration' || kind === 'pages') && (
-                        <label className="sheet-field">
+                        <div className="sheet-field">
                             <span>Duration (minutes)</span>
-                            <div className="chip-row">
-                                {DURATION_CHIPS.map((minutes) => (
-                                    <button type="button" key={minutes}
-                                            className={`chip ${String(duration) === String(minutes) ? 'active' : ''}`}
-                                            onClick={() => setDuration(minutes)}>
-                                        {minutes}
+                            {showTimer ? (
+                                <MeditationTimer
+                                    defaultMinutes={Number(duration) || 10}
+                                    onRunningChange={setTimerRunning}
+                                    onEnterManual={() => setShowTimer(false)}
+                                    onComplete={(minutes) => {
+                                        setDuration(minutes);
+                                        setTimerRunning(false);
+                                        setShowTimer(false);
+                                        setTimerUsed(true);
+                                    }}
+                                />
+                            ) : (
+                                <>
+                                    {!timerUsed && (
+                                        <div className="chip-row centered">
+                                            {DURATION_CHIPS.map((minutes) => (
+                                                <button type="button" key={minutes}
+                                                        className={`chip ${String(duration) === String(minutes) ? 'active' : ''}`}
+                                                        onClick={() => setDuration(minutes)}>
+                                                    {minutes}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    )}
+                                    <input type="number" inputMode="numeric" min="0" placeholder="custom"
+                                           value={duration} onChange={(e) => setDuration(e.target.value)} />
+                                    <button type="button" className="sheet-timer-toggle"
+                                            onClick={() => setShowTimer(true)}>
+                                        ▶ Use a timer
                                     </button>
-                                ))}
-                            </div>
-                            <input type="number" inputMode="numeric" min="0" placeholder="custom"
-                                   value={duration} onChange={(e) => setDuration(e.target.value)} />
-                        </label>
+                                </>
+                            )}
+                        </div>
                     )}
 
                     {kind === 'distance_duration' && (

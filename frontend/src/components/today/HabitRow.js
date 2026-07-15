@@ -14,12 +14,14 @@ const DETAILABLE = new Set(['duration', 'distance_duration', 'volume', 'quantity
  * Program-backed Strength habits open the full-screen per-set logger instead.
  */
 const HabitRow = ({ habit, done, weekly = false, scheduledToday = true, backfillDate = null,
-                    onCheck, onUncheck, onDetail, onMeasurement }) => {
+                    onCheck, onUncheck, onDetail, onTimer, onMeasurement }) => {
     const [measureValue, setMeasureValue] = useState('');
     const navigate = useNavigate();
     const isMeasurement = habit.habit_type === 'measurement';
     const isProgram = Boolean(habit.program_id);
     const canDetail = !isMeasurement && !isProgram && DETAILABLE.has(habit.detail_kind);
+    // Only mindfulness habits get the timer shortcut for now
+    const canTimer = canDetail && habit.bucket_key === 'mindfulness';
 
     // Carry the "Yesterday" backfill date into the full-screen logger so the
     // session (and its habit log) is dated correctly, not always today.
@@ -132,6 +134,11 @@ const HabitRow = ({ habit, done, weekly = false, scheduledToday = true, backfill
                 </form>
             )}
 
+            {!done && canTimer && (
+                <button className="detail-button" onClick={onTimer} aria-label={`Timer for ${habit.name}`}>
+                    ⏱
+                </button>
+            )}
             {!done && canDetail && (
                 <button className="detail-button" onClick={onDetail} aria-label={`Log ${habit.name} with detail`}>
                     ＋

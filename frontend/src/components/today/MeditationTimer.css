@@ -1,0 +1,174 @@
+.medtimer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+    padding: 8px 0 4px;
+}
+
+.medtimer-modes {
+    display: inline-flex;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    padding: 3px;
+    gap: 3px;
+}
+.medtimer-modes button {
+    background: transparent;
+    border: none;
+    color: #9a9a9a;
+    padding: 7px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.medtimer-modes button.active {
+    background: rgba(255, 215, 0, 0.16);
+    color: #ffd700;
+}
+
+.medtimer-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: nowrap;
+    justify-content: center;
+}
+.medtimer-chip {
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #d8d8e0;
+    border-radius: 999px;
+    padding: 7px 15px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.medtimer-chip.active {
+    background: rgba(255, 215, 0, 0.16);
+    border-color: rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+}
+
+.medtimer-hms {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+}
+.medtimer-hms label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #8a8a9a;
+}
+.medtimer-hms input {
+    width: 52px;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-radius: 10px;
+    color: #f8f8f2;
+    padding: 9px 4px;
+    font-size: 17px;
+}
+.medtimer-hms input:focus {
+    outline: none;
+    border-color: rgba(255, 215, 0, 0.6);
+}
+
+.medtimer-dial {
+    width: 182px;
+    height: 182px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background:
+        radial-gradient(closest-side, #16182b 0 78%, transparent 79% 100%),
+        conic-gradient(#ffd700 calc(var(--progress, 0) * 360deg), rgba(255, 255, 255, 0.1) 0);
+    transition: background 0.35s linear;
+}
+.medtimer-dial.is-running {
+    box-shadow: 0 0 34px rgba(255, 215, 0, 0.18);
+}
+.medtimer-time {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 34px;
+    color: #f8f8f2;
+    letter-spacing: 1px;
+}
+.medtimer-sub {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #8a8a9a;
+    margin-top: 2px;
+}
+
+.medtimer-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+}
+.medtimer-start {
+    width: 100%;
+    background: linear-gradient(90deg, #ffd700, #ffb700);
+    border: none;
+    color: #16213e;
+    font-weight: 800;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    cursor: pointer;
+}
+.medtimer-start:disabled {
+    opacity: 0.5;
+    cursor: default;
+}
+.medtimer-manual {
+    width: 100%;
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid rgba(255, 215, 0, 0.4);
+    color: #ffd700;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+.medtimer-running {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+    max-width: 280px;
+    margin: 0 auto;
+}
+.medtimer-running button {
+    flex: 1;
+}
+.medtimer-stop {
+    background: rgba(255, 215, 0, 0.14);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.medtimer-cancel {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    color: #b8b8b8;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    cursor: pointer;
+}

@@ -22,6 +22,7 @@ const TodayPage = () => {
     const [error, setError] = useState(null);
     const [logDate, setLogDate] = useState('today');   // 'today' | 'yesterday' (48h backfill)
     const [sheetHabit, setSheetHabit] = useState(null);
+    const [sheetTimer, setSheetTimer] = useState(false);
     const [pendingSync, setPendingSync] = useState(habitService.pendingCount());
     const [focusState, setFocusState] = useState(null);
     const { celebrateLogResult, pushToast } = useFeedback();
@@ -180,7 +181,9 @@ const TodayPage = () => {
         }
     }, [isBackfill, load, patchHabit, pushToast, targetDate]);
 
-    const openDetail = useCallback((habit) => setSheetHabit(habit), []);
+    const openDetail = useCallback((habit) => { setSheetTimer(false); setSheetHabit(habit); }, []);
+    const openTimer = useCallback((habit) => { setSheetTimer(true); setSheetHabit(habit); }, []);
+    const closeSheet = useCallback(() => { setSheetHabit(null); setSheetTimer(false); }, []);
 
     const submitDetail = useCallback(async (habit, payload) => {
         setSheetHabit(null);
@@ -290,6 +293,7 @@ const TodayPage = () => {
                         onCheck={() => logHabit(habit)}
                         onUncheck={() => undoLog(habit)}
                         onDetail={() => openDetail(habit)}
+                        onTimer={() => openTimer(habit)}
                         onMeasurement={(value) => logHabit(habit, { value })}
                     />
                 ))}
@@ -358,11 +362,12 @@ const TodayPage = () => {
                 <DetailSheet
                     habit={sheetHabit}
                     existingLog={isBackfill ? null : sheetHabit.today_log}
+                    startWithTimer={sheetTimer}
                     focusCategory={!isBackfill ? focusState?.categories?.find(
                         (c) => c.linked_habit_id === sheetHabit.id && c.today_minutes > 0
                     ) : null}
                     onSubmit={(payload) => submitDetail(sheetHabit, payload)}
-                    onClose={() => setSheetHabit(null)}
+                    onClose={closeSheet}
                 />
             )}
         </div>
