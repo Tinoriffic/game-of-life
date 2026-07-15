@@ -12,36 +12,34 @@ const LogWorkoutEntry = ({ program, onClose, habitId = null, onLogged = null }) 
   const { user } = useUser();
 
   useEffect(() => {
-    if (program) {
-      fetchWorkoutProgramDetails();
-    }
+    if (!program) return;
+    const fetchWorkoutProgramDetails = async () => {
+      try {
+        const response = await axiosInstance.get(`/workout-programs/${program.program_id}/program-details`);
+        const groupedData = response.data.reduce((acc, item) => {
+          if (!acc[item.day_name]) {
+            acc[item.day_name] = {
+              day_id: item.day_id,
+              day_name: item.day_name,
+              exercises: [],
+            };
+          }
+          acc[item.day_name].exercises.push({
+            program_exercise_id: item.program_exercise_id,
+            exercise_name: item.exercise_name,
+            sets: item.sets,
+          });
+          return acc;
+        }, {});
+
+        setWorkoutDays(Object.values(groupedData));
+        setSelectedDay(Object.values(groupedData)[0]?.day_name || null);
+      } catch (error) {
+        console.error('Failed to fetch workout program details', error);
+      }
+    };
+    fetchWorkoutProgramDetails();
   }, [program]);
-
-  const fetchWorkoutProgramDetails = async () => {
-    try {
-      const response = await axiosInstance.get(`/workout-programs/${program.program_id}/program-details`);
-      const groupedData = response.data.reduce((acc, item) => {
-        if (!acc[item.day_name]) {
-          acc[item.day_name] = {
-            day_id: item.day_id,
-            day_name: item.day_name,
-            exercises: [],
-          };
-        }
-        acc[item.day_name].exercises.push({
-          program_exercise_id: item.program_exercise_id,
-          exercise_name: item.exercise_name,
-          sets: item.sets,
-        });
-        return acc;
-      }, {});
-
-      setWorkoutDays(Object.values(groupedData));
-      setSelectedDay(Object.values(groupedData)[0]?.day_name || null);
-    } catch (error) {
-      console.error('Failed to fetch workout program details', error);
-    }
-  };
 
   const handleDayChange = (e) => {
     setSelectedDay(e.target.value);

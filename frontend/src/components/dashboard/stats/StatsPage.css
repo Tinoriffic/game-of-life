@@ -64,6 +64,40 @@
   font-size: 1.6em;
 }
 
+/* Segmented control over the nested tab routes */
+.stats-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.stats-tab {
+  flex: 1;
+  text-align: center;
+  padding: 9px 0;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  color: #999;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-decoration: none;
+}
+
+.stats-tab.active {
+  color: #1d1f20;
+  background: #ffd700;
+  border-color: #ffd700;
+  font-weight: 700;
+}
+
+/* Clicks tab embeds the ClicksPage — the shell already provides page padding */
+.stats-page .clicks-page {
+  max-width: none;
+  padding: 4px 0 40px;
+}
+
 .consistency-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -101,16 +135,6 @@
 .stats-page .stats-card {
   margin-bottom: 14px;
   padding: 16px;
-}
-
-.year-heatmap-scroll {
-  overflow-x: auto;
-  padding-bottom: 6px;
-}
-
-.year-heatmap-scroll .hm-grid {
-  min-width: 760px;
-  justify-content: flex-start;
 }
 
 .stats-section-title {

@@ -75,7 +75,7 @@ const FocusStrip = ({ onState }) => {
 
     return (
         <div className="focus-strip">
-            <button className="strip-progress" onClick={() => navigate('/clicks')}>
+            <button className="strip-progress" onClick={() => navigate('/stats/clicks')}>
                 ⚡ <b>{formatClicks(state.today_minutes)} / {state.settings.daily_target_clicks}</b> clicks
             </button>
             <button className="strip-start" onClick={() => navigate('/focus')}>▶ Start focus</button>

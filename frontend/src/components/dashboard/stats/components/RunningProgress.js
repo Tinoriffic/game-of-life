@@ -5,9 +5,9 @@ import './RunningProgress.css';
 const RunningProgress = ({ data }) => {
   const runningHistory = useMemo(() => data?.history || [], [data]);
 
-  const { weeklyStats, pacePR, distancePR, progressMessage } = useMemo(() => {
+  const { weeklyStats, pacePR, distancePR } = useMemo(() => {
     if (!data || runningHistory.length === 0) {
-      return { weeklyStats: {}, pacePR: null, distancePR: null, progressMessage: '' };
+      return { weeklyStats: {}, pacePR: null, distancePR: null };
     }
 
     const sortedHistory = [...runningHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
@@ -24,10 +24,7 @@ const RunningProgress = ({ data }) => {
     const pacePR = Math.min(...runningHistory.map(run => run.duration / run.distance)).toFixed(2);
     const distancePR = Math.max(...runningHistory.map(run => run.distance)).toFixed(2);
 
-    const totalDistance = runningHistory.reduce((sum, run) => sum + run.distance, 0);
-    const progressMessage = `${totalDistance.toFixed(2)} MILES TOTAL`;
-
-    return { weeklyStats, pacePR, distancePR, progressMessage };
+    return { weeklyStats, pacePR, distancePR };
   }, [data, runningHistory]);
 
   const formatDuration = (minutes) => {

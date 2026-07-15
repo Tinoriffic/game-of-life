@@ -23,7 +23,7 @@ const weekdayShort = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString(und
  * Private, no XP - the metric is the reward. Heatmap is mobile-first:
  * a rolling window anchored to today, newest cells always on screen.
  */
-const ClicksPage = () => {
+const ClicksPage = ({ embedded = false }) => {
     const [summary, setSummary] = useState(null);
     const [error, setError] = useState(null);
     const [manualDate, setManualDate] = useState(null);   // date string opens the modal
@@ -88,12 +88,17 @@ const ClicksPage = () => {
     return (
         <div className="clicks-page">
             <header className="clicks-header">
-                <h1 className="clicks-title">⚡ CLICKS</h1>
+                {/* Embedded in the Stats shell the tab is the title */}
+                {embedded
+                    ? <p className="clicks-definition">1 click = 1 hour of focused, needle-moving work</p>
+                    : <h1 className="clicks-title">⚡ CLICKS</h1>}
                 <button className="btn-gold clicks-start" onClick={() => navigate('/focus')}>
                     ▶ Focus
                 </button>
             </header>
-            <p className="clicks-definition">1 click = 1 hour of focused, needle-moving work</p>
+            {!embedded && (
+                <p className="clicks-definition">1 click = 1 hour of focused, needle-moving work</p>
+            )}
 
             {/* Today + week pace */}
             <section className="clicks-hero">

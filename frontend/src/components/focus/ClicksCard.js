@@ -25,7 +25,7 @@ const ClicksCard = () => {
     const scaleMax = Math.max(targetMinutes / 0.7, ...state.week_days.map((d) => d.minutes));
 
     return (
-        <button className="clicks-card" onClick={() => navigate('/clicks')}>
+        <button className="clicks-card" onClick={() => navigate('/stats/clicks')}>
             <div className="clicks-card-head">
                 <span className="clicks-card-title">⚡ CLICKS · THIS WEEK</span>
                 <span className="clicks-card-total">

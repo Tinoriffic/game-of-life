@@ -29,6 +29,11 @@
   margin: 4px 2px 16px;
 }
 
+/* Embedded (stats shell): the definition rides in the header row */
+.clicks-header .clicks-definition {
+  margin: 0;
+}
+
 /* --- Hero: today + week pace ------------------------------------------------- */
 
 .clicks-hero {

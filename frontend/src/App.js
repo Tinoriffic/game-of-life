@@ -1,10 +1,12 @@
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
 import LoginPage from './components/auth/LoginPage';
 import TokenReceiver from './components/auth/TokenReceiver';
 import UserSetupPage from './components/auth/UserSetupPage';
 
 import TodayPage from './components/today/TodayPage';
 import StatsPage from './components/dashboard/stats/StatsPage';
+import OverallTab from './components/dashboard/stats/OverallTab';
+import FitnessTab from './components/dashboard/stats/FitnessTab';
 import ChallengesPage from './components/dashboard/challenges/ChallengesPage';
 import ProfilePage from './components/profile/ProfilePage';
 import ManageHabitsPage from './components/habits/ManageHabitsPage';
@@ -41,14 +43,19 @@ function App() {
 
           {/* The four top-level surfaces */}
           <Route path="/" element={<><InstallBanner /><TodayPage /></>} />
-          <Route path="/stats" element={<StatsPage />} />
+          <Route path="/stats" element={<StatsPage />}>
+            <Route index element={<OverallTab />} />
+            <Route path="fitness" element={<FitnessTab />} />
+            {/* Clicks is feature-flagged; endpoints 403 server-side when off */}
+            <Route path="clicks" element={<ClicksPage embedded />} />
+          </Route>
           <Route path="/challenges" element={<ChallengesPage />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/habits" element={<ManageHabitsPage />} />
 
           {/* Click tracking (feature-flagged; routes 403 server-side when off) */}
           <Route path="/focus" element={<FocusPage />} />
-          <Route path="/clicks" element={<ClicksPage />} />
+          <Route path="/clicks" element={<Navigate to="/stats/clicks" replace />} />
 
           {/* Depth + legacy routes */}
           <Route path="/workout/log/:habitId" element={<WorkoutLogPage />} />

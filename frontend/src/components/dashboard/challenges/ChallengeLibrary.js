@@ -40,13 +40,6 @@ const ChallengeLibrary = ({ challenges, hasActiveChallenge, activeChallenge, onC
         }
     };
 
-    const formatStatRewards = (targetStats) => {
-        if (!targetStats || targetStats.length === 0) return 'No stat rewards';
-        
-        return targetStats.map(stat => `+${stat.xp} ${stat.stat}`).join(', ');
-    };
-
-
     const getBadgeFileName = (challenge) => {
         const activityType = challenge.activity_type?.toLowerCase() || '';
         const title = challenge.title?.toLowerCase() || '';

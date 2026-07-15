@@ -1,7 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useUser } from '../../../player/UserContext';
-import axiosInstance from '../../../../axios';
 import './StrengthProgression.css';
 
 const shortDate = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString(undefined, {
@@ -30,21 +28,14 @@ const Delta = ({ value, unit = 'lbs' }) => {
  * Strength over time, the way a lifter reads it: per exercise, the top-set
  * weight and estimated 1RM per session, with deltas vs last time. Replaces
  * the volume/intensity charts that didn't say anything about progression.
+ * Data comes from the parent (`/users/{id}/strength-progression` shape).
  */
-const StrengthProgression = () => {
-    const { user } = useUser();
-    const [data, setData] = useState(null);
+const StrengthProgression = ({ data }) => {
     const [selected, setSelected] = useState(null);
 
     useEffect(() => {
-        if (!user?.id) return;
-        axiosInstance.get(`/users/${user.id}/strength-progression`)
-            .then((res) => {
-                setData(res.data);
-                setSelected(res.data?.exercises?.[0]?.name || null);
-            })
-            .catch((err) => console.error('Error fetching strength progression:', err));
-    }, [user?.id]);
+        setSelected(data?.exercises?.[0]?.name || null);
+    }, [data]);
 
     const exercise = useMemo(
         () => data?.exercises?.find((e) => e.name === selected) || null,

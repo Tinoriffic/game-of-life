@@ -145,9 +145,10 @@ async def refresh_token_endpoint(request: user_schema.RefreshTokenRequest, db: S
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
 
-    # Issue a new access token
-    new_access_token, _ = auth_utils.generate_tokens(user)
-    return {"access_token": new_access_token}
+    # Rotate both tokens: the fresh refresh token makes the 7-day session a
+    # sliding window (the client persists it), so active users stay signed in.
+    new_access_token, new_refresh_token = auth_utils.generate_tokens(user)
+    return {"access_token": new_access_token, "refresh_token": new_refresh_token}
 
 
 # Create a user

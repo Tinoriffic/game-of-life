@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import axiosInstance from '../axios';
 import './MainMenu.css'
 import PlayerCard from './player/PlayerCard';
@@ -9,7 +9,6 @@ import { userService } from '../services/userService';
 import { APP_VERSION } from '../appVersion';
 
 function MainMenu() {
-  const token = localStorage.getItem('accessToken');
   const [error, setError] = useState('');
   const [playerData, setPlayerData] = useState(null);
   const navigate = useNavigate();
@@ -41,7 +40,7 @@ function MainMenu() {
     };
 
     fetchUserData();
-  }, []);
+  }, [setUser]);
 
   const handleLoginRedirect = () => {
     navigate('/login');

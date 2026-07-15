@@ -181,11 +181,15 @@ def player_level_from_xp(total_xp: int) -> dict:
 # Habit slots (focus over hoarding)
 # ---------------------------------------------------------------------------
 
-SLOTS_BASE = 6
-SLOTS_PER_LEVELS = 3   # +1 slot every 3 player levels
-SLOTS_MAX = 12
+# Locked rungs (xp-tuning.md §slots): rungs widen as you climb so the last
+# slots are a real grind. Measurement habits sit outside the count.
+SLOT_RUNGS = ((1, 5), (2, 6), (5, 7), (10, 8), (16, 9), (24, 10))
 
 
 def slots_for_level(player_level: int) -> int:
     """Active habit slots: start small, earn room to grow with player level."""
-    return min(SLOTS_BASE + max(0, player_level - 1) // SLOTS_PER_LEVELS, SLOTS_MAX)
+    slots = SLOT_RUNGS[0][1]
+    for level, rung_slots in SLOT_RUNGS:
+        if player_level >= level:
+            slots = rung_slots
+    return slots

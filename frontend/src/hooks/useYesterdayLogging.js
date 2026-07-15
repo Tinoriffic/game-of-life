@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../axios';
 import { baseUrl } from '../config/apiConfig';
 
@@ -14,11 +14,7 @@ export const useYesterdayLogging = (userId, activityType) => {
     const [canLogYesterday, setCanLogYesterday] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        checkIfYesterdayLogged();
-    }, [userId, activityType]);
-
-    const checkIfYesterdayLogged = async () => {
+    const checkIfYesterdayLogged = useCallback(async () => {
         try {
             // Fetch recent activities (last 7 days)
             const response = await axiosInstance.get(`${baseUrl}/users/${userId}/daily-activities`);
@@ -43,7 +39,11 @@ export const useYesterdayLogging = (userId, activityType) => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [userId, activityType]);
+
+    useEffect(() => {
+        checkIfYesterdayLogged();
+    }, [checkIfYesterdayLogged]);
 
     /**
      * Adds the date field to the log entry if logging for yesterday

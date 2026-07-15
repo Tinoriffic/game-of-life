@@ -4,7 +4,7 @@ import './ChallengeCompletionModal.css';
 
 const ChallengeCompletionModal = ({ completionData, onClose }) => {
     const [showConfetti, setShowConfetti] = useState(false);
-    const { challenge, progressEntry, totalXpEarned } = completionData;
+    const { challenge, totalXpEarned } = completionData;
 
     useEffect(() => {
         setShowConfetti(true);
@@ -21,19 +21,6 @@ const ChallengeCompletionModal = ({ completionData, onClose }) => {
             name: stat.stat,
             xp: stat.xp
         }));
-    };
-
-    const getTotalDailyXp = () => {
-        if (!challenge?.target_stats) return 0;
-        return challenge.target_stats.reduce((total, stat) => {
-            const xp = Number(stat?.xp || 0);
-            return total + (isNaN(xp) ? 0 : xp);
-        }, 0);
-    };
-
-    const getCompletionBonusXp = () => {
-        const bonus = Number(challenge?.completion_xp_bonus || 0);
-        return isNaN(bonus) ? 0 : bonus;
     };
 
     return (

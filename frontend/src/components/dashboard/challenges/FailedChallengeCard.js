@@ -14,33 +14,33 @@ const FailedChallengeCard = ({ failedChallenge, allowGracePeriod, onRestore, onD
     const challenge = user_challenge?.challenge;
 
     useEffect(() => {
+        const calculateGracePeriod = () => {
+            if (!user_challenge.failed_date) {
+                setGracePeriodExpired(true);
+                return;
+            }
+
+            const failedDate = new Date(user_challenge.failed_date);
+            const now = new Date();
+            const gracePeriodEnd = new Date(failedDate);
+            gracePeriodEnd.setHours(gracePeriodEnd.getHours() + 48); // 48 hours = 2 days (failed yesterday, grace period today)
+
+            const timeRemaining = gracePeriodEnd - now;
+
+            if (timeRemaining <= 0) {
+                setGracePeriodExpired(true);
+                setHoursRemaining(0);
+            } else {
+                setGracePeriodExpired(false);
+                const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
+                setHoursRemaining(hours);
+            }
+        };
+
         calculateGracePeriod();
         const interval = setInterval(calculateGracePeriod, 60000); // Update every minute
         return () => clearInterval(interval);
     }, [user_challenge.failed_date]);
-
-    const calculateGracePeriod = () => {
-        if (!user_challenge.failed_date) {
-            setGracePeriodExpired(true);
-            return;
-        }
-
-        const failedDate = new Date(user_challenge.failed_date);
-        const now = new Date();
-        const gracePeriodEnd = new Date(failedDate);
-        gracePeriodEnd.setHours(gracePeriodEnd.getHours() + 48); // 48 hours = 2 days (failed yesterday, grace period today)
-
-        const timeRemaining = gracePeriodEnd - now;
-
-        if (timeRemaining <= 0) {
-            setGracePeriodExpired(true);
-            setHoursRemaining(0);
-        } else {
-            setGracePeriodExpired(false);
-            const hours = Math.floor(timeRemaining / (1000 * 60 * 60));
-            setHoursRemaining(hours);
-        }
-    };
 
     const handleRestoreClick = () => {
         if (needsActivityData()) {

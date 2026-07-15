@@ -424,7 +424,7 @@ const FocusPage = () => {
                 <TargetSheet
                     target={settings.daily_target_clicks}
                     onSaved={() => { setTargetOpen(false); load(); }}
-                    onViewStats={() => navigate('/clicks')}
+                    onViewStats={() => navigate('/stats/clicks')}
                     onClose={() => setTargetOpen(false)}
                 />
             )}

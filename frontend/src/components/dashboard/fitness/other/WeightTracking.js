@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '../../../../axios';
 import { baseUrl } from '../../../../config/apiConfig';
 import { useUser } from '../../../player/UserContext';
@@ -16,11 +16,7 @@ const WeightTracking = () => {
     const [logForYesterday, setLogForYesterday] = useState(false);
     const [canLogYesterday, setCanLogYesterday] = useState(false);
 
-    useEffect(() => {
-        fetchWeightLogs();
-    }, []);
-
-    const fetchWeightLogs = async () => {
+    const fetchWeightLogs = useCallback(async () => {
         try {
             const response = await axiosInstance.get(`${baseUrl}/users/${user.id}/weight/logs/`);
             console.log(response.data);
@@ -46,7 +42,11 @@ const WeightTracking = () => {
             console.error('Error fetching weight entries: ', error);
             setError('Failed to fetch weight entries. Please try again.');
         }
-    };
+    }, [user.id]);
+
+    useEffect(() => {
+        fetchWeightLogs();
+    }, [fetchWeightLogs]);
 
     const logWeight = async () => {
         // Calculate the date based on whether logging for yesterday
