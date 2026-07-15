@@ -195,7 +195,7 @@ const AdminPanel = () => {
                                             <span className="role">{user.role}</span>
                                         </div>
                                         <div className="user-actions">
-                                            {user.role !== 'ADMIN' && (
+                                            {user.role?.toUpperCase() !== 'ADMIN' && (
                                                 <button 
                                                     onClick={() => handleMakeAdmin(user.id)}
                                                     className="admin-btn"

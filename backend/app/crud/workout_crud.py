@@ -759,9 +759,20 @@ def get_weight_progress(db: Session, user_id: int):
     if not weight_logs:
         return None
 
+    # Source of truth for the goal is the Weigh-in habit's target_value (set in
+    # Manage Habits); the legacy WeightTracking.weight_goal only updates when a new
+    # weigh-in is logged, so reading it alone hid a freshly-set goal.
+    from ..models import habit_model
+    weigh_in = db.query(habit_model.Habit).filter(
+        habit_model.Habit.user_id == user_id,
+        habit_model.Habit.measurement_kind == "weight",
+    ).order_by(habit_model.Habit.status.desc()).first()  # 'active' before 'archived'
+    goal = weigh_in.target_value if weigh_in and weigh_in.target_value is not None \
+        else weight_logs[-1].weight_goal
+
     return {
         "current": weight_logs[-1].weight,
-        "goal": weight_logs[-1].weight_goal,
+        "goal": goal,
         "lowest": min(log.weight for log in weight_logs),
         "highest": max(log.weight for log in weight_logs),
         "change": weight_logs[-1].weight - weight_logs[0].weight,

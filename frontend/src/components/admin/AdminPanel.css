@@ -108,6 +108,8 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
 }
 
 .user-info {
@@ -136,6 +138,20 @@
 .user-actions {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+}
+
+.user-info { min-width: 0; }
+.user-info span { word-break: break-word; }
+
+/* Narrow screens: stack the actions so nothing pushes the row past the viewport */
+@media (max-width: 640px) {
+    .user-actions {
+        width: 100%;
+    }
+    .user-actions button {
+        flex: 1 1 calc(50% - 5px);
+    }
 }
 
 .admin-btn {
