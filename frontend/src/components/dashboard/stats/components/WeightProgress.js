@@ -1,140 +1,164 @@
 import React, { useMemo } from 'react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
+import {
+  ComposedChart, Line, Scatter, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, ReferenceLine, ReferenceDot
+} from 'recharts';
 import './WeightProgress.css';
 
+const DAY_MS = 86400000;
+const EWMA_ALPHA = 0.1; // Hacker's Diet standard: ~10-day effective window
+
+const shortDate = (ts) => new Date(ts).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' });
+
+/**
+ * Weight the way trend apps (Happy Scale / Libra / MacroFactor) read it:
+ * the EWMA trend is your weight, raw weigh-ins are noise around it, and a
+ * dashed projection at the current rate answers "when do I hit my goal?"
+ */
 const WeightProgress = ({ data }) => {
-  // Bucket entries by calendar day, keeping the last log of each day —
-  // multiple same-day entries used to duplicate x-axis dates.
-  const weightHistory = useMemo(() => {
+  const model = useMemo(() => {
+    if (!data?.history?.length) return null;
+
+    // One entry per calendar day (last log wins), ascending.
     const byDay = new Map();
-    for (const entry of data?.history || []) {
+    for (const entry of data.history) {
       const day = String(entry.date).slice(0, 10);
-      byDay.set(day, { ...entry, date: day });
+      byDay.set(day, entry.weight);
     }
-    return [...byDay.values()].sort((a, b) => (a.date < b.date ? -1 : 1));
+    const days = [...byDay.entries()]
+      .map(([day, weight]) => ({ ts: new Date(`${day}T12:00:00`).getTime(), weight }))
+      .sort((a, b) => a.ts - b.ts);
+
+    // Gap-adjusted EWMA (skipped days smooth as if interpolated).
+    let trend = days[0].weight;
+    let prevTs = days[0].ts;
+    const rows = days.map((d, i) => {
+      if (i > 0) {
+        const gapDays = Math.max(1, Math.round((d.ts - prevTs) / DAY_MS));
+        const k = 1 - Math.pow(1 - EWMA_ALPHA, gapDays);
+        trend += k * (d.weight - trend);
+        prevTs = d.ts;
+      }
+      return { ts: d.ts, weight: d.weight, trend: Math.round(trend * 10) / 10 };
+    });
+
+    // Rate: least-squares slope over the last 14 days of trend points.
+    const lastTs = rows[rows.length - 1].ts;
+    const recent = rows.filter((r) => r.ts >= lastTs - 14 * DAY_MS);
+    let ratePerDay;
+    if (recent.length >= 3) {
+      const n = recent.length;
+      const meanX = recent.reduce((s, r) => s + r.ts, 0) / n;
+      const meanY = recent.reduce((s, r) => s + r.trend, 0) / n;
+      const num = recent.reduce((s, r) => s + (r.ts - meanX) * (r.trend - meanY), 0);
+      const den = recent.reduce((s, r) => s + (r.ts - meanX) ** 2, 0);
+      ratePerDay = den > 0 ? (num / den) * DAY_MS : 0;
+    } else if (recent.length >= 2) {
+      const first = recent[0];
+      const last = recent[recent.length - 1];
+      ratePerDay = (last.trend - first.trend) / Math.max(1, (last.ts - first.ts) / DAY_MS);
+    } else {
+      ratePerDay = 0;
+    }
+
+    const trendNow = rows[rows.length - 1].trend;
+    const goal = data.goal ?? null;
+    const weeklyRate = Math.round(ratePerDay * 7 * 10) / 10;
+
+    // Projection: only when actually moving toward the goal at a real rate.
+    let etaTs = null;
+    const towardGoal = goal != null && ratePerDay !== 0
+      && Math.sign(ratePerDay) === Math.sign(goal - trendNow);
+    if (towardGoal && Math.abs(weeklyRate) >= 0.1) {
+      const daysToGoal = (goal - trendNow) / ratePerDay;
+      if (daysToGoal <= 90) {
+        etaTs = lastTs + daysToGoal * DAY_MS;
+        rows[rows.length - 1].projection = trendNow;
+        rows.push({ ts: etaTs, projection: goal });
+      }
+    }
+
+    return { rows, trendNow, weeklyRate, goal, etaTs, lastTs };
   }, [data]);
 
-  const { minWeight, maxWeight, weeklyChange, progressMessage, onTrack } = useMemo(() => {
-    if (!data || weightHistory.length === 0) {
-      return { minWeight: 0, maxWeight: 0, weeklyChange: null, progressMessage: '', onTrack: false };
-    }
+  if (!model) return null;
+  const { rows, trendNow, weeklyRate, goal, etaTs } = model;
 
-    const minWeight = Math.min(...weightHistory.map(entry => entry.weight));
-    const maxWeight = Math.max(...weightHistory.map(entry => entry.weight));
-
-    // Calculate weekly change
-    let weeklyChange = null;
-    const sortedHistory = [...weightHistory].sort((a, b) => new Date(b.date) - new Date(a.date));
-    const currentEntry = sortedHistory[0];
-    const currentDate = new Date(currentEntry.date);
-    const oneWeekAgo = new Date(currentDate.getTime() - 7 * 24 * 60 * 60 * 1000);
-    
-    const weekAgoEntry = sortedHistory.find(entry => new Date(entry.date) <= oneWeekAgo);
-    
-    if (weekAgoEntry) {
-      weeklyChange = (currentEntry.weight - weekAgoEntry.weight).toFixed(1);
-    }
-
-    // Calculate progress towards goal
-    let progressMessage = '';
-    const startWeight = sortedHistory[sortedHistory.length - 1].weight;
-    const currentWeight = data.current;
-    const goalWeight = data.goal;
-
-    if (startWeight === goalWeight) {
-      progressMessage = "GOAL ACHIEVED!";
-    } else {
-      const totalChange = Math.abs(goalWeight - startWeight);
-      const currentChange = Math.abs(currentWeight - startWeight);
-      const progressPercentage = (currentChange / totalChange) * 100;
-      progressMessage = `${progressPercentage.toFixed(1)}% TO GOAL`;
-    }
-
-    // Lost vs gained is only "progress" relative to the goal's direction.
-    const onTrack = goalWeight != null && data.change !== 0
-      && Math.sign(data.change) === Math.sign(goalWeight - startWeight);
-
-    return { minWeight, maxWeight, weeklyChange, progressMessage, onTrack };
-  }, [data, weightHistory]);
-
-  const yAxisMin = Math.floor(minWeight - 5);
-  const yAxisMax = Math.ceil(maxWeight + 5);
-
-  const dateFormatter = (dateString) => {
-    const date = new Date(dateString);
-    return `${date.getMonth() + 1}/${date.getDate()}`;
-  };
-
-  if (!data) return <div className="arcade-text">NO WEIGHT DATA AVAILABLE</div>;
+  const weights = rows.filter((r) => r.weight != null).map((r) => r.weight);
+  const yMin = Math.floor(Math.min(...weights, goal ?? Infinity)) - 2;
+  const yMax = Math.ceil(Math.max(...weights, goal ?? -Infinity)) + 2;
+  const toGoal = goal != null ? Math.round(Math.abs(trendNow - goal) * 10) / 10 : null;
 
   return (
-    <div className="arcade-card weight-progress">
-      <div className="arcade-header">WEIGHT</div>
-      <div className="arcade-stats">
-        <div className="stat-item">
-          <span className="stat-label">CURRENT</span>
-          <span className="stat-value">{data.current} LBS</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">GOAL</span>
-          <span className="stat-value">{data.goal} LBS</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">LOWEST</span>
-          <span className="stat-value">{data.lowest} LBS</span>
-        </div>
-        <div className="stat-item">
-          <span className="stat-label">HIGHEST</span>
-          <span className="stat-value">{data.highest} LBS</span>
-        </div>
+    <div className="stats-card weight-progress">
+      <div className="wp-header">
+        <span className="wp-title">⚖️ WEIGHT</span>
+        {etaTs && <span className="wp-eta">on pace for {shortDate(etaTs)}</span>}
       </div>
-      <div className="arcade-highlight">
-        <div className="highlight-item">
-          <span className="highlight-label">TOTAL {data.change <= 0 ? 'LOST' : 'GAINED'}</span>
-          <span className={`highlight-value ${onTrack ? 'on-track' : ''}`}>
-            {Math.abs(data.change).toFixed(1)} LBS
+
+      <div className="wp-tiles">
+        <div className="wp-tile">
+          <span className="wp-tile-value">{trendNow}</span>
+          <span className="wp-tile-label">trend</span>
+        </div>
+        <div className="wp-tile">
+          <span className="wp-tile-value">{data.current}</span>
+          <span className="wp-tile-label">last weigh-in</span>
+        </div>
+        <div className="wp-tile">
+          <span className="wp-tile-value">
+            {weeklyRate > 0 ? '+' : ''}{weeklyRate}
           </span>
+          <span className="wp-tile-label">lbs / week</span>
         </div>
-        {data.goal != null && (
-          <div className="highlight-item">
-            <span className="highlight-label">TO GOAL</span>
-            <span className="highlight-value">{Math.abs(data.current - data.goal).toFixed(1)} LBS</span>
-          </div>
-        )}
-        {weeklyChange !== null && (
-          <div className="highlight-item">
-            <span className="highlight-label">WEEKLY CHANGE</span>
-            <span className="highlight-value">{weeklyChange > 0 ? '+' : ''}{weeklyChange} LBS</span>
-          </div>
-        )}
+        <div className="wp-tile">
+          <span className="wp-tile-value">{toGoal != null ? toGoal : '—'}</span>
+          <span className="wp-tile-label">{goal != null ? `to goal (${goal})` : 'no goal set'}</span>
+        </div>
       </div>
-      <div className="progress-bar">
-        <div className="progress-fill" style={{ width: progressMessage.split('%')[0] + '%' }}></div>
-        <span className="progress-text">{progressMessage}</span>
-      </div>
-      <div className="arcade-chart">
-        <ResponsiveContainer width="100%" height={200}>
-          <LineChart data={weightHistory}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-            <XAxis
-              dataKey="date"
-              stroke="#B8B8B8"
-              tickFormatter={dateFormatter}
-              interval="preserveStartEnd"
+
+      <ResponsiveContainer width="100%" height={200}>
+        <ComposedChart data={rows} margin={{ top: 10, right: 12 }}>
+          <CartesianGrid stroke="#333" vertical={false} />
+          <XAxis
+            dataKey="ts" type="number" scale="time" domain={['dataMin', 'dataMax']}
+            tickFormatter={shortDate} stroke="#888" tick={{ fontSize: 10 }}
+            interval="preserveStartEnd"
+          />
+          <YAxis domain={[yMin, yMax]} stroke="#888" width={36} tick={{ fontSize: 10 }} />
+          <Tooltip
+            labelFormatter={shortDate}
+            formatter={(value, key) => [
+              `${value} lbs`,
+              { trend: 'Trend', weight: 'Scale', projection: 'Projected' }[key] || key,
+            ]}
+            contentStyle={{ backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,215,0,0.5)', color: '#f8f8f2' }}
+          />
+          {goal != null && (
+            <ReferenceLine
+              y={goal} stroke="#06D6A0" strokeDasharray="5 4"
+              label={{ value: `goal ${goal}`, fill: '#b8b8b8', fontSize: 11, position: 'insideTopRight' }}
             />
-            <YAxis domain={[yAxisMin, yAxisMax]} stroke="#B8B8B8" />
-            <Tooltip
-              contentStyle={{ backgroundColor: 'rgba(0, 0, 0, 0.9)', border: '1px solid rgba(255, 215, 0, 0.5)', color: '#F8F8F2' }}
-              labelFormatter={dateFormatter}
+          )}
+          <Scatter dataKey="weight" fill="rgba(255, 215, 0, 0.35)" isAnimationActive={false} />
+          <Line
+            type="monotone" dataKey="trend" stroke="#FFD700" strokeWidth={2}
+            dot={false} activeDot={{ r: 5, stroke: '#1D1F20', strokeWidth: 2 }}
+          />
+          <Line
+            type="linear" dataKey="projection" stroke="rgba(255, 215, 0, 0.55)"
+            strokeWidth={2} strokeDasharray="6 5" dot={false} connectNulls
+            isAnimationActive={false}
+          />
+          {etaTs && goal != null && (
+            <ReferenceDot
+              x={etaTs} y={goal} r={4} fill="#06D6A0" stroke="#1D1F20" strokeWidth={2}
+              label={{ value: `est. ${shortDate(etaTs)}`, fill: '#b8b8b8', fontSize: 11, position: 'top' }}
             />
-            {data.goal != null && (
-              <ReferenceLine y={data.goal} stroke="#06D6A0" strokeDasharray="5 4"
-                label={{ value: `Goal ${data.goal}`, fill: '#06D6A0', fontSize: 11, position: 'insideTopRight' }} />
-            )}
-            <Line type="monotone" dataKey="weight" stroke="#FFD700" strokeWidth={2} dot={{ fill: '#FFD700', r: 4 }} activeDot={{ r: 8, fill: '#4caf50' }} />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
+          )}
+        </ComposedChart>
+      </ResponsiveContainer>
+      <span className="wp-caption">dots = scale readings · line = trend</span>
     </div>
   );
 };

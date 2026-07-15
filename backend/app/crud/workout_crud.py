@@ -868,6 +868,13 @@ def get_strength_progression(db: Session, user_id: int) -> dict:
     exercises = []
     for ex in by_exercise.values():
         points = ex["sessions"]
+        # PR flags: a point beats every earlier one (first session is baseline, not a PR).
+        best_w = best_e = None
+        for point in points:
+            point["pr_weight"] = best_w is not None and point["top_weight"] > best_w
+            point["pr_e1rm"] = best_e is not None and point["e1rm"] > best_e
+            best_w = point["top_weight"] if best_w is None else max(best_w, point["top_weight"])
+            best_e = point["e1rm"] if best_e is None else max(best_e, point["e1rm"])
         latest = points[-1]
         previous = points[-2] if len(points) > 1 else None
         exercises.append({
@@ -883,9 +890,19 @@ def get_strength_progression(db: Session, user_id: int) -> dict:
     # Most recently trained first, most established next.
     exercises.sort(key=lambda e: (e["last_date"], e["sessions_count"]), reverse=True)
 
+    cutoff_30d = (utc_now().date() - timedelta(days=30)).isoformat()
     return {
         "exercises": exercises,
-        "recent_sessions": list(reversed(session_log))[:5],
+        "summary": {
+            "total_sessions": len(session_log),
+            "sessions_30d": sum(1 for s in session_log if s["date"] >= cutoff_30d),
+            "prs_30d": sum(
+                1 for e in exercises for p in e["sessions"]
+                if p["date"] >= cutoff_30d and (p["pr_weight"] or p["pr_e1rm"])
+            ),
+        },
+        # Full history, newest first — feeds the session-log sheet.
+        "session_history": list(reversed(session_log)),
     }
 
 

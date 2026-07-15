@@ -8,6 +8,7 @@ import { hasClickTracking } from '../../../services/focusService';
 import ClicksCard from '../../focus/ClicksCard';
 import MiniHeatmap from '../../today/MiniHeatmap';
 import SkillsProgress from './components/SkillsProgress';
+import { formatPace, formatDuration } from '../../../utils/format';
 
 /**
  * The Overall tab: the consistency story. The test for every surface here
@@ -67,14 +68,13 @@ const OverallTab = () => {
       {/* Clicks: compact this-week card (flag-gated) → the Clicks tab */}
       {hasClickTracking(user) && <ClicksCard />}
 
-      {/* Streak heatmap, front and center — as many weeks as the screen fits */}
-      <section className="stats-card">
-        {heatmap && heatmap.days.some((d) => d.count > 0) ? (
+      {/* Year heatmap: desktop-only — on a phone it can't show more than the
+          Today strip already does, so it's cut from the mobile view */}
+      {heatmap && heatmap.days.some((d) => d.count > 0) && (
+        <section className="stats-card year-heatmap-card">
           <MiniHeatmap heatmap={heatmap} responsive showMonths />
-        ) : (
-          <p className="stats-empty">Log your first habit → this grid starts filling in.</p>
-        )}
-      </section>
+        </section>
+      )}
 
       {/* Performance trends — the payoff for detail logging */}
       <h2 className="stats-section-title">Habits</h2>
@@ -116,7 +116,7 @@ const HabitTrendCard = ({ habit }) => {
         <span>{habit.total_completions} total</span>
         <span>{habit.completions_30d} in last 30d</span>
         {habit.total_duration_minutes > 0 && (
-          <span>{Math.round(habit.total_duration_minutes / 60 * 10) / 10}h logged</span>
+          <span>{formatDuration(habit.total_duration_minutes)} logged</span>
         )}
         {habit.total_distance > 0 && <span>{habit.total_distance.toFixed(1)} mi</span>}
         {habit.total_quantity > 0 && <span>{habit.total_quantity} reps/items</span>}
@@ -126,7 +126,8 @@ const HabitTrendCard = ({ habit }) => {
         <TrendChart
           data={habit.pace.history}
           dataKey="pace"
-          label={`Pace — best ${habit.pace.best_pace_min_per_mile} min/mi`}
+          label={`Pace — best ${formatPace(habit.pace.best_pace_min_per_mile)} /mi`}
+          format={formatPace}
           invert
         />
       )}
@@ -144,7 +145,7 @@ const HabitTrendCard = ({ habit }) => {
   );
 };
 
-const TrendChart = ({ data, dataKey, label, invert = false }) => (
+const TrendChart = ({ data, dataKey, label, invert = false, format = null }) => (
   <div className="htc-chart">
     <span className="htc-chart-label">{label}</span>
     <ResponsiveContainer width="100%" height={120}>
@@ -155,10 +156,12 @@ const TrendChart = ({ data, dataKey, label, invert = false }) => (
           domain={['auto', 'auto']}
           reversed={invert}
           stroke="#888"
-          width={36}
+          width={40}
           tick={{ fontSize: 10 }}
+          tickFormatter={format || ((v) => v)}
         />
         <Tooltip
+          formatter={(value) => (format ? format(value) : value)}
           contentStyle={{ backgroundColor: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,215,0,0.5)', color: '#f8f8f2' }}
         />
         <Line type="monotone" dataKey={dataKey} stroke="#FFD700" strokeWidth={2} dot={{ r: 2 }} />

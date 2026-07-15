@@ -98,6 +98,11 @@
   padding: 4px 0 40px;
 }
 
+/* Below this the responsive grid can't beat the Today strip's 17 weeks */
+@media (max-width: 479px) {
+  .year-heatmap-card { display: none; }
+}
+
 .consistency-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

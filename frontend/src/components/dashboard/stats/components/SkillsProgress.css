@@ -1,3 +1,140 @@
+/* Arcade base styles (moved from WeightProgress.css when weight went trend-style;
+   still used by SkillsProgress + legacy OverallProgress/RunningProgress) */
+.arcade-card {
+  background: linear-gradient(135deg, #282c34, #1a1a2e);
+  color: #F8F8F2;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.arcade-header {
+  font-size: 24px;
+  text-align: center;
+  margin-bottom: 20px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  font-family: 'Orbitron', sans-serif;
+  color: #FFD700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.4);
+}
+
+.arcade-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.2);
+  padding: 10px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.stat-label {
+  font-size: 12px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  color: #B8B8B8;
+}
+
+.stat-value {
+  font-size: 18px;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.arcade-highlight {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+
+.highlight-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.highlight-label {
+  font-size: 14px;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  color: #B8B8B8;
+}
+
+.highlight-value {
+  font-size: 24px;
+  color: #FFD700;
+  font-weight: bold;
+}
+
+.progress-bar {
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  height: 30px;
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 5px;
+}
+
+.progress-fill {
+  background: linear-gradient(135deg, #4caf50, #45a049);
+  height: 100%;
+  transition: width 0.5s ease-in-out;
+  border-radius: 4px;
+}
+
+.progress-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  color: #F8F8F2;
+  font-size: 14px;
+  text-shadow: 1px 1px 3px #000;
+  font-weight: bold;
+}
+
+.arcade-chart {
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #333;
+}
+
+.recharts-tooltip-wrapper {
+  background-color: rgba(0, 0, 0, 0.9) !important;
+  border: 1px solid rgba(255, 215, 0, 0.5) !important;
+  color: #F8F8F2 !important;
+}
+
+.arcade-text {
+  color: #F8F8F2;
+  text-align: center;
+  padding: 20px;
+  background-color: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+/* Change in the goal's direction reads as progress. */
+.highlight-value.on-track { color: #06d6a0; }
+
+
 .skills-progress {
   background: linear-gradient(135deg, #282c34, #1a1a2e);
   color: #F8F8F2;
