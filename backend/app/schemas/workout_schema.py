@@ -32,6 +32,9 @@ class WorkoutDayCreate(BaseModel):
     day_name: str
     exercises: List[ProgramExerciseCreate]
 
+class WorkoutDayUpdate(WorkoutDayCreate):
+    day_id: Optional[int] = None
+
 class WorkoutProgramCreate(BaseModel):
     name: str
     workout_days: List[WorkoutDayCreate]
@@ -152,7 +155,7 @@ class ExerciseUpdate(BaseModel):
 class WorkoutProgramUpdate(BaseModel):
     name: Optional[str] = None
     status: Optional[str] = None
-    workout_days: Optional[List[WorkoutDayCreate]] = None
+    workout_days: Optional[List[WorkoutDayUpdate]] = None
 
 # List schemas
 class ExerciseList(BaseModel):

@@ -516,20 +516,40 @@ def update_workout_program(db: Session, program_id: int, program_update: workout
             setattr(db_program, key, value)
     
     if 'workout_days' in update_data:
-        # Remove existing workout days and exercises
-        for day in db_program.workout_days:
-            db.query(workout_model.ProgramExercise).filter(workout_model.ProgramExercise.day_id == day.day_id).delete()
-        db.query(workout_model.WorkoutDay).filter(workout_model.WorkoutDay.program_id == program_id).delete()
+        # Reconcile days in place: sessions reference day_id, so kept days must
+        # survive the edit with their id intact. Each incoming day claims its
+        # existing row by day_id (payloads without one create a new day).
+        remaining = {d.day_id: d for d in db_program.workout_days}
+        incoming = [
+            (day_data, remaining.pop(day_data.get('day_id'), None))
+            for day_data in update_data['workout_days']
+        ]
 
-        # Add new workout days and exercises
-        for day_data in update_data['workout_days']:
-            new_day = workout_model.WorkoutDay(program_id=program_id, day_name=day_data['day_name'])
-            db.add(new_day)
-            db.flush()
+        # Days dropped from the program: detach their sessions (day_id -> NULL,
+        # session-context falls back to inferring the day) before deleting.
+        for day in remaining.values():
+            db.query(workout_model.WorkoutSession).filter(
+                workout_model.WorkoutSession.day_id == day.day_id
+            ).update({'day_id': None})
+            db.query(workout_model.ProgramExercise).filter(
+                workout_model.ProgramExercise.day_id == day.day_id
+            ).delete()
+            db.delete(day)
+
+        for day_data, day in incoming:
+            if day is None:
+                day = workout_model.WorkoutDay(program_id=program_id, day_name=day_data['day_name'])
+                db.add(day)
+                db.flush()
+            else:
+                day.day_name = day_data['day_name']
+                db.query(workout_model.ProgramExercise).filter(
+                    workout_model.ProgramExercise.day_id == day.day_id
+                ).delete()
 
             for exercise_data in day_data['exercises']:
                 new_program_exercise = workout_model.ProgramExercise(
-                    day_id=new_day.day_id,
+                    day_id=day.day_id,
                     exercise_id=exercise_data['exercise_id'],
                     sets=exercise_data['sets'],
                     recommended_reps=exercise_data.get('recommended_reps'),

@@ -26,6 +26,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
         name: program.name,
         status: program.status,
         workout_days: program.workout_days.map(day => ({
+          day_id: day.day_id,
           day_name: day.day_name,
           exercises: day.exercises.map(exercise => {
             // Find the exercise in our library
@@ -145,6 +146,7 @@ const EditWorkoutProgramForm = ({ program, onSave, onArchive, onUnarchive, onClo
         name: editedProgram.name,
         status: program.status,
         workout_days: editedProgram.workout_days.map(day => ({
+          day_id: day.day_id,
           day_name: day.day_name,
           exercises: day.exercises.map(exercise => ({
             exercise_id: exercise.exercise_id,

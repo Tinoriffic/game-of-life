@@ -31,6 +31,7 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
                 const p = r.data;
                 setName(p.name || '');
                 setDays((p.workout_days || []).map((d) => ({
+                    day_id: d.day_id,
                     day_name: d.day_name,
                     exercises: (d.exercises || []).map((e) => ({
                         exercise_id: e.exercise_id,
@@ -61,6 +62,8 @@ const ProgramBuilder = ({ mode = 'create', programId = null, onSaved, onClose })
         const payloadDays = days
             .filter((d) => d.day_name.trim())
             .map((d) => ({
+                // day_id keeps the edited day's identity server-side; new days omit it
+                day_id: d.day_id,
                 day_name: d.day_name.trim(),
                 exercises: d.exercises.filter((e) => e.exercise_id).map((e) => ({
                     exercise_id: Number(e.exercise_id),

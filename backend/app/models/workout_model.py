@@ -15,7 +15,8 @@ class WorkoutProgram(Base):
     archived_at = Column(DateTime, nullable=True)
     
     user = relationship("User", back_populates='workout_programs')
-    workout_days = relationship('WorkoutDay', back_populates='workout_program')
+    # day_id order is the canonical day cycle
+    workout_days = relationship('WorkoutDay', back_populates='workout_program', order_by='WorkoutDay.day_id')
     workout_sessions = relationship('WorkoutSession', back_populates='workout_program', lazy='selectin')
 
 class WorkoutDay(Base):
