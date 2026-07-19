@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { BrowserRouter as Router, Navigate, Route, Routes } from 'react-router-dom';
+import { initNativeAuthHandoff } from './native/nativeAuth';
 import LoginPage from './components/auth/LoginPage';
 import TokenReceiver from './components/auth/TokenReceiver';
 import UserSetupPage from './components/auth/UserSetupPage';
@@ -32,6 +34,9 @@ import AdminPanel from './components/admin/AdminPanel';
  * Today · Stats · Challenges · Profile. Today is home.
  */
 function App() {
+  // Native only: catch the mev2:// OAuth return and route tokens into the app.
+  useEffect(() => { initNativeAuthHandoff(); }, []);
+
   return (
     <Router>
       <div className="app-shell">

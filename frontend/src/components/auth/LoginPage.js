@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import './LoginPage.css';
 import axiosInstance from '../../axios';
 import { baseUrl } from '../../config/apiConfig';
+import { Native } from '../../native/nativeBridge';
+import { startNativeLogin } from '../../native/nativeAuth';
 
 const GoogleG = () => (
     <svg viewBox="0 0 48 48" width="20" height="20" aria-hidden="true">
@@ -103,9 +105,21 @@ const LoginPage = () => {
                 </ul>
 
                 {loginUrl && (
-                    <a href={loginUrl} className="google-btn">
-                        <GoogleG /> Continue with Google
-                    </a>
+                    Native.isNative() ? (
+                        // WebViews can't host Google's login page; hand off to
+                        // the system browser + custom-scheme return instead.
+                        <button
+                            type="button"
+                            className="google-btn"
+                            onClick={() => startNativeLogin()}
+                        >
+                            <GoogleG /> Continue with Google
+                        </button>
+                    ) : (
+                        <a href={loginUrl} className="google-btn">
+                            <GoogleG /> Continue with Google
+                        </a>
+                    )
                 )}
                 {!loginUrl && failed && (
                     <button className="login-retry" onClick={fetchLoginUrl}>

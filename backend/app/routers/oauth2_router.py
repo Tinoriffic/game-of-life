@@ -20,19 +20,32 @@ oauth2_scheme = OAuth2AuthorizationCodeBearer(
     scopes={"openid": "Open ID", "email": "Email", "profile": "Profile"}
 )
 
+# Native iOS wrapper carries this through Google's OAuth `state` so the final
+# redirect can hand tokens back over the app's custom scheme instead of the web
+# URL. The `redirect_uri` Google sees is unchanged (no Google Console change).
+IOS_PLATFORM = "ios"
+
+
 @router.get("/login")
-async def login_via_google():
+async def login_via_google(platform: str | None = None):
     authorize_url = OAuth2Config.authorize_url
     client_id = OAuth2Config.client_id
     redirect_uri = OAuth2Config.callback_url
     scope = OAuth2Config.scope
     response_type = 'code'
 
-    login_url = f"{authorize_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}"
+    state = platform or ""
+    login_url = f"{authorize_url}?client_id={client_id}&redirect_uri={redirect_uri}&response_type={response_type}&scope={scope}&state={state}"
+
+    # The native app opens this endpoint directly in the system browser, so send
+    # it straight on to Google. The web app fetches the URL as JSON and navigates
+    # itself, so its (platform-less) behavior is unchanged.
+    if platform:
+        return RedirectResponse(url=login_url)
     return {"login_url": login_url}
 
 @router.get("/auth/callback")
-async def callback(code: str, db: Session = Depends(get_db)):
+async def callback(code: str, state: str = "", db: Session = Depends(get_db)):
     if not code:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Missing authorization code")
     
@@ -59,11 +72,16 @@ async def callback(code: str, db: Session = Depends(get_db)):
     # Verify and register user
     print(f"Fetched User Info: {user_info}")
     result = await handle_user_authentication(user_info, db)
-    
+
+    # iOS hands tokens back over the app's custom scheme; every other platform
+    # returns to the web frontend URL. Only the redirect target differs.
+    is_ios = state == IOS_PLATFORM
+    base = "mev2://" if is_ios else f"{frontend_url}/"
+
     if result["type"] == "existing":
         # Redirect existing user to main screen with session token
         if 'access_token' in result and 'refresh_token' in result:
-            frontend_request = f"{frontend_url}/auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
+            frontend_request = f"{base}auth/callback?accessToken={result['access_token']}&refreshToken={result['refresh_token']}"
             print(f"Redirecting to {frontend_request}")
             return RedirectResponse(url=frontend_request)
         else:
@@ -73,5 +91,5 @@ async def callback(code: str, db: Session = Depends(get_db)):
         # Redirect new user to 'Choose Username' page
         # New users: Store user_info in the database with a 'registration in progress' flag
         registration_token = issue_registration_token(result["user_info"])
-        frontend_request = f"{frontend_url}/user-setup?token={registration_token}"
+        frontend_request = f"{base}user-setup?token={registration_token}"
         return RedirectResponse(url=frontend_request)
