@@ -314,6 +314,7 @@ struct StreakView: View {
                 .foregroundColor(settled ? MeV2Palette.amber : MeV2Palette.amber.opacity(0.55))
                 .monospacedDigit()
         }
+        .fixedSize()
     }
 }
 
@@ -367,8 +368,9 @@ struct StatePill: View {
         }()
         HStack(spacing: 5) {
             Text(settled ? "✓" : "●").font(.system(size: 9, weight: .black))
-            Text(text).font(.system(size: 10, weight: .bold))
+            Text(text).font(.system(size: 10, weight: .bold)).lineLimit(1)
         }
+        .fixedSize(horizontal: true, vertical: false)
         .foregroundColor(settled ? MeV2Palette.green : MeV2Palette.amber)
         .padding(.horizontal, 9).padding(.vertical, 3.5)
         .background(Capsule().fill((settled ? MeV2Palette.green : MeV2Palette.amber).opacity(0.16)))

@@ -34,7 +34,7 @@ button {
    home indicator. env() insets are 0 off-device, so this is a no-op on web. */
 .app-shell {
   padding-top: env(safe-area-inset-top);
-  padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  padding-bottom: calc(56px + max(6px, env(safe-area-inset-bottom) - 20px));
 }
 
 @media (min-width: 768px) {

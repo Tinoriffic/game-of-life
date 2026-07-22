@@ -145,20 +145,28 @@ struct HabitSmallCard: View {
     var index: Int = 0
     var total: Int = 0
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            HStack {
-                HStack(spacing: 5) {
-                    Text(habit.icon).font(.system(size: 14))
-                    Text(habit.name).font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.7)
+        VStack(alignment: .leading, spacing: 5) {
+            HStack(spacing: 4) {
+                if cycle { CycleChevron(isPrevious: true, size: 18) }
+                Text(habit.icon).font(.system(size: 14))
+                Text(habit.name).font(.system(size: 12, weight: .bold))
+                    .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.55)
+                Spacer(minLength: 3)
+                if cycle {
+                    CycleChevron(isPrevious: false, size: 18)
+                } else {
+                    StreakView(streak: habit.streak, settled: habit.isSettled, size: 14)
                 }
-                Spacer(minLength: 4)
-                StreakView(streak: habit.streak, settled: habit.isSettled, size: 14)
             }
-            StatePill(habit: habit)
+            HStack(spacing: 6) {
+                StatePill(habit: habit)
+                if cycle {
+                    Spacer(minLength: 2)
+                    StreakView(streak: habit.streak, settled: habit.isSettled, size: 13)
+                }
+            }
             CompactGridView(days: habit.days, todayDate: todayDate,
-                            todaySettled: habit.isSettled, weeks: cycle ? 7 : 8, labels: true)
-            if cycle { CycleBar(index: index, total: total) }
+                            todaySettled: habit.isSettled, weeks: 8, labels: true)
         }
     }
 }
@@ -170,57 +178,58 @@ struct HabitMediumCard: View {
     var index: Int = 0
     var total: Int = 0
     var body: some View {
-        VStack(spacing: 7) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 7) {
-                    HStack(spacing: 5) {
-                        Text(habit.icon).font(.system(size: 15))
-                        Text(habit.name).font(.system(size: 12, weight: .bold))
-                            .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.7)
-                    }
-                    StatePill(habit: habit)
-                    Spacer(minLength: 8)
-                    HStack(alignment: .firstTextBaseline, spacing: 4) {
-                        StreakView(streak: habit.streak, settled: habit.isSettled, size: 17)
-                        Text("streak").font(.system(size: 9, weight: .semibold))
-                            .foregroundColor(MeV2Palette.textFaint)
+        HStack(alignment: .top, spacing: 12) {
+            VStack(alignment: .leading, spacing: 7) {
+                HStack(spacing: 5) {
+                    Text(habit.icon).font(.system(size: 15))
+                    Text(habit.name).font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.6)
+                }
+                StatePill(habit: habit)
+                Spacer(minLength: 8)
+                HStack(alignment: .firstTextBaseline, spacing: 4) {
+                    StreakView(streak: habit.streak, settled: habit.isSettled, size: 17)
+                    Text("streak").font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(MeV2Palette.textFaint)
+                }
+                if cycle {
+                    HStack(spacing: 9) {
+                        CycleChevron(isPrevious: true)
+                        CycleChevron(isPrevious: false)
                     }
                 }
-                .frame(width: 104, alignment: .leading)
-
-                HeatmapGridView(days: habit.days, todayDate: todayDate,
-                                binary: true, todaySettled: habit.isSettled)
             }
-            if cycle { CycleBar(index: index, total: total) }
+            .frame(width: 104, alignment: .leading)
+
+            HeatmapGridView(days: habit.days, todayDate: todayDate,
+                            binary: true, todaySettled: habit.isSettled)
         }
     }
 }
 
-/// Prev/next chevrons + page dots for cycle mode. Chevrons are interactive
-/// widget buttons (iOS 17+) that advance the shown habit.
-struct CycleBar: View {
-    let index: Int
-    let total: Int
+/// A prev/next chevron for cycle mode — an interactive widget button (iOS 17+)
+/// that advances the shown habit. Kept out of the grid's vertical space.
+struct CycleChevron: View {
+    let isPrevious: Bool
+    var size: CGFloat = 22
+
+    private var label: some View {
+        Image(systemName: isPrevious ? "chevron.left" : "chevron.right")
+            .font(.system(size: size * 0.5, weight: .heavy))
+            .foregroundColor(MeV2Palette.textDim)
+            .frame(width: size, height: size)
+            .background(Circle().fill(Color.white.opacity(0.08)))
+    }
+
     var body: some View {
-        HStack(spacing: 8) {
-            Button(intent: CycleHabitIntent(.previous)) {
-                Image(systemName: "chevron.left").font(.system(size: 11, weight: .bold))
+        Group {
+            if isPrevious {
+                Button(intent: CyclePreviousIntent()) { label }
+            } else {
+                Button(intent: CycleNextIntent()) { label }
             }
-            .buttonStyle(.plain).foregroundColor(MeV2Palette.textDim)
-            Spacer()
-            HStack(spacing: 4) {
-                ForEach(0..<max(total, 1), id: \.self) { i in
-                    Circle()
-                        .fill(i == index ? MeV2Palette.accent : Color.white.opacity(0.22))
-                        .frame(width: 5, height: 5)
-                }
-            }
-            Spacer()
-            Button(intent: CycleHabitIntent(.next)) {
-                Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold))
-            }
-            .buttonStyle(.plain).foregroundColor(MeV2Palette.textDim)
         }
+        .buttonStyle(.plain)
     }
 }
 
