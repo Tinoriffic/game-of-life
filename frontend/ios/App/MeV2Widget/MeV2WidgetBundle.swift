@@ -12,5 +12,9 @@ import SwiftUI
 struct MeV2WidgetBundle: WidgetBundle {
     var body: some Widget {
         MeV2Widget()
+        // Live Activity for the meditation / workout-rest countdowns.
+        if #available(iOS 16.1, *) {
+            TimerLiveActivity()
+        }
     }
 }

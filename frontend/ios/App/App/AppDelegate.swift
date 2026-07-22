@@ -1,14 +1,26 @@
 import UIKit
 import Capacitor
+import UserNotifications
 
 @UIApplicationMain
-class AppDelegate: UIResponder, UIApplicationDelegate {
+class AppDelegate: UIResponder, UIApplicationDelegate, UNUserNotificationCenterDelegate {
 
     var window: UIWindow?
 
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
-        // Override point for customization after application launch.
+        // Own foreground presentation of our timer notifications (see below).
+        UNUserNotificationCenter.current().delegate = self
         return true
+    }
+
+    // A timer's end notification is scheduled up front (so it fires when locked
+    // or backgrounded). If the app happens to be in the foreground when it
+    // fires, the in-app Web Audio chime already plays — so suppress the banner
+    // and sound here to avoid a double alert.
+    func userNotificationCenter(_ center: UNUserNotificationCenter,
+                                willPresent notification: UNNotification,
+                                withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void) {
+        completionHandler([])
     }
 
     func applicationWillResignActive(_ application: UIApplication) {

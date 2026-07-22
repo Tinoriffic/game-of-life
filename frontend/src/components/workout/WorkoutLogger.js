@@ -2,8 +2,12 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import axiosInstance from '../../axios';
 import { useUser } from '../player/UserContext';
 import { parseApiError } from '../../hooks/useYesterdayLogging';
+import { Native } from '../../native/nativeBridge';
 import IntroCoach from '../common/IntroCoach';
 import './WorkoutLogger.css';
+
+// Stable id for the rest timer's Live Activity + scheduled locked-screen alert.
+const REST_ALERT_ID = 'workout-rest';
 
 const fmt = (s) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
 
@@ -63,6 +67,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
     const alertedRef = useRef(false);
     const restTargetRef = useRef(90);
     useEffect(() => { restTargetRef.current = restTarget; }, [restTarget]);
+    const restJustStartedRef = useRef(false);
 
     // Set stopwatch (timed exercises): { key, sec }
     const [setTimer, setSetTimer] = useState(null);
@@ -215,6 +220,9 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         if (restTargetRef.current && next >= restTargetRef.current && !alertedRef.current) {
             alertedRef.current = true;
             startAlarm();
+            // Countdown reached zero — retire the Live Activity (the locked-screen
+            // notification has already fired at this instant).
+            Native.endLiveActivity({ id: REST_ALERT_ID });
         }
     }, [startAlarm]);
 
@@ -244,12 +252,26 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         };
     }, [tickRest, tickSet]);
 
-    // Cleanup intervals on unmount.
+    // Keep the native alert/Live Activity in sync when the target is nudged
+    // mid-rest. Skips the initial arm (startRest already set it) and the
+    // not-running case; only genuine target changes reschedule.
+    useEffect(() => {
+        if (restJustStartedRef.current) { restJustStartedRef.current = false; return; }
+        if (!restOn || restStartRef.current == null || alertedRef.current || !restTarget) return;
+        const endsAt = restStartRef.current + restTarget * 1000;
+        Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.' });
+        Native.updateLiveActivity({ id: REST_ALERT_ID, endsAt, label: 'Rest' });
+    }, [restTarget, restOn]);
+
+    // Cleanup intervals on unmount, and retire any live rest alert/activity so
+    // it doesn't dangle after the logger closes.
     useEffect(() => () => {
         clearInterval(restRef.current);
         clearInterval(setTimerRef.current);
         clearInterval(alarmRef.current);
         clearTimeout(alarmEndRef.current);
+        Native.cancelAlert({ id: REST_ALERT_ID });
+        Native.endLiveActivity({ id: REST_ALERT_ID });
     }, []);
 
     const startRest = () => {
@@ -261,12 +283,23 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         setRestSec(0);
         setRestOn(true);
         restRef.current = setInterval(tickRest, 1000);
+        // Native: fire a locked-screen alert + drive the Dynamic Island so the
+        // rest-over cue reaches you even backgrounded. The reschedule effect
+        // below keeps the alert in sync if you nudge the target mid-rest.
+        restJustStartedRef.current = true;
+        if (restTargetRef.current) {
+            const endsAt = restStartRef.current + restTargetRef.current * 1000;
+            Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.' });
+            Native.startLiveActivity({ id: REST_ALERT_ID, type: 'workout', endsAt, label: 'Rest' });
+        }
     };
     const stopRest = () => {
         clearInterval(restRef.current);
         stopAlarm();
         restStartRef.current = null;
         setRestOn(false);
+        Native.cancelAlert({ id: REST_ALERT_ID });
+        Native.endLiveActivity({ id: REST_ALERT_ID });
     };
 
     // --- Set stopwatch (timed exercises) ---

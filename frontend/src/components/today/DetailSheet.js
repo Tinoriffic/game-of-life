@@ -103,6 +103,7 @@ const DetailSheet = ({ habit, existingLog, focusCategory, startWithTimer = false
                             {showTimer ? (
                                 <MeditationTimer
                                     defaultMinutes={Number(duration) || 10}
+                                    label={habit.name}
                                     onRunningChange={setTimerRunning}
                                     onEnterManual={() => setShowTimer(false)}
                                     onComplete={(minutes) => {

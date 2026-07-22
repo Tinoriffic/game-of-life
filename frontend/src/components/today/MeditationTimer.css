@@ -95,6 +95,10 @@
 .medtimer-dial.is-running {
     box-shadow: 0 0 34px rgba(255, 215, 0, 0.18);
 }
+.medtimer-dial.is-paused {
+    box-shadow: none;
+    opacity: 0.72;
+}
 .medtimer-time {
     font-family: 'Orbitron', sans-serif;
     font-size: 34px;
@@ -145,15 +149,27 @@
 }
 .medtimer-running {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     width: 100%;
     max-width: 280px;
     margin: 0 auto;
 }
 .medtimer-running button {
-    flex: 1;
+    flex: 1 1 40%;
+    min-width: 110px;
 }
 .medtimer-stop {
+    background: rgba(255, 215, 0, 0.14);
+    border: 1px solid rgba(255, 215, 0, 0.5);
+    color: #ffd700;
+    border-radius: 12px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+}
+.medtimer-pause {
     background: rgba(255, 215, 0, 0.14);
     border: 1px solid rgba(255, 215, 0, 0.5);
     color: #ffd700;

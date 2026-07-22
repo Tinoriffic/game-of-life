@@ -20,6 +20,9 @@
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		AB10CAFE000000000000B002 /* AppViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB10CAFE000000000000B001 /* AppViewController.swift */; };
 		AB10CAFE000000000000B004 /* WidgetBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB10CAFE000000000000B003 /* WidgetBridge.swift */; };
+		AB10CAFE000000000000B006 /* TimerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB10CAFE000000000000B005 /* TimerBridge.swift */; };
+		AB10CAFE000000000000B008 /* TimerActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB10CAFE000000000000B007 /* TimerActivityAttributes.swift */; };
+		AB10CAFE000000000000B009 /* TimerActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB10CAFE000000000000B007 /* TimerActivityAttributes.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -64,6 +67,8 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		AB10CAFE000000000000B001 /* AppViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppViewController.swift; sourceTree = "<group>"; };
 		AB10CAFE000000000000B003 /* WidgetBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetBridge.swift; sourceTree = "<group>"; };
+		AB10CAFE000000000000B005 /* TimerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerBridge.swift; sourceTree = "<group>"; };
+		AB10CAFE000000000000B007 /* TimerActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimerActivityAttributes.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -139,6 +144,8 @@
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				AB10CAFE000000000000B001 /* AppViewController.swift */,
 				AB10CAFE000000000000B003 /* WidgetBridge.swift */,
+				AB10CAFE000000000000B005 /* TimerBridge.swift */,
+				AB10CAFE000000000000B007 /* TimerActivityAttributes.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -265,6 +272,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AB10CAFE000000000000B009 /* TimerActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -275,6 +283,8 @@
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
 				AB10CAFE000000000000B002 /* AppViewController.swift in Sources */,
 				AB10CAFE000000000000B004 /* WidgetBridge.swift in Sources */,
+				AB10CAFE000000000000B006 /* TimerBridge.swift in Sources */,
+				AB10CAFE000000000000B008 /* TimerActivityAttributes.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -321,7 +331,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = MeV2WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J9AD973TMZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -365,7 +375,7 @@
 				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CODE_SIGN_ENTITLEMENTS = MeV2WidgetExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J9AD973TMZ;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
@@ -510,7 +520,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J9AD973TMZ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
@@ -534,7 +544,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 3;
 				DEVELOPMENT_TEAM = J9AD973TMZ;
 				INFOPLIST_FILE = App/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
