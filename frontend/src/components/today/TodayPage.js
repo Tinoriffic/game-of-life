@@ -8,6 +8,7 @@ import HabitRow from './HabitRow';
 import DetailSheet from './DetailSheet';
 import OnboardingPicker from './OnboardingPicker';
 import MiniHeatmap from './MiniHeatmap';
+import { Native } from '../../native/nativeBridge';
 import FocusStrip from '../focus/FocusStrip';
 import IntroCoach from '../common/IntroCoach';
 import './TodayPage.css';
@@ -62,6 +63,21 @@ const TodayPage = () => {
         window.addEventListener('online', onOnline);
         return () => window.removeEventListener('online', onOnline);
     }, [load, pushToast]);
+
+    // Mirror the day + heatmap into the iOS home-screen widget whenever either
+    // changes (covers initial load, logs, backfills). No-op on web.
+    useEffect(() => {
+        if (!today?.day || !heatmap?.days) return;
+        Native.syncWidgetData({
+            updatedAt: new Date().toISOString(),
+            todayDate: today.date,
+            dayStreak: today.day.day_streak ?? 0,
+            completed: today.day.completed ?? 0,
+            scheduled: today.day.scheduled ?? 0,
+            isComplete: Boolean(today.day.is_complete),
+            days: heatmap.days.slice(-126),
+        });
+    }, [today, heatmap]);
 
     const targetDate = useMemo(() => {
         if (!today) return null;
