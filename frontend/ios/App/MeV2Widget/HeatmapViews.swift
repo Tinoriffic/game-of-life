@@ -6,14 +6,19 @@ enum MeV2Palette {
     static let bgTop = Color(red: 0.137, green: 0.152, blue: 0.204)   // #232734
     static let bgBottom = Color(red: 0.102, green: 0.114, blue: 0.149) // #1A1D26
 
-    static let cellNone = Color.white.opacity(0.12)
-    static let cellSome = Color(red: 1.0, green: 0.82, blue: 0.15).opacity(0.62)      // gold, punchier
-    static let cellPartial = Color(red: 1.0, green: 0.56, blue: 0.18)                 // vivid orange
-    static let cellComplete = Color(red: 0.10, green: 0.90, blue: 0.66)               // brighter #06D6A0
+    // "Mint Circuit": one green intensity ramp, dark → bright, so a fuller day
+    // reads as a brighter cell (cleaner than the old three-hue mix).
+    static let cellNone = Color(red: 0.102, green: 0.161, blue: 0.141)   // #1a2924
+    static let cellLow  = Color(red: 0.094, green: 0.420, blue: 0.322)   // #186b52
+    static let cellMid  = Color(red: 0.078, green: 0.694, blue: 0.518)   // #14b184
+    static let cellHigh = Color(red: 0.184, green: 0.941, blue: 0.698)   // #2ff0b2
 
-    static let amber = Color(red: 1.0, green: 0.624, blue: 0.263)
-    static let green = Color(red: 0.024, green: 0.839, blue: 0.627)
-    static let gold = Color(red: 1.0, green: 0.843, blue: 0.0)
+    static let accent = Color(red: 1.0, green: 0.812, blue: 0.227)       // gold #ffcf3a — attention/streak
+    static let success = cellHigh                                        // mint — done
+    // back-compat aliases used by the atom views (pending=gold, done=mint)
+    static let amber = accent
+    static let green = success
+    static let gold = accent
     static let ringTrack = Color.white.opacity(0.12)
     static let textDim = Color.white.opacity(0.55)
     static let textFaint = Color.white.opacity(0.36)
@@ -23,14 +28,14 @@ enum MeV2Palette {
 
     static func overallCell(_ day: WidgetData.Day) -> Color {
         switch day.status {
-        case "complete": return cellComplete
-        case "partial": return cellPartial
-        default: return day.count > 0 ? cellSome : cellNone
+        case "complete": return cellHigh
+        case "partial": return cellMid
+        default: return day.count > 0 ? cellLow : cellNone
         }
     }
 
     static func habitCell(_ day: WidgetData.Day) -> Color {
-        (day.count > 0 || day.status == "complete") ? cellComplete : cellNone
+        (day.count > 0 || day.status == "complete") ? cellHigh : cellNone
     }
 
     static func cellFill(_ day: WidgetData.Day?, binary: Bool) -> Color {
@@ -214,14 +219,15 @@ struct TwoWeekStripView: View {
 
 // MARK: - Compact grid (small, per-habit)
 
-/// A plain recent-weeks grid, no weekday labels — used on the per-habit small
-/// card where the header already carries the context.
+/// A recent-weeks grid for the per-habit small card, with an optional weekday
+/// label column (grid slides right to make room).
 struct CompactGridView: View {
     let days: [WidgetData.Day]
     let todayDate: String
     var binary: Bool = true
     var todaySettled: Bool = false
     var weeks: Int = 9
+    var labels: Bool = false
 
     var body: some View {
         let aligned = AlignedWeeks.build(from: days, todayDate: todayDate)
@@ -229,22 +235,36 @@ struct CompactGridView: View {
         let base = aligned.columns.count - cols.count
         GeometryReader { geo in
             let spacing: CGFloat = 2.5
+            let labelW: CGFloat = labels ? 8 : 0
+            let labelGap: CGFloat = labels ? 3 : 0
             let n = CGFloat(max(cols.count, 1))
-            let cellW = (geo.size.width - spacing * (n - 1)) / n
+            let cellW = (geo.size.width - labelW - labelGap - spacing * (n - 1)) / n
             let cellH = (geo.size.height - spacing * 6) / 7
             let cell = max(3, min(cellW, cellH))
-            HStack(alignment: .top, spacing: spacing) {
-                ForEach(cols.indices, id: \.self) { ci in
+            HStack(alignment: .top, spacing: labelGap) {
+                if labels {
                     VStack(spacing: spacing) {
                         ForEach(0..<7, id: \.self) { r in
-                            let isToday = aligned.todayCell.map { $0 == (base + ci, r) } ?? false
-                            let day = cols[ci][r]
-                            RoundedRectangle(cornerRadius: cell * 0.23)
-                                .fill(MeV2Palette.cellFill(day, binary: binary))
-                                .frame(width: cell, height: cell)
-                                .overlay {
-                                    if isToday { TodayOutline(corner: cell * 0.23, settled: todaySettled) }
-                                }
+                            Text(aligned.rowLabels[r])
+                                .font(.system(size: 6.5, weight: .bold))
+                                .foregroundColor(MeV2Palette.textFaint)
+                                .frame(width: labelW, height: cell)
+                        }
+                    }
+                }
+                HStack(alignment: .top, spacing: spacing) {
+                    ForEach(cols.indices, id: \.self) { ci in
+                        VStack(spacing: spacing) {
+                            ForEach(0..<7, id: \.self) { r in
+                                let isToday = aligned.todayCell.map { $0 == (base + ci, r) } ?? false
+                                let day = cols[ci][r]
+                                RoundedRectangle(cornerRadius: cell * 0.23)
+                                    .fill(MeV2Palette.cellFill(day, binary: binary))
+                                    .frame(width: cell, height: cell)
+                                    .overlay {
+                                        if isToday { TodayOutline(corner: cell * 0.23, settled: todaySettled) }
+                                    }
+                            }
                         }
                     }
                 }

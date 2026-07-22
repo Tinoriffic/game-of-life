@@ -50,6 +50,8 @@ struct WidgetData: Codable {
         habits?.first { $0.id == id }
     }
 
+    var habitIds: [String] { (habits ?? []).map { $0.id } }
+
     /// Gallery preview / placeholder: a plausible-looking recent stretch.
     static func sample() -> WidgetData {
         let formatter = DateFormatter()
@@ -80,5 +82,17 @@ struct WidgetData: Codable {
                           dayStreak: 12, completed: 2, scheduled: 3,
                           isComplete: false, days: makeDays(["complete", "partial", "complete"]),
                           habits: habits)
+    }
+}
+
+/// Cycle-mode state: which habit the "Cycle through habits" widget is showing.
+/// Shared through the App Group so the chevron intents and the widget agree.
+enum WidgetCycle {
+    static let sentinel = "__cycle__"          // config value that means "cycle mode"
+    private static let key = "cycleHabitId"
+
+    static var currentId: String? {
+        get { UserDefaults(suiteName: WidgetData.appGroupId)?.string(forKey: key) }
+        set { UserDefaults(suiteName: WidgetData.appGroupId)?.set(newValue, forKey: key) }
     }
 }

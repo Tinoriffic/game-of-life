@@ -9,11 +9,31 @@
 
 import WidgetKit
 import SwiftUI
+import AppIntents
 
 struct HeatmapEntry: TimelineEntry {
     let date: Date
     let data: WidgetData?
-    let habitId: String?    // nil = all-habits card
+    let habitId: String?        // resolved habit to show (nil = all-habits card)
+    var cycleMode: Bool = false // show chevrons + page dots
+    var cycleIndex: Int = 0
+    var cycleTotal: Int = 0
+}
+
+/// Turn the configured value (nil / a habit id / the cycle sentinel) into a
+/// concrete entry, resolving the cycle-mode habit from shared state.
+func makeEntry(configured: String?, data: WidgetData?) -> HeatmapEntry {
+    guard let data = data else {
+        return HeatmapEntry(date: Date(), data: nil, habitId: configured)
+    }
+    if configured == WidgetCycle.sentinel {
+        let ids = data.habitIds
+        let current = WidgetCycle.currentId ?? ids.first
+        let idx = current.flatMap { ids.firstIndex(of: $0) } ?? 0
+        return HeatmapEntry(date: Date(), data: data, habitId: current,
+                            cycleMode: true, cycleIndex: idx, cycleTotal: ids.count)
+    }
+    return HeatmapEntry(date: Date(), data: data, habitId: configured)
 }
 
 struct Provider: AppIntentTimelineProvider {
@@ -22,13 +42,11 @@ struct Provider: AppIntentTimelineProvider {
     }
 
     func snapshot(for configuration: SelectHabitIntent, in context: Context) async -> HeatmapEntry {
-        HeatmapEntry(date: Date(), data: WidgetData.load() ?? WidgetData.sample(),
-                     habitId: configuration.habit?.id)
+        makeEntry(configured: configuration.habitId, data: WidgetData.load() ?? WidgetData.sample())
     }
 
     func timeline(for configuration: SelectHabitIntent, in context: Context) async -> Timeline<HeatmapEntry> {
-        let entry = HeatmapEntry(date: Date(), data: WidgetData.load(),
-                                 habitId: configuration.habit?.id)
+        let entry = makeEntry(configured: configuration.habitId, data: WidgetData.load())
         // Re-render at next local midnight so "today" rolls over even unopened.
         let midnight = Calendar.current.nextDate(
             after: Date(), matching: DateComponents(hour: 0, minute: 0),
@@ -48,8 +66,12 @@ struct MeV2WidgetEntryView: View {
             if let id = entry.habitId {
                 if let habit = data.habit(withId: id) {
                     switch family {
-                    case .systemMedium: HabitMediumCard(habit: habit, todayDate: data.todayDate)
-                    default: HabitSmallCard(habit: habit, todayDate: data.todayDate)
+                    case .systemMedium:
+                        HabitMediumCard(habit: habit, todayDate: data.todayDate,
+                                        cycle: entry.cycleMode, index: entry.cycleIndex, total: entry.cycleTotal)
+                    default:
+                        HabitSmallCard(habit: habit, todayDate: data.todayDate,
+                                       cycle: entry.cycleMode, index: entry.cycleIndex, total: entry.cycleTotal)
                     }
                 } else {
                     MissingHabitView()   // picked habit no longer exists
@@ -119,20 +141,24 @@ struct AllHabitsMediumCard: View {
 struct HabitSmallCard: View {
     let habit: WidgetData.HabitData
     let todayDate: String
+    var cycle: Bool = false
+    var index: Int = 0
+    var total: Int = 0
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack {
                 HStack(spacing: 5) {
                     Text(habit.icon).font(.system(size: 14))
                     Text(habit.name).font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white).lineLimit(1)
+                        .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.7)
                 }
                 Spacer(minLength: 4)
                 StreakView(streak: habit.streak, settled: habit.isSettled, size: 14)
             }
             StatePill(habit: habit)
             CompactGridView(days: habit.days, todayDate: todayDate,
-                            todaySettled: habit.isSettled, weeks: 9)
+                            todaySettled: habit.isSettled, weeks: cycle ? 7 : 8, labels: true)
+            if cycle { CycleBar(index: index, total: total) }
         }
     }
 }
@@ -140,26 +166,60 @@ struct HabitSmallCard: View {
 struct HabitMediumCard: View {
     let habit: WidgetData.HabitData
     let todayDate: String
+    var cycle: Bool = false
+    var index: Int = 0
+    var total: Int = 0
     var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            VStack(alignment: .leading, spacing: 7) {
-                HStack(spacing: 5) {
-                    Text(habit.icon).font(.system(size: 15))
-                    Text(habit.name).font(.system(size: 12, weight: .bold))
-                        .foregroundColor(.white).lineLimit(1)
+        VStack(spacing: 7) {
+            HStack(alignment: .top, spacing: 12) {
+                VStack(alignment: .leading, spacing: 7) {
+                    HStack(spacing: 5) {
+                        Text(habit.icon).font(.system(size: 15))
+                        Text(habit.name).font(.system(size: 12, weight: .bold))
+                            .foregroundColor(.white).lineLimit(1).minimumScaleFactor(0.7)
+                    }
+                    StatePill(habit: habit)
+                    Spacer(minLength: 8)
+                    HStack(alignment: .firstTextBaseline, spacing: 4) {
+                        StreakView(streak: habit.streak, settled: habit.isSettled, size: 17)
+                        Text("streak").font(.system(size: 9, weight: .semibold))
+                            .foregroundColor(MeV2Palette.textFaint)
+                    }
                 }
-                StatePill(habit: habit)
-                Spacer(minLength: 8)
-                HStack(alignment: .firstTextBaseline, spacing: 4) {
-                    StreakView(streak: habit.streak, settled: habit.isSettled, size: 17)
-                    Text("streak").font(.system(size: 9, weight: .semibold))
-                        .foregroundColor(MeV2Palette.textFaint)
+                .frame(width: 104, alignment: .leading)
+
+                HeatmapGridView(days: habit.days, todayDate: todayDate,
+                                binary: true, todaySettled: habit.isSettled)
+            }
+            if cycle { CycleBar(index: index, total: total) }
+        }
+    }
+}
+
+/// Prev/next chevrons + page dots for cycle mode. Chevrons are interactive
+/// widget buttons (iOS 17+) that advance the shown habit.
+struct CycleBar: View {
+    let index: Int
+    let total: Int
+    var body: some View {
+        HStack(spacing: 8) {
+            Button(intent: CycleHabitIntent(.previous)) {
+                Image(systemName: "chevron.left").font(.system(size: 11, weight: .bold))
+            }
+            .buttonStyle(.plain).foregroundColor(MeV2Palette.textDim)
+            Spacer()
+            HStack(spacing: 4) {
+                ForEach(0..<max(total, 1), id: \.self) { i in
+                    Circle()
+                        .fill(i == index ? MeV2Palette.accent : Color.white.opacity(0.22))
+                        .frame(width: 5, height: 5)
                 }
             }
-            .frame(width: 104, alignment: .leading)
-
-            HeatmapGridView(days: habit.days, todayDate: todayDate,
-                            binary: true, todaySettled: habit.isSettled)
+            Spacer()
+            Button(intent: CycleHabitIntent(.next)) {
+                Image(systemName: "chevron.right").font(.system(size: 11, weight: .bold))
+            }
+            .buttonStyle(.plain).foregroundColor(MeV2Palette.textDim)
         }
     }
 }
