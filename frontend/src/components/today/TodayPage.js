@@ -65,18 +65,38 @@ const TodayPage = () => {
     }, [load, pushToast]);
 
     // Mirror the day + heatmap into the iOS home-screen widget whenever either
-    // changes (covers initial load, logs, backfills). No-op on web.
+    // changes (covers initial load, logs, backfills). No-op on web; the extra
+    // per-habit fetch only happens inside the native app.
     useEffect(() => {
-        if (!today?.day || !heatmap?.days) return;
-        Native.syncWidgetData({
-            updatedAt: new Date().toISOString(),
-            todayDate: today.date,
-            dayStreak: today.day.day_streak ?? 0,
-            completed: today.day.completed ?? 0,
-            scheduled: today.day.scheduled ?? 0,
-            isComplete: Boolean(today.day.is_complete),
-            days: heatmap.days.slice(-126),
-        });
+        if (!today?.day || !heatmap?.days || !Native.isNative()) return;
+        let cancelled = false;
+        habitService.getHeatmapByHabit(126)
+            .then((perHabit) => {
+                if (cancelled) return;
+                Native.syncWidgetData({
+                    version: 2,
+                    updatedAt: new Date().toISOString(),
+                    todayDate: today.date,
+                    dayStreak: today.day.day_streak ?? 0,
+                    completed: today.day.completed ?? 0,
+                    scheduled: today.day.scheduled ?? 0,
+                    isComplete: Boolean(today.day.is_complete),
+                    days: heatmap.days.slice(-126),
+                    habits: (perHabit.habits || []).map((h) => ({
+                        id: String(h.id),
+                        name: h.name,
+                        icon: h.icon || '',
+                        cadence: h.cadence_type,
+                        timesPerWeek: h.times_per_week ?? 0,
+                        streak: h.current_streak ?? 0,
+                        doneToday: Boolean(h.completed_today),
+                        weekCount: h.week_count ?? 0,
+                        days: h.days,
+                    })),
+                });
+            })
+            .catch((e) => console.error('widget per-habit sync failed', e));
+        return () => { cancelled = true; };
     }, [today, heatmap]);
 
     const targetDate = useMemo(() => {

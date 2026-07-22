@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import './InstallPrompt.css';
+import { Native } from '../../native/nativeBridge';
 
 /**
  * The PWA install moment (§9): Android/desktop Chrome get the real install
@@ -26,7 +27,10 @@ const isIOSDevice = () =>
     /iphone|ipad|ipod/i.test(window.navigator.userAgent) &&
     !window.navigator.standalone;
 
+// The native app is already "the whole app" — no install prompt belongs there,
+// so treat it like an installed standalone PWA (suppresses every install path).
 const isStandalone = () =>
+    Native.isNative() ||
     window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
 // Install UI is mobile-only. Desktop Chrome also fires beforeinstallprompt, but

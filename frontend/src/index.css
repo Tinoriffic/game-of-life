@@ -29,14 +29,17 @@ button {
   font-family: 'Orbitron', sans-serif;
 }
 
-/* Room for the fixed tab bar (bottom on mobile, top on desktop) */
+/* Room for the fixed tab bar (bottom on mobile, top on desktop), plus the
+   device safe areas so content clears the status bar / Dynamic Island and the
+   home indicator. env() insets are 0 off-device, so this is a no-op on web. */
 .app-shell {
-  padding-bottom: 64px;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: calc(64px + env(safe-area-inset-bottom));
 }
 
 @media (min-width: 768px) {
   .app-shell {
     padding-bottom: 0;
-    padding-top: 56px;
+    padding-top: calc(56px + env(safe-area-inset-top));
   }
 }

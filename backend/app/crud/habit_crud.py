@@ -781,6 +781,49 @@ def get_heatmap(db: Session, user: User, days: int = 182, habit_id: Optional[int
     return {"start": str(start), "end": str(user_today), "days": days_out}
 
 
+def get_heatmap_by_habit(db: Session, user: User, days: int = 126) -> dict:
+    """Every habit's grid + streak in one call — feeds the iOS home-screen
+    widget's per-habit cards (fetched native-only, so the web never pays)."""
+    user_today = get_user_today(db, user.id)
+    start = user_today - timedelta(days=days - 1)
+    habits = get_user_habits(db, user.id, include_archived=False)
+
+    rows = db.query(HabitLog.habit_id, HabitLog.date, func.count(HabitLog.id)).filter(
+        HabitLog.user_id == user.id, HabitLog.date >= start).group_by(
+        HabitLog.habit_id, HabitLog.date).all()
+    counts_by_habit = {}
+    for habit_id, log_date, n in rows:
+        counts_by_habit.setdefault(habit_id, {})[log_date] = int(n)
+
+    out = []
+    for habit in habits:
+        counts = counts_by_habit.get(habit.id, {})
+        dates = _habit_log_dates(db, habit.id)  # full history, for streaks
+        days_out = []
+        cursor = start
+        while cursor <= user_today:
+            n = counts.get(cursor, 0)
+            days_out.append({
+                "date": str(cursor),
+                "count": n,
+                "status": "complete" if n else "none",
+            })
+            cursor += timedelta(days=1)
+        out.append({
+            "id": habit.id,
+            "name": habit.name,
+            "icon": habit.icon or (habit.bucket.icon if habit.bucket else None),
+            "cadence_type": habit.cadence_type,
+            "times_per_week": habit.times_per_week,
+            "current_streak": habit_logic.current_streak(
+                habit.cadence_type, habit.weekdays, habit.times_per_week, dates, user_today),
+            "completed_today": user_today in dates,
+            "week_count": habit_logic.week_count(dates, user_today),
+            "days": days_out,
+        })
+    return {"start": str(start), "end": str(user_today), "habits": out}
+
+
 def get_stats_overview(db: Session, user: User) -> dict:
     """Numbers a user can look at and FEEL progress (or its absence)."""
     user_today = get_user_today(db, user.id)

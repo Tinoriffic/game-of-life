@@ -70,6 +70,15 @@ async def get_heatmap(
     return habit_crud.get_heatmap(db, current_user, days=days, habit_id=habit_id)
 
 
+@router.get("/habits/heatmap-by-habit")
+async def get_heatmap_by_habit(
+    days: int = Query(126, ge=7, le=400),
+    db: Session = Depends(get_db),
+    current_user: user_model.User = Depends(auth_utils.get_current_user),
+):
+    return habit_crud.get_heatmap_by_habit(db, current_user, days=days)
+
+
 @router.get("/habits/stats-overview")
 async def get_stats_overview(
     db: Session = Depends(get_db),

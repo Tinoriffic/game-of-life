@@ -77,6 +77,11 @@ export const habitService = {
         return response.data;
     },
 
+    async getHeatmapByHabit(days = 126) {
+        const response = await axiosInstance.get('/habits/heatmap-by-habit', { params: { days } });
+        return response.data;
+    },
+
     async getStatsOverview() {
         const response = await axiosInstance.get('/habits/stats-overview');
         return response.data;
