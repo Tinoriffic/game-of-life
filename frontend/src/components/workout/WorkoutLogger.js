@@ -259,7 +259,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         if (restJustStartedRef.current) { restJustStartedRef.current = false; return; }
         if (!restOn || restStartRef.current == null || alertedRef.current || !restTarget) return;
         const endsAt = restStartRef.current + restTarget * 1000;
-        Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.' });
+        Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.', sound: 'workout' });
         Native.updateLiveActivity({ id: REST_ALERT_ID, endsAt, label: 'Rest' });
     }, [restTarget, restOn]);
 
@@ -289,7 +289,7 @@ const WorkoutLogger = ({ program, habitId, sessionDate = null, onLogged, onClose
         restJustStartedRef.current = true;
         if (restTargetRef.current) {
             const endsAt = restStartRef.current + restTargetRef.current * 1000;
-            Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.' });
+            Native.scheduleAlert({ id: REST_ALERT_ID, fireAt: endsAt, title: 'Rest over', body: 'Time for your next set.', sound: 'workout' });
             Native.startLiveActivity({ id: REST_ALERT_ID, type: 'workout', endsAt, label: 'Rest' });
         }
     };

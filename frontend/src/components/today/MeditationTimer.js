@@ -82,7 +82,7 @@ const MeditationTimer = ({ defaultMinutes = 10, label = 'Meditation', onComplete
     const armNative = useCallback((remainingSec, { fresh }) => {
         if (mode !== 'countdown') return;
         const endsAt = Date.now() + remainingSec * 1000;
-        Native.scheduleAlert({ id: idRef.current, fireAt: endsAt, title: `${label} complete`, body: 'Your timer has finished.' });
+        Native.scheduleAlert({ id: idRef.current, fireAt: endsAt, title: `${label} complete`, body: 'Your timer has finished.', sound: 'meditation' });
         if (fresh) {
             Native.startLiveActivity({ id: idRef.current, type: 'meditation', endsAt, label });
         } else {

@@ -21,9 +21,9 @@ export const Native = {
 
   // Fire a local notification (sound + haptic) at an absolute time, even when
   // the phone is locked or the app is backgrounded. fireAt = epoch ms.
-  scheduleAlert({ id, fireAt, title, body }) {
+  scheduleAlert({ id, fireAt, title, body, sound }) {
     if (!Native.isNative()) return;
-    TimerBridge.scheduleAlert({ id, fireAt, title, body }).catch(warn('scheduleAlert'));
+    TimerBridge.scheduleAlert({ id, fireAt, title, body, sound }).catch(warn('scheduleAlert'));
   },
   cancelAlert({ id }) {
     if (!Native.isNative()) return;

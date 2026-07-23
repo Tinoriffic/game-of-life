@@ -51,16 +51,21 @@ struct TimerLiveActivity: Widget {
                         .foregroundStyle(.white.opacity(0.7))
                 }
             } compactLeading: {
-                icon(for: context.attributes.type)
-                    .foregroundStyle(tint(context.attributes.type))
-            } compactTrailing: {
+                // Remaining time on the leading side so it stays visible even
+                // when another app shares the island and ours is pushed right.
                 timerLabel(context)
                     .monospacedDigit()
                     .foregroundStyle(tint(context.attributes.type))
-                    .frame(maxWidth: 54)
-            } minimal: {
+                    .frame(maxWidth: 56)
+            } compactTrailing: {
                 icon(for: context.attributes.type)
                     .foregroundStyle(tint(context.attributes.type))
+            } minimal: {
+                // Show the time (not just an icon) in the tiny two-activity slot.
+                timerLabel(context)
+                    .font(.system(size: 13, design: .rounded).monospacedDigit())
+                    .foregroundStyle(tint(context.attributes.type))
+                    .frame(maxWidth: 44)
             }
             .widgetURL(URL(string: "mev2://timer"))
         }
