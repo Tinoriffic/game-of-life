@@ -13,7 +13,11 @@ import { baseUrl } from './config/apiConfig';
  */
 
 const axiosInstance = axios.create({
-    baseURL: baseUrl
+    baseURL: baseUrl,
+    // A request that never settles (e.g. a stalled fetch after the webview
+    // resumes from background) must fail loudly so the UI can show a retry
+    // instead of hanging on a spinner forever.
+    timeout: 25000
 });
 
 axiosInstance.interceptors.request.use((config) => {

@@ -18,22 +18,28 @@ struct HeatmapEntry: TimelineEntry {
     var cycleMode: Bool = false // show chevrons + page dots
     var cycleIndex: Int = 0
     var cycleTotal: Int = 0
+    var stale: Bool = false     // snapshot predates today; shown reset to a fresh day
 }
 
 /// Turn the configured value (nil / a habit id / the cycle sentinel) into a
-/// concrete entry, resolving the cycle-mode habit from shared state.
-func makeEntry(configured: String?, data: WidgetData?) -> HeatmapEntry {
-    guard let data = data else {
+/// concrete entry, resolving the cycle-mode habit from shared state. If the
+/// stored snapshot is from an earlier day, it's freshened to a neutral new-day
+/// state so the widget never shows yesterday's completion as today's.
+func makeEntry(configured: String?, data rawData: WidgetData?) -> HeatmapEntry {
+    guard let rawData = rawData else {
         return HeatmapEntry(date: Date(), data: nil, habitId: configured)
     }
+    let freshened = rawData.freshened(forDeviceDate: WidgetData.deviceToday())
+    let data = freshened ?? rawData
+    let stale = freshened != nil
     if configured == WidgetCycle.sentinel {
         let ids = data.habitIds
         let current = WidgetCycle.currentId ?? ids.first
         let idx = current.flatMap { ids.firstIndex(of: $0) } ?? 0
         return HeatmapEntry(date: Date(), data: data, habitId: current,
-                            cycleMode: true, cycleIndex: idx, cycleTotal: ids.count)
+                            cycleMode: true, cycleIndex: idx, cycleTotal: ids.count, stale: stale)
     }
-    return HeatmapEntry(date: Date(), data: data, habitId: configured)
+    return HeatmapEntry(date: Date(), data: data, habitId: configured, stale: stale)
 }
 
 struct Provider: AppIntentTimelineProvider {
@@ -61,7 +67,8 @@ struct MeV2WidgetEntryView: View {
     @Environment(\.widgetFamily) var family
     var entry: HeatmapEntry
 
-    var body: some View {
+    @ViewBuilder
+    private var card: some View {
         if let data = entry.data {
             if let id = entry.habitId {
                 if let habit = data.habit(withId: id) {
@@ -84,6 +91,18 @@ struct MeV2WidgetEntryView: View {
             }
         } else {
             EmptyStateView()
+        }
+    }
+
+    var body: some View {
+        card.overlay(alignment: .topTrailing) {
+            // Freshened from a prior day's snapshot: hint that opening the app
+            // will fill in today's real numbers.
+            if entry.stale, entry.data != nil {
+                Image(systemName: "arrow.clockwise")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundColor(MeV2Palette.textFaint)
+            }
         }
     }
 }

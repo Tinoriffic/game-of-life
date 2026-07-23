@@ -52,6 +52,37 @@ struct WidgetData: Codable {
 
     var habitIds: [String] { (habits ?? []).map { $0.id } }
 
+    /// The app only pushes a fresh snapshot while it is open, so after midnight
+    /// (or a habit logged elsewhere) the stored snapshot still describes an
+    /// earlier day. Rather than paint yesterday's completed state as "today",
+    /// return a copy reset to a fresh, not-yet-logged day: streaks are kept
+    /// (already earned) but nothing reads as done, and a pending cell is added
+    /// for the real today so the grid outlines the right day. Returns nil when
+    /// the snapshot already matches `deviceToday` (nothing to do).
+    func freshened(forDeviceDate deviceToday: String) -> WidgetData? {
+        guard todayDate < deviceToday else { return nil }
+        let pending = Day(date: deviceToday, count: 0, status: "none")
+        let freshHabits = habits?.map { h in
+            HabitData(id: h.id, name: h.name, icon: h.icon, cadence: h.cadence,
+                      timesPerWeek: h.timesPerWeek, streak: h.streak,
+                      doneToday: false,          // daily: a new day starts unlogged
+                      weekCount: h.weekCount,    // weekly: carries within the week
+                      days: h.days + [pending])
+        }
+        return WidgetData(updatedAt: updatedAt, todayDate: deviceToday,
+                          dayStreak: dayStreak, completed: 0, scheduled: scheduled,
+                          isComplete: false, days: days + [pending], habits: freshHabits)
+    }
+
+    /// Device's local calendar date as "yyyy-MM-dd", matching stored day keys.
+    static func deviceToday() -> String {
+        let f = DateFormatter()
+        f.calendar = Calendar.current
+        f.timeZone = .current
+        f.dateFormat = "yyyy-MM-dd"
+        return f.string(from: Date())
+    }
+
     /// Gallery preview / placeholder: a plausible-looking recent stretch.
     static func sample() -> WidgetData {
         let formatter = DateFormatter()

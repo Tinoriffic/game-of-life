@@ -9,6 +9,7 @@ import DetailSheet from './DetailSheet';
 import OnboardingPicker from './OnboardingPicker';
 import MiniHeatmap from './MiniHeatmap';
 import { Native } from '../../native/nativeBridge';
+import { useForegroundRefresh } from '../../hooks/useForegroundRefresh';
 import FocusStrip from '../focus/FocusStrip';
 import IntroCoach from '../common/IntroCoach';
 import './TodayPage.css';
@@ -48,21 +49,38 @@ const TodayPage = () => {
         }
     }, []);
 
-    useEffect(() => {
-        // Flush any offline-queued logs first so the day state is honest.
-        habitService.flushQueue().then((flushed) => {
-            setPendingSync(habitService.pendingCount());
-            if (flushed > 0) pushToast({ kind: 'daycomplete', text: 'Offline logs synced ✓' });
-            load();
-        });
+    // Flush any offline-queued logs, then load the day. `load()` runs even if the
+    // flush rejects (a corrupted queue must never strand us on the skeleton).
+    const syncAndLoad = useCallback((announce = true) => {
+        return habitService.flushQueue()
+            .then((flushed) => {
+                setPendingSync(habitService.pendingCount());
+                if (announce && flushed > 0) pushToast({ kind: 'daycomplete', text: 'Offline logs synced ✓' });
+            })
+            .catch(() => {})
+            .finally(() => load());
+    }, [load, pushToast]);
 
-        const onOnline = () => habitService.flushQueue().then(() => {
-            setPendingSync(habitService.pendingCount());
-            load();
-        });
+    useEffect(() => {
+        syncAndLoad();
+        const onOnline = () => syncAndLoad(false);
         window.addEventListener('online', onOnline);
         return () => window.removeEventListener('online', onOnline);
-    }, [load, pushToast]);
+    }, [syncAndLoad]);
+
+    // Re-sync whenever the app returns to the foreground so a resumed webview is
+    // never showing yesterday's (or a half-loaded) state.
+    useForegroundRefresh(useCallback(() => syncAndLoad(false), [syncAndLoad]));
+
+    // Watchdog for an app left open across local midnight: reload once the date
+    // actually rolls over so the header, ring, and backfill target stay correct.
+    useEffect(() => {
+        if (!today?.date) return undefined;
+        const now = new Date();
+        const nextMidnight = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 30);
+        const timer = setTimeout(() => syncAndLoad(false), nextMidnight.getTime() - now.getTime());
+        return () => clearTimeout(timer);
+    }, [today?.date, syncAndLoad]);
 
     // Mirror the day + heatmap into the iOS home-screen widget whenever either
     // changes (covers initial load, logs, backfills). No-op on web; the extra
