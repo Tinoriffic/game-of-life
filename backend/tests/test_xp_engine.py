@@ -142,13 +142,21 @@ def test_xp_to_next_never_negative():
 
 # --- habit slots ---
 def test_slots_for_level():
-    # Locked rungs (xp-tuning.md §slots): 1→5, 2→6, 5→7, 10→8, 16→9, 24→10 cap
+    # Rungs (xp-tuning.md §slots): 1→5, 2→6, 3→7, 5→8, 8→9, 10→10 cap
     assert slots_for_level(1) == 5
     assert slots_for_level(2) == 6
-    assert slots_for_level(4) == 6
-    assert slots_for_level(5) == 7
-    assert slots_for_level(9) == 7
-    assert slots_for_level(10) == 8
-    assert slots_for_level(16) == 9
-    assert slots_for_level(24) == 10
+    assert slots_for_level(3) == 7
+    assert slots_for_level(4) == 7
+    assert slots_for_level(5) == 8
+    assert slots_for_level(7) == 8
+    assert slots_for_level(8) == 9
+    assert slots_for_level(10) == 10
     assert slots_for_level(99) == 10  # capped
+
+
+def test_slots_never_shrink_as_level_rises():
+    previous = 0
+    for level in range(1, 100):
+        slots = slots_for_level(level)
+        assert slots >= previous
+        previous = slots

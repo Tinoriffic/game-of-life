@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { habitService } from '../../services/habitService';
 import { useFeedback } from '../feedback/FeedbackContext';
 import OnboardingPicker from '../today/OnboardingPicker';
+import HabitEditSheet from './HabitEditSheet';
 import './ManageHabitsPage.css';
 
 const CADENCE_LABEL = (habit) => {
@@ -15,13 +16,15 @@ const CADENCE_LABEL = (habit) => {
 };
 
 /**
- * Habit management: archive to free a slot (history retained — no data is
- * ever lost by rotating focus), restore, and add from the library.
+ * Habit management: edit name/cadence/goal in place, archive to free a slot
+ * (history retained — no data is ever lost by rotating focus), restore, and
+ * add from the library.
  */
 const ManageHabitsPage = () => {
     const [habits, setHabits] = useState([]);
     const [slots, setSlots] = useState(null);
     const [showPicker, setShowPicker] = useState(false);
+    const [editing, setEditing] = useState(null);
     const [dragId, setDragId] = useState(null);
     const { pushToast } = useFeedback();
     const habitsRef = useRef([]);
@@ -61,26 +64,6 @@ const ManageHabitsPage = () => {
             load();
         } catch (err) {
             pushToast({ kind: 'partial', text: err.response?.data?.detail || 'Could not restore' });
-        }
-    };
-
-    const editGoal = async (habit) => {
-        const input = window.prompt(
-            `Target ${habit.measurement_unit || ''} for "${habit.name}":`,
-            habit.target_value ?? ''
-        );
-        if (input === null || input.trim() === '') return;
-        const target_value = parseFloat(input);
-        if (Number.isNaN(target_value)) {
-            pushToast({ kind: 'partial', text: 'Enter a number' });
-            return;
-        }
-        try {
-            await habitService.updateHabit(habit.id, { target_value });
-            pushToast({ kind: 'daycomplete', text: 'Goal updated' });
-            load();
-        } catch (err) {
-            pushToast({ kind: 'partial', text: err.response?.data?.detail || 'Could not update goal' });
         }
     };
 
@@ -195,11 +178,7 @@ const ManageHabitsPage = () => {
                             </div>
                         </div>
                         <div className="manage-actions">
-                            {habit.habit_type === 'measurement' && (
-                                <button className="manage-action" onClick={() => editGoal(habit)}>
-                                    {habit.target_value != null ? 'Edit goal' : 'Set goal'}
-                                </button>
-                            )}
+                            <button className="manage-action edit" onClick={() => setEditing(habit)}>Edit</button>
                             <button className="manage-action" onClick={() => archive(habit)}>Archive</button>
                         </div>
                     </div>
@@ -226,6 +205,14 @@ const ManageHabitsPage = () => {
             )}
 
             <Link to="/" className="manage-back">← Back to Today</Link>
+
+            {editing && (
+                <HabitEditSheet
+                    habit={editing}
+                    onClose={() => setEditing(null)}
+                    onSaved={() => { setEditing(null); load(); }}
+                />
+            )}
         </div>
     );
 };

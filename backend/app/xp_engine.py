@@ -183,7 +183,7 @@ def player_level_from_xp(total_xp: int) -> dict:
 
 # Locked rungs (xp-tuning.md §slots): rungs widen as you climb so the last
 # slots are a real grind. Measurement habits sit outside the count.
-SLOT_RUNGS = ((1, 5), (2, 6), (5, 7), (10, 8), (16, 9), (24, 10))
+SLOT_RUNGS = ((1, 5), (2, 6), (3, 7), (5, 8), (8, 9), (10, 10))
 
 
 def slots_for_level(player_level: int) -> int:

@@ -156,8 +156,19 @@ def update_habit(db: Session, user: User, habit_id: int, data: habit_schema.Habi
     if not habit:
         raise ValueError("Habit not found")
 
+    cadence_before = (habit.cadence_type, habit.times_per_week, tuple(habit.weekdays or ()))
+
     if data.name is not None:
-        habit.name = data.name.strip()
+        new_name = data.name.strip()
+        duplicate = (
+            db.query(Habit)
+            .filter(Habit.user_id == user.id, Habit.status == "active", Habit.id != habit.id,
+                    func.lower(Habit.name) == new_name.lower())
+            .first()
+        )
+        if duplicate:
+            raise ValueError("You already have an active habit with that name")
+        habit.name = new_name
     if data.icon is not None:
         habit.icon = data.icon
     if data.cadence_type is not None:
@@ -176,6 +187,13 @@ def update_habit(db: Session, user: User, habit_id: int, data: habit_schema.Habi
         habit.times_per_week = None
     if habit.cadence_type != habit_logic.CADENCE_WEEKDAYS:
         habit.weekdays = None
+
+    # A cadence change moves what's scheduled today, so the day's stored
+    # completion state (and the XP already paid for it) has to be re-settled.
+    cadence_after = (habit.cadence_type, habit.times_per_week, tuple(habit.weekdays or ()))
+    if cadence_after != cadence_before and habit.status == "active":
+        db.flush()
+        recompute_day_completion(db, user, get_user_today(db, user.id))
 
     db.commit()
     db.refresh(habit)

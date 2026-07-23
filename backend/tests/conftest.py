@@ -2,6 +2,7 @@ import pytest
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
 from app.database import Base
 import app.models  # noqa: F401 - registers every model on Base.metadata for create_all
 from app.models import User, Skill, ActivityStreak
@@ -16,8 +17,13 @@ def db():
 
     The CRUD under test is query-heavy (joins, ordering, streak math), so we run
     against real tables rather than a mocked Session.
+
+    StaticPool keeps every checkout on one connection: an in-memory SQLite DB
+    lives *in* its connection, so without it a commit inside TestClient's worker
+    thread would reconnect to an empty database.
     """
-    engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False})
+    engine = create_engine("sqlite:///:memory:", poolclass=StaticPool,
+                           connect_args={"check_same_thread": False})
     Base.metadata.create_all(bind=engine)
     session = sessionmaker(bind=engine)()
     try:

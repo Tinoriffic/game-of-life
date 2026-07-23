@@ -93,6 +93,11 @@
   text-align: center;
 }
 
+.manage-action.edit {
+  border-color: rgba(255, 215, 0, 0.55);
+  color: #ffd700;
+}
+
 .manage-action.restore {
   border-color: rgba(6, 214, 160, 0.6);
   color: #06d6a0;
