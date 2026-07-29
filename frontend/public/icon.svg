@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <!-- Me v2 app icon master. Segmented XP ring, 9 of 12 notches lit.
+       Gold gradient is the .player-xp-fill gradient from TodayPage.css. -->
+  <defs>
+    <linearGradient id="xpGold" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#ff9f43"/>
+      <stop offset="1" stop-color="#ffd700"/>
+    </linearGradient>
+    <!-- Wedge edges sit mid-gap, not on a segment edge, or antialiasing leaks a
+         gold hairline at the boundary. -->
+    <mask id="lit9">
+      <rect width="1024" height="1024" fill="black"/>
+      <path d="M 512 512 L 491.93 52.44 A 460 460 0 1 1 52.44 532.07 Z" fill="white"/>
+    </mask>
+  </defs>
+
+  <rect width="1024" height="1024" fill="#1d1f20"/>
+
+  <circle cx="512" cy="512" r="300" fill="none" stroke="#2b2e30" stroke-width="110"
+          stroke-dasharray="131.08 26" transform="rotate(-90 512 512)"/>
+
+  <g mask="url(#lit9)">
+    <circle cx="512" cy="512" r="300" fill="none" stroke="url(#xpGold)" stroke-width="110"
+            stroke-dasharray="131.08 26" transform="rotate(-90 512 512)"/>
+  </g>
+
+  <polyline points="398,566 512,452 626,566" fill="none" stroke="#ffd700"
+            stroke-width="60" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
