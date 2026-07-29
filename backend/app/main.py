@@ -5,7 +5,7 @@ load_dotenv()
 
 from .oauth2_config import OAuth2Config
 from .cors import setup_cors
-from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router, habit_router, focus_router
+from .routers import oauth2_router, user_router, activity_router, skill_router, workout_router, challenge_router, admin_router, habit_router, focus_router, strava_router
 from . import models
 from .database import engine, SessionLocal
 
@@ -62,6 +62,13 @@ def _bootstrap():
         conn.execute(text(
             "ALTER TABLE focus_sessions ADD COLUMN IF NOT EXISTS pause_started_at TIMESTAMP"
         ))
+        # Habit-log provenance (Strava import + future sources).
+        conn.execute(text(
+            "ALTER TABLE habit_logs ADD COLUMN IF NOT EXISTS source VARCHAR NOT NULL DEFAULT 'manual'"
+        ))
+        conn.execute(text(
+            "ALTER TABLE habit_logs ADD COLUMN IF NOT EXISTS external_ref VARCHAR"
+        ))
         # Neutral muscle group so an exercise can be created with just name + tracking
         # (mirrors the existing "Other" equipment). Preselected by the create form.
         conn.execute(text(
@@ -101,6 +108,7 @@ app.include_router(challenge_router.router)
 app.include_router(admin_router.router)
 app.include_router(habit_router.router)
 app.include_router(focus_router.router)
+app.include_router(strava_router.router)
 
 
 # Example Routes

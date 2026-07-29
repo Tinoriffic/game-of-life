@@ -61,6 +61,10 @@ export const initNativeAuthHandoff = () => {
       if (token) {
         window.location.href = `/user-setup?token=${encodeURIComponent(token)}`;
       }
+    } else if (route === 'profile') {
+      // Strava connect returns here (mev2://profile?strava=connected|error|denied).
+      const strava = params.get('strava');
+      window.location.href = strava ? `/profile?strava=${encodeURIComponent(strava)}` : '/profile';
     }
   });
 };

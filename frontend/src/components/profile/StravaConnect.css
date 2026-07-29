@@ -1,0 +1,122 @@
+.strava-card {
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
+  border: 1px solid rgba(252, 76, 2, 0.35);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 14px 0;
+  color: #f8f8f2;
+}
+
+.strava-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.strava-logo {
+  font-weight: 800;
+  font-size: 15px;
+  color: #fc4c02;
+  letter-spacing: 0.3px;
+}
+
+.strava-connected {
+  font-size: 11px;
+  color: #06d6a0;
+  border: 1px solid rgba(6, 214, 160, 0.5);
+  border-radius: 8px;
+  padding: 2px 8px;
+}
+
+.strava-desc {
+  color: #a8a8b8;
+  font-size: 13px;
+  margin: 8px 0 12px;
+  line-height: 1.4;
+}
+
+.strava-connect-btn {
+  width: 100%;
+  background: #fc4c02;
+  color: #fff;
+  font-weight: 800;
+  border: none;
+  border-radius: 11px;
+  padding: 12px;
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.strava-connect-btn:disabled { opacity: 0.6; }
+
+.strava-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 12px 0 8px;
+  font-size: 13px;
+  color: #c8c8d4;
+}
+
+.strava-field select {
+  flex: 1;
+  max-width: 62%;
+  background: rgba(0, 0, 0, 0.4);
+  color: #f8f8f2;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  padding: 8px 9px;
+  font-size: 13px;
+}
+
+.strava-note { color: #d08770; font-size: 12px; }
+
+.strava-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #c8c8d4;
+  margin: 8px 0 12px;
+  cursor: pointer;
+}
+
+.strava-toggle input { width: 16px; height: 16px; accent-color: #fc4c02; }
+
+.strava-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.strava-sync-btn {
+  flex: 1;
+  background: rgba(252, 76, 2, 0.16);
+  border: 1px solid rgba(252, 76, 2, 0.6);
+  color: #fc4c02;
+  font-weight: 700;
+  border-radius: 10px;
+  padding: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.strava-sync-btn:disabled { opacity: 0.5; }
+
+.strava-disconnect {
+  flex: none;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #9a9aa8;
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.strava-lastsync {
+  color: #77778a;
+  font-size: 11px;
+  margin: 10px 0 0;
+  text-align: right;
+}

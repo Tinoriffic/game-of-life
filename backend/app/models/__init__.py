@@ -6,3 +6,4 @@ from .challenge_model import *
 from .system_settings_model import *
 from .habit_model import *
 from .focus_model import *
+from .strava_model import *

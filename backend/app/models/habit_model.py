@@ -117,6 +117,11 @@ class HabitLog(Base):
     attribute_xp = Column(Integer, nullable=False, default=0)
     player_xp = Column(Integer, nullable=False, default=0)
 
+    # Provenance: 'manual' (the default one-tap path) | 'strava' | future imports.
+    # external_ref (e.g. 'strava:<activity_id>') makes imports idempotent.
+    source = Column(String, nullable=False, default="manual")
+    external_ref = Column(String, nullable=True, index=True)
+
     is_backfill = Column(Boolean, default=False)
     created_at = Column(DateTime, default=utc_now)
     updated_at = Column(DateTime, default=utc_now, onupdate=utc_now)

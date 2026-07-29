@@ -448,7 +448,8 @@ def _auto_progress_challenge(db: Session, user: User, habit: Habit, log_date: da
 
 
 def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.HabitLogCreate,
-              allow_archived: bool = False) -> dict:
+              allow_archived: bool = False, enforce_window: bool = True,
+              source: str = "manual", external_ref: Optional[str] = None) -> dict:
     """
     The core action of the app. Creates the day's log, pays both XP tracks,
     updates streaks/day-state/challenge, and returns everything the feedback
@@ -457,6 +458,10 @@ def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.Habi
     allow_archived: the focus-session bridge still pays XP on an archived
     linked habit; archived habits aren't scheduled, so Today/day-complete
     stay unaffected.
+
+    enforce_window=False lets a trusted importer (Strava) backfill a run older
+    than the 48h manual window; future dates are still rejected. source /
+    external_ref stamp provenance and make the import idempotent.
     """
     habit = get_user_habit(db, user.id, habit_id)
     if not habit or (habit.status != "active" and not allow_archived):
@@ -464,7 +469,10 @@ def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.Habi
 
     user_today = get_user_today(db, user.id)
     log_date = payload.date or user_today
-    _validate_log_date(user_today, log_date)
+    if enforce_window:
+        _validate_log_date(user_today, log_date)
+    elif log_date > user_today:
+        raise ValueError("Cannot log habits for future dates")
 
     if habit.habit_type == "measurement" and payload.value is None:
         raise ValueError(f"This habit logs a value ({habit.measurement_unit or 'number'})")
@@ -490,6 +498,8 @@ def log_habit(db: Session, user: User, habit_id: int, payload: habit_schema.Habi
         quantity=payload.quantity,
         note=payload.note,
         attribute=attribute,
+        source=source,
+        external_ref=external_ref,
         is_backfill=log_date != user_today,
     )
     db.add(log)
@@ -647,6 +657,7 @@ def _log_dict(log: HabitLog) -> dict:
         "attribute": log.attribute,
         "attribute_xp": log.attribute_xp,
         "player_xp": log.player_xp,
+        "source": log.source,
         "is_backfill": bool(log.is_backfill),
     }
 

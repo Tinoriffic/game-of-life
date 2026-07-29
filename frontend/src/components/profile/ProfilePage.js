@@ -5,6 +5,7 @@ import { habitService } from '../../services/habitService';
 import { useUser } from '../player/UserContext';
 import PlayerCard from '../player/PlayerCard';
 import AvatarPicker from '../player/AvatarPicker';
+import StravaConnect from './StravaConnect';
 import { useInstallPrompt } from '../pwa/InstallPrompt';
 import { APP_VERSION } from '../../appVersion';
 import './ProfilePage.css';
@@ -97,6 +98,8 @@ const ProfilePage = () => {
             )}
 
             <PlayerCard playerData={playerData} />
+
+            <StravaConnect />
 
             <div className="profile-links">
                 <button className="profile-link" onClick={() => setAvatarOpen(true)}>

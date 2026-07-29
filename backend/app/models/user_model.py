@@ -42,3 +42,5 @@ class User(Base):
     created_exercises = relationship("Exercise", back_populates="user")
     user_challenges = relationship("UserChallenge", back_populates="user")
     user_badges = relationship("UserBadge", back_populates="user")
+    strava_connection = relationship("StravaConnection", back_populates="user", uselist=False,
+                                     cascade="all, delete-orphan")
